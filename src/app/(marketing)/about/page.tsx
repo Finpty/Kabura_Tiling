@@ -6,7 +6,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { RevealText } from "@/components/ui/RevealText";
 import { CTASection } from "@/components/home/CTASection";
 import { PlaceholderNotice } from "@/components/ui/PlaceholderNotice";
-import { imageProps } from "@/lib/media";
+import { imageFill } from "@/lib/media";
 import { pageMetadata } from "@/lib/seo";
 import { site } from "@/lib/site";
 import { pad } from "@/lib/utils";
@@ -98,7 +98,7 @@ export default function AboutPage() {
       <Section spacing="flush" className="relative">
         <div className="relative aspect-[16/9] w-full overflow-hidden md:aspect-[21/8]">
           <Image
-            {...imageProps("floorTiling")}
+            {...imageFill("floorTiling")}
             alt="Floor tiles set into combed adhesive with spacers at the joints."
             fill
             sizes="100vw"
@@ -164,7 +164,7 @@ export default function AboutPage() {
 
             <div className="relative mt-8 aspect-[4/3] overflow-hidden rounded-sm">
               <Image
-                {...imageProps("stoneFeature")}
+                {...imageFill("stoneFeature")}
                 alt=""
                 fill
                 sizes="(min-width: 1024px) 45vw, 92vw"

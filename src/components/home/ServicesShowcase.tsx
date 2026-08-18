@@ -7,7 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Section, SectionLabel } from "@/components/ui/Section";
 import { MagneticLink } from "@/components/ui/MagneticButton";
 import { SERVICES } from "@/lib/services";
-import { imageProps } from "@/lib/media";
+import { imageFill } from "@/lib/media";
 import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
 import { useIsDesktop } from "@/hooks/use-media-query";
 import { cn, pad } from "@/lib/utils";
@@ -45,7 +45,7 @@ export function ServicesShowcase() {
             transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
           >
             <Image
-              {...imageProps(activeService.image)}
+              {...imageFill(activeService.image)}
               alt=""
               fill
               sizes="100vw"
@@ -142,10 +142,10 @@ export function ServicesShowcase() {
                   {/* Mobile: the image travels with the row */}
                   <span className="relative block aspect-[16/7] w-full overflow-hidden rounded-sm md:hidden">
                     <Image
-                      {...imageProps(service.image)}
+                      {...imageFill(service.image)}
                       alt=""
                       fill
-                      sizes="100vw"
+                      sizes="(min-width: 768px) 0px, 100vw"
                       className="object-cover opacity-80"
                     />
                     <span className="absolute inset-0 bg-gradient-to-t from-ink/70 to-transparent" />

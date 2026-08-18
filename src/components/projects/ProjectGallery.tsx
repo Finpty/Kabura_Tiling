@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { imageProps } from "@/lib/media";
+import { imageFill } from "@/lib/media";
 import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
 import type { ProjectImage } from "@/lib/projects";
 import { cn } from "@/lib/utils";
@@ -62,7 +62,7 @@ export function ProjectGallery({ images }: { images: ProjectImage[] }) {
               className="group relative block aspect-[3/2] w-full overflow-hidden rounded-sm bg-charcoal-2"
             >
               <Image
-                {...imageProps(image.key)}
+                {...imageFill(image.key)}
                 alt={image.caption ?? ""}
                 fill
                 sizes="(min-width: 640px) 46vw, 92vw"
@@ -117,7 +117,7 @@ export function ProjectGallery({ images }: { images: ProjectImage[] }) {
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             >
               <Image
-                {...imageProps(images[open].key)}
+                {...imageFill(images[open].key)}
                 alt={images[open].caption ?? ""}
                 fill
                 sizes="100vw"

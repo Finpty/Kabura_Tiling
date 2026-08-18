@@ -7,7 +7,7 @@ import { Reveal } from "@/components/ui/Reveal";
 import { CTASection } from "@/components/home/CTASection";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { SERVICES, SERVICE_CATEGORIES } from "@/lib/services";
-import { imageProps } from "@/lib/media";
+import { imageFill } from "@/lib/media";
 import { pageMetadata, absoluteUrl } from "@/lib/seo";
 import { site } from "@/lib/site";
 import { pad } from "@/lib/utils";
@@ -68,7 +68,7 @@ export default function ServicesPage() {
                       >
                         <span className="relative block aspect-[16/10] overflow-hidden">
                           <Image
-                            {...imageProps(service.image)}
+                            {...imageFill(service.image)}
                             alt=""
                             fill
                             sizes="(min-width: 1024px) 30vw, (min-width: 640px) 46vw, 92vw"

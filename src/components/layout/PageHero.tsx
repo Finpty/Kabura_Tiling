@@ -2,7 +2,7 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { RevealText } from "@/components/ui/RevealText";
-import { imageProps } from "@/lib/media";
+import { imageFill } from "@/lib/media";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -40,7 +40,7 @@ export function PageHero({
     >
       <div aria-hidden="true" className="absolute inset-0 -z-10">
         <Image
-          {...imageProps(imageKey)}
+          {...imageFill(imageKey)}
           alt=""
           fill
           sizes="100vw"

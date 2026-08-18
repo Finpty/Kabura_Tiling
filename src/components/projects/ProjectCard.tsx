@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { imageProps } from "@/lib/media";
+import { imageFill } from "@/lib/media";
 import type { Project } from "@/lib/projects";
 import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
 import { cn, pad } from "@/lib/utils";
@@ -42,7 +42,7 @@ export function ProjectCard({ project, index, className, priority }: Props) {
             style={reduced ? undefined : { y }}
           >
             <Image
-              {...imageProps(project.cover)}
+              {...imageFill(project.cover)}
               alt={project.title}
               fill
               sizes="(min-width: 1280px) 32vw, (min-width: 768px) 46vw, 92vw"

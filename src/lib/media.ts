@@ -68,13 +68,37 @@ export function material(id: string): MaterialSwatch | null {
 
 export const MATERIAL_LIST: MaterialSwatch[] = Object.values(materials);
 
-/** Props spread straight onto `next/image`. */
+/**
+ * Props for an intrinsically-sized `next/image` — includes width and height, so
+ * the element reserves its own space and cannot shift the layout.
+ *
+ * Do NOT combine with `fill`: next/image rejects width/height alongside it.
+ * Use `imageFill` for that case instead.
+ */
 export function imageProps(key: string, altOverride?: string) {
   const m = img(key);
   return {
     src: m.src,
     width: m.width,
     height: m.height,
+    alt: altOverride ?? m.alt,
+    placeholder: "blur" as const,
+    blurDataURL: m.blurDataURL,
+  };
+}
+
+/**
+ * Props for a `fill` `next/image`, which sizes itself to a positioned parent.
+ *
+ * Deliberately omits width and height — passing those alongside `fill` is an
+ * error next/image only reports in development, so it is easy to ship. Keeping
+ * the two shapes as separate functions makes the mistake unrepresentable rather
+ * than merely discouraged.
+ */
+export function imageFill(key: string, altOverride?: string) {
+  const m = img(key);
+  return {
+    src: m.src,
     alt: altOverride ?? m.alt,
     placeholder: "blur" as const,
     blurDataURL: m.blurDataURL,

@@ -2,7 +2,7 @@ import Image from "next/image";
 import { Section } from "@/components/ui/Section";
 import { MagneticLink } from "@/components/ui/MagneticButton";
 import { RevealText } from "@/components/ui/RevealText";
-import { imageProps } from "@/lib/media";
+import { imageFill } from "@/lib/media";
 import { site, hasPhone } from "@/lib/site";
 import { telHref } from "@/lib/utils";
 
@@ -28,7 +28,7 @@ export function CTASection({
     >
       <div aria-hidden="true" className="absolute inset-0 -z-10">
         <Image
-          {...imageProps(imageKey)}
+          {...imageFill(imageKey)}
           alt=""
           fill
           sizes="100vw"

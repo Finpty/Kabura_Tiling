@@ -10,7 +10,7 @@ import { CTASection } from "@/components/home/CTASection";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { SERVICES, getService } from "@/lib/services";
 import { SERVICE_AREAS } from "@/lib/service-areas";
-import { img, imageProps, video } from "@/lib/media";
+import { img, imageFill, video } from "@/lib/media";
 import { faqSchema, pageMetadata, serviceSchema } from "@/lib/seo";
 import { site } from "@/lib/site";
 import { pad } from "@/lib/utils";
@@ -114,12 +114,13 @@ export default async function ServicePage({ params }: Params) {
                 video={clip}
                 poster={img(service.image)}
                 alt={service.title}
+                sizes="(min-width: 1024px) 22rem, 92vw"
                 className="aspect-[4/5] w-full rounded-sm"
               />
             ) : (
               <div className="relative aspect-[4/5] w-full overflow-hidden rounded-sm">
                 <Image
-                  {...imageProps(service.image)}
+                  {...imageFill(service.image)}
                   alt=""
                   fill
                   sizes="(min-width: 1024px) 22rem, 92vw"

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useId, useRef, useState } from "react";
-import { imageProps } from "@/lib/media";
+import { imageFill } from "@/lib/media";
 import { clamp, cn } from "@/lib/utils";
 
 type Props = {
@@ -37,8 +37,9 @@ export function BeforeAfterSlider({
   const containerRef = useRef<HTMLDivElement>(null);
   const labelId = useId();
 
-  const before = imageProps(beforeKey);
-  const after = imageProps(afterKey);
+  // Both render with `fill`, so they must not carry width/height.
+  const before = imageFill(beforeKey);
+  const after = imageFill(afterKey);
 
   const setFromClientX = useCallback((clientX: number) => {
     const node = containerRef.current;

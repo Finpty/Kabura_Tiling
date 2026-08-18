@@ -53,6 +53,7 @@ export function VideoRail() {
           poster={img(panel.imageKey)}
           alt={panel.title}
           className="absolute inset-0 h-full w-full"
+          sizes="(min-width: 1024px) 30vw, (min-width: 768px) 38vw, 78vw"
           placeholderLabel={clip ? undefined : "Footage to come"}
         />
         <div

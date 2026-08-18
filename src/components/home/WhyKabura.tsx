@@ -5,7 +5,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Section, SectionLabel } from "@/components/ui/Section";
 import { Reveal } from "@/components/ui/Reveal";
-import { imageProps } from "@/lib/media";
+import { imageFill } from "@/lib/media";
 import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
 import { cn, pad } from "@/lib/utils";
 
@@ -119,10 +119,10 @@ export function WhyKabura() {
                       )}
                     >
                       <Image
-                        {...imageProps(pillar.image)}
+                        {...imageFill(pillar.image)}
                         alt=""
                         fill
-                        sizes="100vw"
+                        sizes="(min-width: 1024px) 0px, 100vw"
                         className="object-cover"
                       />
                     </span>
@@ -143,7 +143,7 @@ export function WhyKabura() {
                   )}
                 >
                   <Image
-                    {...imageProps(pillar.image)}
+                    {...imageFill(pillar.image)}
                     alt=""
                     fill
                     sizes="(min-width: 1024px) 28rem, 100vw"

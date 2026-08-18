@@ -3,7 +3,7 @@ import Image from "next/image";
 import { QuoteWizard } from "@/components/quote/QuoteWizard";
 import { Section } from "@/components/ui/Section";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
-import { imageProps } from "@/lib/media";
+import { imageFill } from "@/lib/media";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { pageMetadata } from "@/lib/seo";
 import { site } from "@/lib/site";
@@ -28,7 +28,7 @@ export default function QuotePage() {
     >
       <div aria-hidden="true" className="absolute inset-0 -z-10">
         <Image
-          {...imageProps("heroBathroom")}
+          {...imageFill("heroBathroom")}
           alt=""
           fill
           sizes="100vw"

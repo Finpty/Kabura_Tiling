@@ -9,7 +9,7 @@ import { AmbientVideo } from "@/components/ui/AmbientVideo";
 import { CTASection } from "@/components/home/CTASection";
 import { PlaceholderNotice } from "@/components/ui/PlaceholderNotice";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { img, imageProps, video } from "@/lib/media";
+import { img, imageFill, video } from "@/lib/media";
 import { faqSchema, pageMetadata, serviceSchema } from "@/lib/seo";
 import { site } from "@/lib/site";
 import { pad } from "@/lib/utils";
@@ -121,6 +121,7 @@ export default function BathroomsPage() {
               video={video("bathroomReveal")}
               poster={img("bathroomReveal")}
               alt="Bathroom finished in large-format stone-look tiles."
+              sizes="(min-width: 1024px) 46vw, 92vw"
               className="aspect-[4/5] w-full rounded-sm"
               placeholderLabel={video("bathroomReveal") ? undefined : "Footage to come"}
             />
@@ -186,7 +187,7 @@ export default function BathroomsPage() {
             </h2>
             <div className="relative mt-10 hidden aspect-[3/4] overflow-hidden rounded-sm lg:block">
               <Image
-                {...imageProps("cornerDetail")}
+                {...imageFill("cornerDetail")}
                 alt=""
                 fill
                 sizes="22rem"

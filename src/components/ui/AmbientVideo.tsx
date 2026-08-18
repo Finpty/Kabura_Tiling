@@ -18,6 +18,12 @@ type Props = {
   /** Marks a slot that is waiting on real footage. */
   placeholderLabel?: string;
   objectPosition?: string;
+  /**
+   * Rendered width of the poster, for `next/image` to pick a source from.
+   * Defaults to full-bleed; a rail panel or an aside must say so, or the
+   * browser downloads a viewport-wide image to paint a 400px box.
+   */
+  sizes?: string;
 };
 
 /**
@@ -39,6 +45,7 @@ export function AmbientVideo({
   priority = false,
   placeholderLabel,
   objectPosition = "center",
+  sizes = "100vw",
 }: Props) {
   const { ready, allowVideo } = useDeviceCapability();
   const { ref, inView } = useInView<HTMLDivElement>({
@@ -71,7 +78,7 @@ export function AmbientVideo({
         src={poster.src}
         alt={alt}
         fill
-        sizes="100vw"
+        sizes={sizes}
         placeholder="blur"
         blurDataURL={poster.blurDataURL}
         priority={priority}

@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { SLAB_LAYERS } from "./layers";
 import { useDeviceCapability } from "@/hooks/use-device-capability";
-import { imageProps } from "@/lib/media";
+import { imageFill, imageProps } from "@/lib/media";
 import { cn } from "@/lib/utils";
 
 /**
@@ -98,7 +98,7 @@ export function SlabStage() {
         {/* Ambient backdrop */}
         <div aria-hidden="true" className="absolute inset-0">
           <Image
-            {...imageProps("stoneSlab")}
+            {...imageFill("stoneSlab")}
             alt=""
             fill
             sizes="100vw"
