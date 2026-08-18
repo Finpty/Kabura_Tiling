@@ -14,8 +14,8 @@ type SectionProps = {
 const SPACING = {
   flush: "",
   tight: "py-16 md:py-20",
-  normal: "py-24 md:py-32",
-  loose: "py-28 md:py-44",
+  normal: "py-20 md:py-28",
+  loose: "py-24 md:py-36",
 } as const;
 
 export function Section({

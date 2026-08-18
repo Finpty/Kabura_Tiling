@@ -113,7 +113,9 @@ export function TileWall() {
     [patternId, format.w, format.h],
   );
 
-  const jointPct = 0.28;
+  // A fixed pixel joint keeps the grout line visible at every viewport width;
+  // a percentage one disappears on a phone.
+  const JOINT_PX = 3;
 
   return (
     <Section
@@ -155,8 +157,8 @@ export function TileWall() {
                   style={{
                     left: `${(tile.x / AREA.w) * 100}%`,
                     top: `${(tile.y / AREA.h) * 100}%`,
-                    width: `calc(${(tile.w / AREA.w) * 100}% - ${jointPct}%)`,
-                    height: `calc(${(tile.h / AREA.h) * 100}% - ${jointPct * 1.5}%)`,
+                    width: `calc(${(tile.w / AREA.w) * 100}% - ${JOINT_PX}px)`,
+                    height: `calc(${(tile.h / AREA.h) * 100}% - ${JOINT_PX}px)`,
                     backgroundImage: `url(${material?.src})`,
                     backgroundSize: "cover",
                     backgroundPosition: `${(index * 37) % 100}% ${(index * 61) % 100}%`,

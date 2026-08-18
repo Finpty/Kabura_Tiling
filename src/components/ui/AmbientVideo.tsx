@@ -107,7 +107,7 @@ export function AmbientVideo({
       ) : null}
 
       {!video && placeholderLabel ? (
-        <span className="absolute bottom-4 left-4 z-10 rounded-full border border-bone/25 bg-ink/55 px-3 py-1.5 text-[0.62rem] font-medium tracking-[0.16em] text-bone/80 uppercase backdrop-blur-sm">
+        <span className="absolute top-4 left-4 z-10 rounded-full border border-bone/25 bg-ink/55 px-3 py-1.5 text-[0.62rem] font-medium tracking-[0.16em] text-bone/80 uppercase backdrop-blur-sm">
           {placeholderLabel}
         </span>
       ) : null}

@@ -77,7 +77,7 @@ export const PLACEHOLDER_PROJECTS: Project[] = [
       { key: "cornerDetail", caption: "Placeholder image" },
       { key: "heroBathroomAlt", caption: "Placeholder image" },
     ],
-    beforeAfter: { before: "demolition", after: "bathroom", label: "Kabura Finish" },
+    beforeAfter: { before: "waterproofing", after: "bathroom", label: "Kabura Finish" },
     isPlaceholder: true,
   },
   {
@@ -102,7 +102,7 @@ export const PLACEHOLDER_PROJECTS: Project[] = [
       { key: "largeFormat", caption: "Placeholder image" },
       { key: "floorTiling", caption: "Placeholder image" },
     ],
-    beforeAfter: { before: "screed", after: "residential", label: "Kabura Finish" },
+    beforeAfter: { before: "demolition", after: "residential", label: "Kabura Finish" },
     isPlaceholder: true,
   },
   {
@@ -197,7 +197,7 @@ export const PLACEHOLDER_PROJECTS: Project[] = [
       { key: "wall", caption: "Placeholder image" },
       { key: "repairs", caption: "Placeholder image" },
     ],
-    beforeAfter: { before: "demolition", after: "floorTiling", label: "Kabura Finish" },
+    beforeAfter: { before: "screed", after: "floorTiling", label: "Kabura Finish" },
     isPlaceholder: true,
   },
 ];

@@ -125,9 +125,9 @@ const IMAGES = [
     crop: [0.02, 0.02, 0.96, 0.56], cast: "cool" },
 
   { key: "screed", file: "screed.jpg", width: 1920, ratio: 16 / 9,
-    alt: "A freshly screeded floor with a straight edge resting across the surface.",
+    alt: "A tile edge lowered onto a bed of combed adhesive.",
     hf: "07-screed.png",
-    from: ["tiler-is-putting-spacer-ceramic-tiles.jpg"], crop: [0.0, 0.34, 0.55, 0.4],
+    from: ["tiler-is-putting-spacer-ceramic-tiles.jpg"], crop: [0.42, 0.3, 0.56, 0.42],
     scene: { material: "concrete-ash", lightAngle: 160, lightStrength: 0.42, vignette: 0.5, mottle: 0.44, edge: true } },
 
   { key: "outdoor", file: "outdoor.jpg", width: 1920, ratio: 16 / 9,
@@ -171,8 +171,8 @@ const IMAGES = [
     scene: { material: "nero-marquina", lightAngle: 130, lightStrength: 0.3, vignette: 0.5, mottle: 0.34 } },
 
   { key: "demolition", file: "demolition.jpg", width: 1600, ratio: 3 / 2,
-    alt: "A stripped-back substrate prepared for new tiling.",
-    from: ["tiler-is-putting-spacer-ceramic-tiles.jpg"], crop: [0.55, 0.3, 0.45, 0.45],
+    alt: "Combed adhesive over a bare substrate, with the first tile being set.",
+    from: ["tiler-is-putting-spacer-ceramic-tiles.jpg"], crop: [0.04, 0.42, 0.5, 0.4],
     scene: { material: "concrete-pearl", lightAngle: 150, lightStrength: 0.36, vignette: 0.5, mottle: 0.52 } },
 
   { key: "repairs", file: "repairs.jpg", width: 1600, ratio: 3 / 2,

@@ -53,8 +53,10 @@ export function ServicesShowcase() {
             />
           </motion.div>
         </AnimatePresence>
-        <div className="absolute inset-0 bg-ink/86" />
-        <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/70 to-ink/30" />
+        {/* Enough scrim to hold the type, little enough that the image reads. */}
+        <div className="absolute inset-0 bg-ink/50" />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/78 to-ink/15" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/60" />
       </div>
 
       <div className="shell relative">

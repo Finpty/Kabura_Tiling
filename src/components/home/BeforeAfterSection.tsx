@@ -16,16 +16,16 @@ const PAIRS = [
   {
     id: "bathroom",
     label: "Bathroom",
-    before: "demolition",
+    before: "waterproofing",
     after: "bathroom",
-    caption: "Strip-out through to a finished wet area.",
+    caption: "Waterproofed wet area through to a finished bathroom.",
   },
   {
     id: "floor",
     label: "Floor",
-    before: "screed",
+    before: "demolition",
     after: "residential",
-    caption: "Prepared substrate through to a large-format floor.",
+    caption: "Combed adhesive through to a finished large-format floor.",
   },
   {
     id: "wall",

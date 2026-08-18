@@ -59,6 +59,9 @@ export function QuoteWizard({ enabled }: { enabled: boolean }) {
   const [serverError, setServerError] = useState<string>();
 
   const headingRef = useRef<HTMLHeadingElement>(null);
+  // Focus moves to the step heading on every step change *except* the first
+  // render — otherwise landing on /quote would scroll past the introduction.
+  const mounted = useRef(false);
   const reduced = usePrefersReducedMotion();
   const isLast = step === STEPS.length - 1;
 
@@ -74,6 +77,10 @@ export function QuoteWizard({ enabled }: { enabled: boolean }) {
   }, [previews]);
 
   useEffect(() => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
     if (status === "idle") headingRef.current?.focus();
   }, [step, status]);
 

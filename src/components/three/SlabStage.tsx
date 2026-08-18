@@ -92,7 +92,7 @@ export function SlabStage() {
       ref={sectionRef}
       id="under-the-tile"
       aria-labelledby="under-the-tile-heading"
-      className="relative h-[320svh] bg-ink"
+      className="relative h-[210svh] bg-ink lg:h-[320svh]"
     >
       <div className="sticky top-0 flex h-svh flex-col overflow-hidden">
         {/* Ambient backdrop */}
@@ -107,7 +107,7 @@ export function SlabStage() {
           <div className="absolute inset-0 bg-gradient-to-b from-ink via-ink/60 to-ink" />
         </div>
 
-        <div className="shell relative z-10 flex flex-1 flex-col pt-24 pb-10 md:pt-28">
+        <div className="shell relative z-10 flex flex-1 flex-col pt-24 pb-24 md:pt-28 lg:pb-10">
           <motion.div style={{ opacity: headingOpacity }} className="max-w-3xl">
             <p className="eyebrow text-bronze-light">02 — The build-up</p>
             <h2
@@ -122,8 +122,8 @@ export function SlabStage() {
             </p>
           </motion.div>
 
-          <div className="relative mt-4 flex flex-1 items-center lg:mt-0">
-            <div className="absolute inset-0">
+          <div className="relative mt-4 flex flex-1 flex-col gap-4 lg:mt-0 lg:flex-row lg:items-center">
+            <div className="relative min-h-[15rem] flex-1 overflow-hidden lg:absolute lg:inset-0 lg:min-h-0 lg:overflow-visible">
               {use3d ? (
                 <SlabScene
                   progress={progressRef}
@@ -136,7 +136,7 @@ export function SlabStage() {
             </div>
 
             {/* Layer labels — real HTML, outside the canvas */}
-            <ol className="relative ml-auto flex w-full max-w-xs flex-col gap-px lg:max-w-sm">
+            <ol className="relative flex w-full flex-col gap-px lg:ml-auto lg:max-w-sm">
               {SLAB_LAYERS.map((layer, index) => {
                 const active = index === activeIndex && progress > 0.04;
                 return (

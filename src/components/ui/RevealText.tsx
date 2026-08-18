@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { Fragment, createElement, type ReactNode } from "react";
 import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,13 @@ type Props = {
 
 /**
  * Masked line/word reveal for display type.
+ *
+ * The viewport trigger sits on the *container*, not on the masked spans. That
+ * is essential rather than stylistic: each span starts translated fully outside
+ * its `overflow: hidden` mask, and IntersectionObserver intersects an element
+ * against its ancestors' clip rects — so a span watching itself would report
+ * "not visible" forever and never animate in. The container is untransformed,
+ * so it reports correctly and staggers its children.
  *
  * The whole string stays in the accessibility tree as one label; the animated
  * spans are hidden from assistive technology so a headline is never read out
@@ -50,13 +57,34 @@ export function RevealText({
     );
   }
 
+  const container: Variants = {
+    hidden: {},
+    shown: { transition: { delayChildren: delay, staggerChildren: stagger } },
+  };
+
+  const part: Variants = {
+    hidden: { y: "108%", opacity: 0 },
+    shown: {
+      y: "0%",
+      opacity: 1,
+      transition: { duration: 1, ease: [0.16, 1, 0.3, 1] },
+    },
+  };
+
   return wrap(
     <>
       <span className="sr-only">{text}</span>
-      <span aria-hidden="true">
-        {parts.map((part, index) => (
+      <motion.span
+        aria-hidden="true"
+        className="block"
+        variants={container}
+        initial="hidden"
+        whileInView="shown"
+        viewport={{ once: true, margin: "0px 0px -10% 0px" }}
+      >
+        {parts.map((piece, index) => (
           <span
-            key={`${part}-${index}`}
+            key={`${piece}-${index}`}
             className={cn(
               "overflow-hidden",
               by === "line" ? "block" : "inline-block",
@@ -65,20 +93,13 @@ export function RevealText({
           >
             <motion.span
               className="inline-block will-change-transform"
-              initial={{ y: "108%", opacity: 0 }}
-              whileInView={{ y: "0%", opacity: 1 }}
-              viewport={{ once: true, margin: "0px 0px -10% 0px" }}
-              transition={{
-                duration: 1,
-                delay: delay + index * stagger,
-                ease: [0.16, 1, 0.3, 1],
-              }}
+              variants={part}
             >
-              {part}
+              {piece}
             </motion.span>
           </span>
         ))}
-      </span>
+      </motion.span>
     </>,
   );
 }

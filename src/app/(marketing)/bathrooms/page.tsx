@@ -159,10 +159,10 @@ export default function BathroomsPage() {
         <div className="shell">
           <SectionLabel eyebrow="Before / after" />
           <h2 className="mt-6 max-w-2xl font-display text-headline text-bone">
-            From stripped back to finished.
+            From waterproofed to finished.
           </h2>
           <BeforeAfterSlider
-            beforeKey="demolition"
+            beforeKey="waterproofing"
             afterKey="bathroom"
             className="mt-12 aspect-[16/10] w-full rounded-sm md:aspect-[16/8]"
           />

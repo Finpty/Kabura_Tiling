@@ -36,7 +36,7 @@ export function Hero() {
     <section
       ref={ref}
       className="grain relative isolate flex h-svh min-h-[38rem] flex-col justify-end overflow-hidden"
-      aria-labelledby="hero-heading"
+      aria-label="Introduction"
     >
       <motion.div
         aria-hidden="true"
@@ -56,9 +56,9 @@ export function Hero() {
       {/* Cinematic scrims */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/85 via-ink/35 to-ink/25"
+        className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/85 via-ink/40 to-ink/45"
       />
-      <div aria-hidden="true" className="scrim-bottom absolute inset-x-0 bottom-0 -z-10 h-2/3" />
+      <div aria-hidden="true" className="scrim-bottom absolute inset-x-0 bottom-0 -z-10 h-3/4" />
 
       <motion.div
         className="shell relative w-full pb-14 md:pb-20"
@@ -71,16 +71,14 @@ export function Hero() {
           </p>
         </div>
 
-        <h1 id="hero-heading" className="mt-7 max-w-[16ch]">
-          <RevealText
-            as="span"
-            by="line"
-            text={"CRAFTED IN TILE.\nBUILT TO LAST."}
-            className="block font-display text-hero font-semibold text-bone uppercase"
-            stagger={0.11}
-            delay={0.15}
-          />
-        </h1>
+        <RevealText
+          as="h1"
+          by="line"
+          text={"CRAFTED IN TILE.\nBUILT TO LAST."}
+          className="mt-7 block font-display text-hero font-semibold text-bone uppercase"
+          stagger={0.11}
+          delay={0.15}
+        />
 
         <div className="mt-9 flex flex-col gap-9 lg:flex-row lg:items-end lg:justify-between">
           <motion.div
