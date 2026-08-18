@@ -107,7 +107,7 @@ export const SERVICES: Service[] = [
       "Thresholds, transitions and trims",
       "Movement joints where required",
     ],
-    image: "floor",
+    image: "floorTiling",
   },
   {
     slug: "wall-tiling",

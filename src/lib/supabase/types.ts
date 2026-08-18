@@ -108,50 +108,86 @@ export type ReviewRow = {
   sort_order: number;
 };
 
-/** Minimal typing for the tables this app touches. */
+/**
+ * Minimal typing for the tables this app touches.
+ *
+ * Shaped to satisfy supabase-js's `GenericSchema`: every table needs Row /
+ * Insert / Update / Relationships, and the schema needs the Views, Functions,
+ * Enums and CompositeTypes keys even when empty. Generate the full types with
+ * `supabase gen types typescript` once the project exists if you prefer.
+ */
+type Table<
+  Row,
+  Insert = Partial<Row>,
+  Update = Partial<Row>,
+  Relationships extends readonly unknown[] = [],
+> = {
+  Row: Row;
+  Insert: Insert;
+  Update: Update;
+  Relationships: Relationships;
+};
+
+/** Declared so embedded selects such as `projects(project_media(...))` resolve. */
+type ProjectMediaRelationships = [
+  {
+    foreignKeyName: "project_media_project_id_fkey";
+    columns: ["project_id"];
+    isOneToOne: false;
+    referencedRelation: "projects";
+    referencedColumns: ["id"];
+  },
+];
+
+type QuoteChildRelationships<Name extends string> = [
+  {
+    foreignKeyName: `${Name}_quote_request_id_fkey`;
+    columns: ["quote_request_id"];
+    isOneToOne: false;
+    referencedRelation: "quote_requests";
+    referencedColumns: ["id"];
+  },
+];
+
+export type QuoteRequestInsert = Pick<
+  QuoteRequest,
+  "service" | "suburb" | "name" | "phone" | "email"
+> &
+  Partial<Omit<QuoteRequest, "service" | "suburb" | "name" | "phone" | "email">>;
+
 export type Database = {
   public: {
     Tables: {
-      quote_requests: {
-        Row: QuoteRequest;
-        Insert: Omit<
-          QuoteRequest,
-          "id" | "created_at" | "updated_at" | "reference" | "status"
-        > &
-          Partial<Pick<QuoteRequest, "status">>;
-        Update: Partial<QuoteRequest>;
-      };
-      quote_request_files: {
-        Row: QuoteRequestFile;
-        Insert: Omit<QuoteRequestFile, "id" | "created_at">;
-        Update: Partial<QuoteRequestFile>;
-      };
-      quote_request_notes: {
-        Row: QuoteRequestNote;
-        Insert: Omit<QuoteRequestNote, "id" | "created_at">;
-        Update: Partial<QuoteRequestNote>;
-      };
-      projects: {
-        Row: ProjectRow;
-        Insert: Partial<ProjectRow>;
-        Update: Partial<ProjectRow>;
-      };
-      project_media: {
-        Row: ProjectMediaRow;
-        Insert: Partial<ProjectMediaRow>;
-        Update: Partial<ProjectMediaRow>;
-      };
-      reviews: {
-        Row: ReviewRow;
-        Insert: Partial<ReviewRow>;
-        Update: Partial<ReviewRow>;
-      };
-      admin_users: {
-        Row: { user_id: string; email: string | null; created_at: string };
-        Insert: { user_id: string; email?: string | null };
-        Update: Partial<{ user_id: string; email: string | null }>;
-      };
+      quote_requests: Table<QuoteRequest, QuoteRequestInsert>;
+      quote_request_files: Table<
+        QuoteRequestFile,
+        Omit<QuoteRequestFile, "id" | "created_at"> & { id?: string },
+        Partial<QuoteRequestFile>,
+        QuoteChildRelationships<"quote_request_files">
+      >;
+      quote_request_notes: Table<
+        QuoteRequestNote,
+        Omit<QuoteRequestNote, "id" | "created_at"> & { id?: string },
+        Partial<QuoteRequestNote>,
+        QuoteChildRelationships<"quote_request_notes">
+      >;
+      projects: Table<ProjectRow>;
+      project_media: Table<
+        ProjectMediaRow,
+        Partial<ProjectMediaRow>,
+        Partial<ProjectMediaRow>,
+        ProjectMediaRelationships
+      >;
+      reviews: Table<ReviewRow>;
+      admin_users: Table<
+        { user_id: string; email: string | null; created_at: string },
+        { user_id: string; email?: string | null }
+      >;
     };
+    Views: Record<never, never>;
+    Functions: Record<never, never>;
+    Enums: { enquiry_status: EnquiryStatus };
+    CompositeTypes: Record<never, never>;
   };
 };
 
