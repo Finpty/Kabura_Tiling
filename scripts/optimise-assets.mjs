@@ -152,7 +152,8 @@ const IMAGES = [
     from: ["tiler-is-putting-spacer-ceramic-tiles.jpg"], crop: [0, 0, 1, 0.72] },
 
   { key: "residential", file: "residential.jpg", width: 2200, ratio: 16 / 9, gradeStrength: 1.4,
-    alt: "Contemporary interior with a tiled splashback and large-format floor tiles.",
+    alt: "Living space finished in large-format tiles, running out through full-height glass to the terrace.",
+    hf: "08-alfresco.png", hfCrop: [0.0, 0.06, 0.44, 0.92],
     from: ["modern-contemporary-white-kitchen.jpg"], crop: [0, 0, 1, 0.58] },
 
   { key: "wall", file: "wall.jpg", width: 1600, ratio: 3 / 4, gradeStrength: 1.6,
@@ -161,13 +162,13 @@ const IMAGES = [
 
   { key: "bathroom", file: "bathroom.jpg", width: 1800, ratio: 3 / 2,
     alt: "Bathroom finished in large-format stone-look tiles with a stone feature wall.",
-    hf: "01-hero-bathroom.png",
+    hf: "01-hero-bathroom.png", hfCrop: [0.30, 0.05, 0.55, 0.88],
     from: ["master-bathroom-modern-bathroom-interior-design-white-bathtub-with-marble-tile-dark-stone-wall-3drender.jpg"],
     crop: [0.18, 0, 0.64, 0.7] },
 
   { key: "stone", file: "stone.jpg", width: 1800, ratio: 3 / 2,
     alt: "Natural stone surface with pronounced veining.",
-    hf: "04-stone-feature.png",
+    hf: "04-stone-feature.png", hfCrop: [0.10, 0.04, 0.33, 0.62],
     scene: { material: "nero-marquina", lightAngle: 130, lightStrength: 0.3, vignette: 0.5, mottle: 0.34 } },
 
   { key: "demolition", file: "demolition.jpg", width: 1600, ratio: 3 / 2,
@@ -176,14 +177,17 @@ const IMAGES = [
     scene: { material: "concrete-pearl", lightAngle: 150, lightStrength: 0.36, vignette: 0.5, mottle: 0.52 } },
 
   { key: "repairs", file: "repairs.jpg", width: 1600, ratio: 3 / 2,
-    alt: "Close detail of a grout joint between two large-format tiles.",
+    alt: "Close detail of the grout joint and trim where two large-format tiles meet.",
+    hf: "10-corner-detail.png", hfCrop: [0.02, 0.46, 0.56, 0.52],
     scene: { material: "carrara-perla", tile: [520, 1040], joint: 7, grout: "#8c8479", bond: "brick", lightAngle: 158, lightStrength: 0.44, vignette: 0.4, mottle: 0.26 } },
 ];
 
 async function resolveSource(spec) {
   if (spec.hf) {
     const p = path.join(HF, spec.hf);
-    if (existsSync(p)) return { input: p, kind: "higgsfield", crop: null };
+    // `hfCrop` lets one generation serve several slots at different framings —
+    // without it, e.g. the stone feature wall appears twice, identically.
+    if (existsSync(p)) return { input: p, kind: "higgsfield", crop: spec.hfCrop ?? null };
   }
   for (const name of spec.from ?? []) {
     const p = path.join(RAW, name);

@@ -56,7 +56,7 @@ export function Hero() {
       {/* Cinematic scrims */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/85 via-ink/40 to-ink/45"
+        className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/72 via-ink/34 to-ink/40"
       />
       <div aria-hidden="true" className="scrim-bottom absolute inset-x-0 bottom-0 -z-10 h-3/4" />
 
