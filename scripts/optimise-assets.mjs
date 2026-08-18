@@ -182,12 +182,30 @@ const IMAGES = [
     scene: { material: "carrara-perla", tile: [520, 1040], joint: 7, grout: "#8c8479", bond: "brick", lightAngle: 158, lightStrength: 0.44, vignette: 0.4, mottle: 0.26 } },
 ];
 
+const IMAGE_EXTS = [".png", ".jpg", ".jpeg", ".webp"];
+
+/** Find `name` in `dir`, accepting any common image extension. */
+function resolveByBasename(dir, name) {
+  const exact = path.join(dir, name);
+  if (existsSync(exact)) return exact;
+
+  const base = name.replace(/\.[^.]+$/, "");
+  for (const ext of IMAGE_EXTS) {
+    const candidate = path.join(dir, base + ext);
+    if (existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
 async function resolveSource(spec) {
   if (spec.hf) {
-    const p = path.join(HF, spec.hf);
+    // Match on the basename, not the extension: Higgsfield returns png or jpg
+    // depending on the model and resolution, and a slot should not silently fall
+    // back to a procedural field just because the file arrived as the other one.
+    const found = resolveByBasename(HF, spec.hf);
     // `hfCrop` lets one generation serve several slots at different framings —
     // without it, e.g. the stone feature wall appears twice, identically.
-    if (existsSync(p)) return { input: p, kind: "higgsfield", crop: spec.hfCrop ?? null };
+    if (found) return { input: found, kind: "higgsfield", crop: spec.hfCrop ?? null };
   }
   for (const name of spec.from ?? []) {
     const p = path.join(RAW, name);
