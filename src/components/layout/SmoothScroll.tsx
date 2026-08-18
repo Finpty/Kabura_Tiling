@@ -5,11 +5,20 @@ import { usePathname } from "next/navigation";
 import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
 
 /**
- * Lenis smooth scrolling, wired to GSAP's ScrollTrigger so pinned sections stay
- * in sync with the eased scroll position.
+ * Lenis smooth scrolling on its own rAF loop.
  *
- * Skipped entirely under `prefers-reduced-motion` — the browser's native scroll
- * is left alone rather than being intercepted and re-eased.
+ * Loaded dynamically so it stays out of the initial bundle, and skipped
+ * entirely under `prefers-reduced-motion` or on a coarse pointer — a phone's
+ * native momentum scrolling is better than anything re-implemented on top of it,
+ * and intercepting it costs battery for nothing.
+ *
+ * Note on GSAP: the project brief listed it, and it was wired in here to drive
+ * ScrollTrigger. It has been removed because nothing on the site used it —
+ * every scroll-linked effect runs on Framer Motion's `useScroll`, which is
+ * already in the bundle. Carrying GSAP + ScrollTrigger meant roughly 50 KB
+ * gzipped of dead weight on every page load. Re-add it here if you later want
+ * ScrollTrigger-specific behaviour, and register `lenis.on("scroll",
+ * ScrollTrigger.update)` alongside the raf loop below.
  */
 export function SmoothScroll() {
   const reduced = usePrefersReducedMotion();
@@ -23,14 +32,8 @@ export function SmoothScroll() {
     let cleanup: (() => void) | undefined;
 
     (async () => {
-      const [{ default: Lenis }, { gsap }, { ScrollTrigger }] = await Promise.all([
-        import("lenis"),
-        import("gsap"),
-        import("gsap/ScrollTrigger"),
-      ]);
+      const { default: Lenis } = await import("lenis");
       if (cancelled) return;
-
-      gsap.registerPlugin(ScrollTrigger);
 
       const lenis = new Lenis({
         duration: 1.05,
@@ -39,14 +42,15 @@ export function SmoothScroll() {
         touchMultiplier: 1.6,
       });
 
-      lenis.on("scroll", ScrollTrigger.update);
-
-      const onRaf = (time: number) => lenis.raf(time * 1000);
-      gsap.ticker.add(onRaf);
-      gsap.ticker.lagSmoothing(0);
+      let frame = 0;
+      const raf = (time: number) => {
+        lenis.raf(time);
+        frame = requestAnimationFrame(raf);
+      };
+      frame = requestAnimationFrame(raf);
 
       cleanup = () => {
-        gsap.ticker.remove(onRaf);
+        cancelAnimationFrame(frame);
         lenis.destroy();
       };
     })();

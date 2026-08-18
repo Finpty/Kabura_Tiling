@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { SLAB_LAYERS } from "./SlabScene";
+import { SLAB_LAYERS } from "./layers";
 import { useDeviceCapability } from "@/hooks/use-device-capability";
 import { imageProps } from "@/lib/media";
 import { cn } from "@/lib/utils";
