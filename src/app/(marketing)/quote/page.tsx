@@ -4,7 +4,7 @@ import { QuoteWizard } from "@/components/quote/QuoteWizard";
 import { Section } from "@/components/ui/Section";
 import { Breadcrumbs } from "@/components/seo/Breadcrumbs";
 import { imageProps } from "@/lib/media";
-import { isAdminConfigured } from "@/lib/supabase/admin";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { pageMetadata } from "@/lib/seo";
 import { site } from "@/lib/site";
 
@@ -16,8 +16,10 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function QuotePage() {
-  // The wizard needs the server route, which needs the service-role key.
-  const enabled = isAdminConfigured();
+  // The wizard needs somewhere to write. The server route works with either the
+  // service role (full flow, with photo uploads) or the anon key alone
+  // (enquiry captured, photos skipped) — so the public key is the real gate.
+  const enabled = isSupabaseConfigured;
 
   return (
     <Section

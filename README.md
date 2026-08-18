@@ -35,6 +35,13 @@ The marketing site runs **fully without Supabase**. Without it, the quote form
 explains that it is not connected instead of silently failing, and `/admin` is
 switched off. Nothing else changes.
 
+The quote intake degrades in one more step: with only the anon key it still
+captures the enquiry (RLS grants `anon` INSERT and nothing more) and skips photo
+uploads, because indexing an upload needs privileges `anon` does not have and
+storing files nothing points at would be worse than not storing them. Losing a
+lead to a missing environment variable is the worst outcome available, so that
+path exists rather than a hard failure.
+
 ## Commands
 
 | Command | What it does |
@@ -136,19 +143,21 @@ supplied" placeholder rather than inventing a number, address or registration.
 | `NEXT_PUBLIC_SOCIAL_GOOGLE` | — | as above, plus the "read our reviews" link |
 | `NEXT_PUBLIC_SUPABASE_URL` | for quotes | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | for quotes | Publishable key — safe in the browser, every table is behind RLS |
-| `SUPABASE_SERVICE_ROLE_KEY` | for quotes | **Server only.** Never prefix with `NEXT_PUBLIC_`, never commit |
+| `SUPABASE_SERVICE_ROLE_KEY` | for photos + admin | **Server only.** Never prefix with `NEXT_PUBLIC_`, never commit. Without it enquiries are still captured through the anon key, but photo uploads are skipped and `/admin` stays off |
 | `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | — | Search Console token |
 
 ## Supabase setup
 
 1. Create a project at [supabase.com](https://supabase.com).
-2. Run the migration — either with the CLI:
+2. Run the migrations in `supabase/migrations/` in filename order — either
+   with the CLI:
    ```bash
    supabase link --project-ref <ref>
    supabase db push
    ```
-   or by pasting `supabase/migrations/20260818000000_init.sql` into the SQL
-   editor and running it. It is idempotent, so re-running is safe.
+   or by pasting each file into the SQL editor. They are idempotent, so
+   re-running is safe. See `supabase/migrations/README.md` for what each does,
+   and `supabase/verify-rls.sql` to re-check the security model afterwards.
 3. Copy the project URL, the anon key and the service-role key from
    **Project Settings → API** into `.env.local`.
 4. Create your staff login under **Authentication → Users**, then authorise it:

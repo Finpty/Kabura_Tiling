@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createServerSupabase } from "@/lib/supabase/server";
 import { QUOTE_UPLOAD_BUCKET } from "@/lib/supabase/types";
 import {
   ACCEPTED_IMAGE_TYPES,
@@ -40,7 +41,23 @@ function extensionFor(type: string, name: string) {
 }
 
 export async function POST(request: Request) {
-  const supabase = createAdminClient();
+  /**
+   * Two paths, deliberately:
+   *
+   *  - Service role configured: the full flow — the enquiry is written, photos
+   *    are uploaded to the private bucket and indexed in quote_request_files,
+   *    and the reference is read back for the confirmation screen.
+   *
+   *  - Only the anon key configured: still capture the lead. RLS grants anon
+   *    INSERT on quote_requests, so the enquiry is saved; photos are skipped
+   *    because indexing them needs privileges anon does not have, and silently
+   *    storing files nothing points at would be worse than not storing them.
+   *    Losing an enquiry because one env var is missing is the worst outcome
+   *    available, so this path exists rather than a hard 503.
+   */
+  const admin = createAdminClient();
+  const supabase = admin ?? (await createServerSupabase());
+
   if (!supabase) {
     return NextResponse.json(
       {
@@ -95,9 +112,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const { data: inserted, error: insertError } = await supabase
-    .from("quote_requests")
-    .insert({
+  const insertPayload = {
       service: draft.service,
       suburb: draft.suburb,
       postcode: draft.postcode || null,
@@ -110,7 +125,39 @@ export async function POST(request: Request) {
       phone: draft.phone,
       email: draft.email,
       source_path: field(form, "sourcePath") || null,
-    })
+  };
+
+  // Only the service role can read the row back — anon has no SELECT policy,
+  // which is the point. On the anon path we insert and trust the constraint.
+  if (!admin) {
+    const { error } = await supabase.from("quote_requests").insert(insertPayload);
+    if (error) {
+      console.error("quote insert failed (anon path)", error);
+      return NextResponse.json(
+        { ok: false, error: "We couldn't save that. Please try again." },
+        { status: 500 },
+      );
+    }
+    const photoCount = form
+      .getAll("photos")
+      .filter((e): e is File => e instanceof File && e.size > 0).length;
+
+    if (photoCount > 0) {
+      console.warn(
+        `quote: ${photoCount} photo(s) were not stored — SUPABASE_SERVICE_ROLE_KEY is not set`,
+      );
+    }
+    return NextResponse.json({
+      ok: true,
+      reference: null,
+      uploaded: 0,
+      photosSkipped: photoCount,
+    });
+  }
+
+  const { data: inserted, error: insertError } = await supabase
+    .from("quote_requests")
+    .insert(insertPayload)
     .select("id, reference, upload_token")
     .single();
 
@@ -142,7 +189,7 @@ export async function POST(request: Request) {
 
     const path = `${inserted.upload_token}/${String(index + 1).padStart(2, "0")}-${Date.now()}.${extensionFor(photo.type, photo.name)}`;
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await admin.storage
       .from(QUOTE_UPLOAD_BUCKET)
       .upload(path, photo, {
         contentType: photo.type,
@@ -156,7 +203,7 @@ export async function POST(request: Request) {
       continue;
     }
 
-    const { error: fileRowError } = await supabase
+    const { error: fileRowError } = await admin
       .from("quote_request_files")
       .insert({
         quote_request_id: inserted.id,
