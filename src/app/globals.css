@@ -1,0 +1,255 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   Kabura Tiling Group — design tokens
+   Dark charcoal / warm stone / off-white / natural beige / bronze
+------------------------------------------------------------------- */
+@theme {
+  --color-ink: #0b0a09;
+  --color-charcoal: #14120f;
+  --color-charcoal-2: #1d1a16;
+  --color-graphite: #292520;
+  --color-slate: #3b352e;
+  --color-stone: #8b8177;
+  --color-stone-light: #a79c90;
+  --color-sand: #c9bca8;
+  --color-beige: #ddd2be;
+  --color-bone: #f1ece2;
+  --color-paper: #fbf8f2;
+  --color-bronze: #a9743d;
+  --color-bronze-light: #cf9d5f;
+  --color-bronze-glow: #e0b782;
+
+  --font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-instrument-serif), "Iowan Old Style", Georgia,
+    "Times New Roman", serif;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+
+  --text-display: clamp(2.75rem, 9vw, 9.5rem);
+  --text-display--line-height: 0.88;
+  --text-display--letter-spacing: -0.045em;
+
+  --text-hero: clamp(2.5rem, 7.2vw, 7.5rem);
+  --text-hero--line-height: 0.9;
+  --text-hero--letter-spacing: -0.042em;
+
+  --text-headline: clamp(2rem, 4.6vw, 4.25rem);
+  --text-headline--line-height: 0.95;
+  --text-headline--letter-spacing: -0.035em;
+
+  --text-title: clamp(1.5rem, 2.6vw, 2.5rem);
+  --text-title--line-height: 1.06;
+  --text-title--letter-spacing: -0.025em;
+
+  --text-lead: clamp(1.0625rem, 1.35vw, 1.375rem);
+  --text-lead--line-height: 1.5;
+  --text-lead--letter-spacing: -0.012em;
+
+  --text-micro: 0.6875rem;
+  --text-micro--line-height: 1.1;
+  --text-micro--letter-spacing: 0.18em;
+
+  --animate-marquee: marquee 42s linear infinite;
+  --animate-shimmer: shimmer 2.2s var(--ease-out-expo) infinite;
+  --animate-drift: drift 26s ease-in-out infinite alternate;
+}
+
+@keyframes marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+@keyframes shimmer {
+  0% { transform: translate3d(-100%, 0, 0); }
+  100% { transform: translate3d(200%, 0, 0); }
+}
+@keyframes drift {
+  from { transform: scale(1.06) translate3d(-1.2%, -0.8%, 0); }
+  to { transform: scale(1.14) translate3d(1.2%, 1%, 0); }
+}
+
+/* ------------------------------------------------------------------ */
+
+:root {
+  --header-h: 4.5rem;
+  --grain-opacity: 0.045;
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    border-color: color-mix(in oklab, var(--color-stone) 22%, transparent);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+
+  body {
+    background-color: var(--color-ink);
+    color: var(--color-bone);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background-color: var(--color-bronze);
+    color: var(--color-paper);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-bronze-light);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  img, video {
+    max-width: 100%;
+  }
+
+  input, textarea, select, button {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* Firefox scrollbar */
+  * {
+    scrollbar-color: var(--color-graphite) transparent;
+  }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--color-ink); }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-graphite);
+    border-radius: 999px;
+    border: 3px solid var(--color-ink);
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-slate); }
+}
+
+@layer components {
+  .shell {
+    width: 100%;
+    margin-inline: auto;
+    max-width: 96rem;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 768px) { .shell { padding-inline: 2.5rem; } }
+  @media (min-width: 1280px) { .shell { padding-inline: 3.5rem; } }
+
+  .eyebrow {
+    font-size: var(--text-micro);
+    line-height: 1.1;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .rule {
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      color-mix(in oklab, var(--color-stone) 42%, transparent),
+      transparent
+    );
+  }
+
+  .glass {
+    background-color: color-mix(in oklab, var(--color-charcoal) 72%, transparent);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+  }
+
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: var(--grain-opacity);
+    background-image: url("/media/texture/grain.png");
+    background-size: 180px 180px;
+    mix-blend-mode: overlay;
+    z-index: 5;
+  }
+
+  /* Progressive-blur scrim used over cinematic imagery */
+  .scrim-bottom {
+    background: linear-gradient(
+      to top,
+      color-mix(in oklab, var(--color-ink) 92%, transparent) 0%,
+      color-mix(in oklab, var(--color-ink) 62%, transparent) 32%,
+      color-mix(in oklab, var(--color-ink) 18%, transparent) 68%,
+      transparent 100%
+    );
+  }
+
+  .link-underline {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    transition: background-size 0.45s var(--ease-out-expo);
+  }
+  .link-underline:hover,
+  .link-underline:focus-visible {
+    background-size: 100% 1px;
+  }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .mask-fade-r {
+    mask-image: linear-gradient(to right, #000 78%, transparent 100%);
+  }
+  .mask-fade-b {
+    mask-image: linear-gradient(to bottom, #000 70%, transparent 100%);
+  }
+  .no-scrollbar { scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .perspective { perspective: 1400px; }
+  .preserve-3d { transform-style: preserve-3d; }
+  .backface-hidden { backface-visibility: hidden; }
+}
+
+/* ------------------------------------------------------------------
+   Reduced motion — collapse every decorative animation
+------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .lenis.lenis-smooth { scroll-behavior: auto !important; }
+}
