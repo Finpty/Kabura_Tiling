@@ -76,7 +76,7 @@ export default async function HomePage() {
       <WhyKabura />
       <TileWall />
       <BathroomVisualiser />
-      <Testimonials reviews={reviews} />
+      <Testimonials data={reviews} />
       <ServiceAreasSection />
 
       <CTASection />

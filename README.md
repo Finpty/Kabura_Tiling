@@ -324,7 +324,10 @@ appear across the site automatically.
 - [x] ~~ABN~~ — 84 668 679 114 (ATO checksum verified)
 - [ ] Opening hours
 - [ ] Street address, or confirmation that there is no public shopfront
-- [ ] Instagram / Facebook / LinkedIn / Google Business Profile URLs
+- [x] ~~Instagram~~ — @kaburatilinggroupptyltd
+- [ ] Facebook / LinkedIn URLs
+- [ ] Google Business Profile: set `GOOGLE_PLACES_API_KEY` + `GOOGLE_PLACE_ID`
+      to pull the real reviews (see `.env.example`)
 - [ ] Any trade licence or certification numbers you want shown — with the
       registration numbers so they can be verified
 - [ ] Confirmation of the suburbs to list in `src/lib/service-areas.ts`
@@ -341,7 +344,8 @@ appear across the site automatically.
 - [ ] The official Kabura logo (SVG or high-resolution PNG with transparency).
       `src/components/layout/Logo.tsx` is a typographic placeholder built for
       this site
-- [ ] Google review content, or the Business Profile URL to link to
+- [x] ~~Google review content~~ — wired to the live Places API; supply the two
+      keys above and real reviews appear, attributed and linked back to Google
 - [ ] Any company history, team detail or credentials you want on `/about`
 
 **Before launch:**

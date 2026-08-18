@@ -2,6 +2,11 @@ import "server-only";
 
 import { createServerSupabase } from "./supabase/server";
 import { PLACEHOLDER_PROJECTS, type Project, type ProjectCategory } from "./projects";
+import {
+  EMPTY_GOOGLE_REVIEWS,
+  getGoogleReviews,
+  type GoogleReviews,
+} from "./google-reviews";
 import type { ReviewRow } from "./supabase/types";
 
 /**
@@ -73,17 +78,34 @@ export async function getProject(slug: string): Promise<Project | null> {
   return projects.find((p) => p.slug === slug) ?? null;
 }
 
-export async function getReviews(): Promise<ReviewRow[]> {
-  const supabase = await createServerSupabase();
-  if (!supabase) return [];
+/**
+ * Reviews shown on the site, from the two sources that can be trusted:
+ * Kabura's live Google Business Profile, and rows an admin has explicitly
+ * approved in Supabase. Google comes first — it is verifiable by anyone.
+ *
+ * No review is ever authored here. Both sources empty is the expected state
+ * before launch, and the UI says "reviews coming soon" rather than filling
+ * the space with something invented.
+ */
+export async function getReviews(): Promise<GoogleReviews> {
+  const [google, supabase] = await Promise.all([
+    getGoogleReviews(),
+    createServerSupabase(),
+  ]);
 
-  const { data, error } = await supabase
-    .from("reviews")
-    .select("*")
-    .eq("approved", true)
-    .order("sort_order", { ascending: true });
+  let approved: ReviewRow[] = [];
+  if (supabase) {
+    const { data, error } = await supabase
+      .from("reviews")
+      .select("*")
+      .eq("approved", true)
+      .order("sort_order", { ascending: true });
+    if (!error && data) approved = data as ReviewRow[];
+  }
 
-  // No reviews is the expected state — the UI shows "coming soon", never a fake one.
-  if (error || !data) return [];
-  return data as ReviewRow[];
+  if (google.reviews.length === 0 && approved.length === 0) {
+    return EMPTY_GOOGLE_REVIEWS;
+  }
+
+  return { ...google, reviews: [...google.reviews, ...approved] };
 }

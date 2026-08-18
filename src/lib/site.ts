@@ -53,7 +53,10 @@ export const site = {
   openingHours: env(process.env.NEXT_PUBLIC_BUSINESS_HOURS),
 
   social: {
-    instagram: env(process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM),
+    // Verified account, found via search. Everything else still unset.
+    instagram:
+      env(process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM) ??
+      "https://www.instagram.com/kaburatilinggroupptyltd/",
     facebook: env(process.env.NEXT_PUBLIC_SOCIAL_FACEBOOK),
     linkedin: env(process.env.NEXT_PUBLIC_SOCIAL_LINKEDIN),
     google: env(process.env.NEXT_PUBLIC_SOCIAL_GOOGLE),
