@@ -38,10 +38,14 @@ export const site = {
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
       : "http://localhost:3000"),
 
-  /* ---------- Supplied by Kabura — currently unset ---------- */
-  phone: env(process.env.NEXT_PUBLIC_BUSINESS_PHONE),
-  email: env(process.env.NEXT_PUBLIC_BUSINESS_EMAIL),
-  abn: env(process.env.NEXT_PUBLIC_BUSINESS_ABN),
+  /* ---------- Supplied by Kabura, 18 Aug 2026 ----------
+     Committed as defaults because they are public business facts meant to be
+     displayed; an environment variable still overrides for staging setups.
+     The ABN passes the ATO checksum. Anything below still reading only from
+     env (address, hours, socials) has not been supplied yet. */
+  phone: env(process.env.NEXT_PUBLIC_BUSINESS_PHONE) ?? "0481 000 331",
+  email: env(process.env.NEXT_PUBLIC_BUSINESS_EMAIL) ?? "Kaburatiling@gmail.com",
+  abn: env(process.env.NEXT_PUBLIC_BUSINESS_ABN) ?? "84 668 679 114",
   /** Street address is optional — many trade businesses operate without a shopfront. */
   streetAddress: env(process.env.NEXT_PUBLIC_BUSINESS_STREET),
   addressLocality: env(process.env.NEXT_PUBLIC_BUSINESS_SUBURB),

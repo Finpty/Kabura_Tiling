@@ -317,11 +317,11 @@ three.js bundle into the shared chunk and cost every page ~254 KB it never used.
 Nothing below is guessed at anywhere in the code. Send these through and they
 appear across the site automatically.
 
-**Business details** — set in `.env.local` / your host:
+**Business details:**
 
-- [ ] Public phone number
-- [ ] Public email address
-- [ ] ABN
+- [x] ~~Public phone number~~ — 0481 000 331
+- [x] ~~Public email address~~ — Kaburatiling@gmail.com
+- [x] ~~ABN~~ — 84 668 679 114 (ATO checksum verified)
 - [ ] Opening hours
 - [ ] Street address, or confirmation that there is no public shopfront
 - [ ] Instagram / Facebook / LinkedIn / Google Business Profile URLs
@@ -335,9 +335,9 @@ appear across the site automatically.
       each, plus genuine matched before/after pairs from the same room
 - [ ] For each project: suburb, project type, tile brand/format, services
       completed, and anything notable about the job
-- [ ] On-site footage for the video rail: tile cutting, waterproofing,
-      screeding, large-format installation, a bathroom transformation
-- [ ] Hero footage — a slow architectural move through a finished bathroom
+- [x] ~~On-site footage for the video rail~~ — four Higgsfield clips in use;
+      real on-site footage would still be better where you have it
+- [x] ~~Hero footage~~ — Higgsfield bathroom clip in use
 - [ ] The official Kabura logo (SVG or high-resolution PNG with transparency).
       `src/components/layout/Logo.tsx` is a typographic placeholder built for
       this site
