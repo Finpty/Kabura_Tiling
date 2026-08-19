@@ -64,6 +64,12 @@ export type DisplayReview = {
   body: string;
   /** ISO timestamp, or null. */
   reviewedAt: string | null;
+  /**
+   * The date exactly as the source shows it — "2 months ago", "July 2026".
+   * Takes precedence over formatting `reviewedAt`, so a transcribed review
+   * displays the words that are actually on it.
+   */
+  dateLabel?: string | null;
   /** Deep link to this review on Google, so a visitor can verify it. */
   reviewUrl: string | null;
   source: string;

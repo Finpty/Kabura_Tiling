@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Section, SectionLabel } from "@/components/ui/Section";
 import { MagneticLink } from "@/components/ui/MagneticButton";
+import { Marquee } from "@/components/ui/Marquee";
 import { PlaceholderNotice } from "@/components/ui/PlaceholderNotice";
 import { SocialIcon } from "@/components/ui/SocialIcons";
 import type { DisplayReview, GoogleReviews } from "@/lib/google-reviews";
@@ -14,21 +15,42 @@ import { cn, formatDate } from "@/lib/utils";
 /**
  * Reviews.
  *
- * NO REVIEW IS EVER WRITTEN HERE. Everything shown comes from Kabura's live
- * Google Business Profile or from rows an admin approved in Supabase. Each
- * carries its author, its date and — for Google reviews — a link back to the
- * original, so a visitor can check it. With neither source configured this
- * renders "coming soon" rather than filling the space.
+ * NO REVIEW IS EVER WRITTEN HERE. Every card comes from Kabura's live Google
+ * Business Profile, from `src/lib/reviews.ts` where reviews from that same
+ * profile are transcribed word for word, or from a row an admin approved in
+ * Supabase. With all three empty the section renders nothing at all — no
+ * placeholder, no "coming soon", no filler.
  *
- * The rail is one component at every breakpoint: swipe on a phone,
- * arrow buttons once there is room for them. Cards snap, so a half-visible
- * card never ends up as the resting state.
+ * The cards borrow Google's own review layout — avatar, name, star row, date,
+ * body — because that is the shape people already trust, then wear the site's
+ * palette rather than Google's. The rail is one component at every breakpoint:
+ * swipe on a phone, arrows once there is room for them.
  */
 
-/** Character count past which a card offers to expand rather than clamp. */
-const LONG_REVIEW = 260;
+/** Work the ticker names. Every one is a service the site already lists. */
+const TICKER = [
+  "Large Format Tiling",
+  "Screeding",
+  "Waterproofing",
+  "Bathroom Renovations",
+  "Floor Tiling",
+  "Wall Tiling",
+  "Outdoor Tiling",
+  "Feature Tiling",
+];
 
-function Stars({ rating, className }: { rating: number; className?: string }) {
+/** Character count past which a card offers to expand rather than clamp. */
+const LONG_REVIEW = 240;
+
+function Stars({
+  rating,
+  className,
+  size = "sm",
+}: {
+  rating: number;
+  className?: string;
+  size?: "sm" | "md";
+}) {
   const rounded = Math.round(rating);
   return (
     <span
@@ -41,8 +63,8 @@ function Stars({ rating, className }: { rating: number; className?: string }) {
           key={star}
           viewBox="0 0 20 20"
           className={cn(
-            "h-3.5 w-3.5",
-            star <= rounded ? "text-bronze-light" : "text-stone/35",
+            size === "md" ? "h-4 w-4" : "h-3.5 w-3.5",
+            star <= rounded ? "text-bronze-light" : "text-stone/30",
           )}
           fill="currentColor"
           aria-hidden="true"
@@ -54,7 +76,7 @@ function Stars({ rating, className }: { rating: number; className?: string }) {
   );
 }
 
-/** Google avatar, falling back to a monogram if there is no photo or it fails. */
+/** Google avatar when there is one, a monogram when there is not. */
 function Avatar({ review }: { review: DisplayReview }) {
   const [failed, setFailed] = useState(false);
   const initials = review.authorName
@@ -68,11 +90,11 @@ function Avatar({ review }: { review: DisplayReview }) {
       <Image
         src={review.authorPhotoUrl}
         alt=""
-        width={48}
-        height={48}
+        width={44}
+        height={44}
         unoptimized
         onError={() => setFailed(true)}
-        className="h-12 w-12 shrink-0 rounded-full border border-stone/25 object-cover"
+        className="h-11 w-11 shrink-0 rounded-full border border-stone/25 object-cover"
       />
     );
   }
@@ -80,7 +102,7 @@ function Avatar({ review }: { review: DisplayReview }) {
   return (
     <span
       aria-hidden="true"
-      className="grid h-12 w-12 shrink-0 place-items-center rounded-full border border-stone/25 bg-charcoal-2 text-sm font-medium text-sand"
+      className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-bronze/35 bg-gradient-to-br from-bronze/25 to-charcoal-2 text-sm font-semibold text-bronze-light"
     >
       {initials || "★"}
     </span>
@@ -90,32 +112,30 @@ function Avatar({ review }: { review: DisplayReview }) {
 function ReviewCard({ review }: { review: DisplayReview }) {
   const [expanded, setExpanded] = useState(false);
   const long = review.body.length > LONG_REVIEW;
+  const date =
+    review.dateLabel ??
+    (review.reviewedAt ? formatDate(review.reviewedAt) : null);
 
   return (
-    <article className="glass flex h-full w-[82vw] shrink-0 snap-center flex-col rounded-xl border border-stone/20 p-6 transition-colors duration-500 hover:border-stone/35 sm:w-[22rem] sm:p-7">
-      <header className="flex items-center gap-3.5">
-        <Avatar review={review} />
-        <div className="min-w-0">
-          <p className="truncate font-medium text-bone">{review.authorName}</p>
-          <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-stone">
-            {review.source === "Google" ? (
-              <span className="inline-flex items-center gap-1.5">
-                <SocialIcon name="google" className="h-3 w-3" />
-                Google
-              </span>
-            ) : (
-              <span>{review.source}</span>
-            )}
-            {review.reviewedAt ? (
-              <>
-                <span aria-hidden="true">·</span>
-                <time dateTime={review.reviewedAt}>
-                  {formatDate(review.reviewedAt)}
-                </time>
-              </>
+    <article className="glass flex w-[80vw] shrink-0 snap-center flex-col rounded-2xl border border-stone/20 p-6 text-left transition-[border-color,transform,box-shadow] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:border-bronze-light/40 hover:shadow-[0_28px_60px_-34px_color-mix(in_oklab,var(--color-bronze)_55%,transparent)] sm:w-[21rem] sm:p-7">
+      <header className="flex items-start justify-between gap-3">
+        <span className="flex min-w-0 items-center gap-3.5">
+          <Avatar review={review} />
+          <span className="min-w-0">
+            <span className="block truncate font-medium text-bone">
+              {review.authorName}
+            </span>
+            {date ? (
+              <span className="mt-0.5 block text-xs text-stone">{date}</span>
             ) : null}
-          </p>
-        </div>
+          </span>
+        </span>
+
+        {/* Google's mark, so the card's provenance is visible at a glance. */}
+        <SocialIcon
+          name="google"
+          className="mt-1 h-4 w-4 shrink-0 text-stone-light"
+        />
       </header>
 
       {review.rating ? <Stars rating={review.rating} className="mt-5" /> : null}
@@ -123,7 +143,7 @@ function ReviewCard({ review }: { review: DisplayReview }) {
       <blockquote
         className={cn(
           "mt-4 flex-1 text-sm leading-relaxed text-sand/85",
-          long && !expanded && "line-clamp-[7]",
+          long && !expanded && "line-clamp-6",
         )}
       >
         {review.body}
@@ -156,7 +176,6 @@ function ReviewCard({ review }: { review: DisplayReview }) {
 
 export function Testimonials({ data }: { data: GoogleReviews }) {
   const reviews = data.reviews;
-  const hasReviews = reviews.length > 0;
   const profileUrl = data.profileUrl ?? site.social.google;
 
   const railRef = useRef<HTMLDivElement>(null);
@@ -172,19 +191,53 @@ export function Testimonials({ data }: { data: GoogleReviews }) {
 
   useEffect(() => {
     syncEdges();
-    const rail = railRef.current;
-    if (!rail) return;
     window.addEventListener("resize", syncEdges);
     return () => window.removeEventListener("resize", syncEdges);
   }, [syncEdges, reviews.length]);
 
-  const scrollBy = (direction: 1 | -1) => {
+  const nudge = (direction: 1 | -1) => {
     const rail = railRef.current;
     if (!rail) return;
     const card = rail.querySelector("article");
     const step = card ? card.clientWidth + 16 : rail.clientWidth * 0.8;
     rail.scrollBy({ left: direction * step, behavior: "smooth" });
   };
+
+  /**
+   * Nothing real to show means nothing at all — in production. An empty reviews
+   * section is a worse look than no reviews section, and a "coming soon" line
+   * tells a customer the business has none.
+   *
+   * Running `next dev` is the exception. A section that vanishes silently is
+   * indistinguishable from one that is broken, so locally it says where the
+   * reviews go. `process.env.NODE_ENV` is inlined at build time, so this branch
+   * is dead code the production bundle never contains.
+   */
+  if (reviews.length === 0) {
+    if (process.env.NODE_ENV !== "development") return null;
+    return <EmptyInDev />;
+  }
+
+  /**
+   * Google's own aggregate when the API supplied one; otherwise the average of
+   * the cards on screen, labelled as exactly that. The two are different
+   * numbers and are never presented as the same thing.
+   */
+  const rated = reviews.filter((review) => (review.rating ?? 0) > 0);
+  const shownAverage =
+    rated.length > 0
+      ? Math.round(
+          (rated.reduce((sum, review) => sum + (review.rating ?? 0), 0) /
+            rated.length) *
+            10,
+        ) / 10
+      : null;
+
+  const headline = data.rating ?? shownAverage;
+  const countLabel =
+    data.total !== null
+      ? `${data.total} Google review${data.total === 1 ? "" : "s"}`
+      : `${reviews.length} of our Google reviews`;
 
   return (
     <Section
@@ -193,7 +246,13 @@ export function Testimonials({ data }: { data: GoogleReviews }) {
       className="border-t border-stone/12 bg-ink"
       aria-labelledby="reviews-heading"
     >
-      <div className="shell">
+      {/* Service ticker — the same right-to-left drift used at the top of the
+          page, kept small so it reads as texture rather than a banner. */}
+      <div className="border-y border-stone/10 bg-charcoal/40 py-3">
+        <Marquee items={TICKER} className="opacity-70" />
+      </div>
+
+      <div className="shell pt-16 md:pt-20">
         <SectionLabel index="11" eyebrow="Reviews" className={centreRow} />
 
         <div className="mt-6 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
@@ -215,174 +274,142 @@ export function Testimonials({ data }: { data: GoogleReviews }) {
                 centreBlock,
               )}
             >
-              Every review below is a real one, pulled straight from our Google
-              Business Profile. Nothing here is written by us.
+              Every review below was left by a real customer on Google. Nothing
+              here is written by us.
             </p>
           </div>
 
-          {/* Aggregate rating */}
-          {data.rating !== null ? (
+          {/* Aggregate */}
+          {headline !== null ? (
             <a
               href={profileUrl ?? undefined}
               target="_blank"
               rel="noopener noreferrer"
               className={cn(
-                "glass group flex shrink-0 items-center gap-4 rounded-xl border border-stone/25 px-5 py-4 transition-colors duration-400 hover:border-bronze-light",
+                "glass group flex shrink-0 items-center gap-4 rounded-2xl border border-stone/25 px-5 py-4 transition-[border-color,transform] duration-500 hover:-translate-y-0.5 hover:border-bronze-light",
                 centreBlock,
               )}
             >
               <SocialIcon
                 name="google"
-                className="h-6 w-6 shrink-0 text-sand transition-colors duration-400 group-hover:text-bronze-light"
+                className="h-7 w-7 shrink-0 text-sand transition-colors duration-400 group-hover:text-bronze-light"
               />
               <span className="flex flex-col">
                 <span className="flex items-baseline gap-2">
                   <span className="font-display text-3xl font-semibold text-bone tabular-nums">
-                    {data.rating.toFixed(1)}
+                    {headline.toFixed(1)}
                   </span>
-                  <Stars rating={data.rating} />
+                  <Stars rating={headline} size="md" />
                 </span>
-                <span className="mt-1 text-xs text-stone">
-                  {data.total !== null
-                    ? `${data.total} Google review${data.total === 1 ? "" : "s"}`
-                    : "on Google"}
-                </span>
+                <span className="mt-1 text-xs text-stone">{countLabel}</span>
               </span>
             </a>
           ) : null}
         </div>
 
-        {hasReviews ? (
-          <div className="mt-12">
-            {/* Rail. Negative margins let cards bleed to the screen edge on a
-                phone while the section keeps its gutter. */}
-            <div
-              ref={railRef}
-              onScroll={syncEdges}
-              className="no-scrollbar -mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 md:-mx-10 md:px-10 xl:-mx-14 xl:px-14"
-            >
-              {reviews.map((review) => (
-                <ReviewCard key={review.id} review={review} />
-              ))}
-            </div>
-
-            <div
-              className={cn(
-                "mt-8 flex flex-wrap items-center gap-4",
-                centreRow,
-              )}
-            >
-              {reviews.length > 1 ? (
-                <div className="hidden items-center gap-2 sm:flex">
-                  <button
-                    type="button"
-                    onClick={() => scrollBy(-1)}
-                    disabled={atStart}
-                    className="grid h-11 w-11 place-items-center rounded-full border border-stone/30 text-bone transition-colors hover:border-bronze-light hover:text-bronze-light disabled:pointer-events-none disabled:opacity-30"
-                  >
-                    <span className="sr-only">Previous reviews</span>
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="h-4 w-4"
-                      fill="none"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M15 5 8 12l7 7"
-                        stroke="currentColor"
-                        strokeWidth="1.6"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => scrollBy(1)}
-                    disabled={atEnd}
-                    className="grid h-11 w-11 place-items-center rounded-full border border-stone/30 text-bone transition-colors hover:border-bronze-light hover:text-bronze-light disabled:pointer-events-none disabled:opacity-30"
-                  >
-                    <span className="sr-only">More reviews</span>
-                    <svg
-                      viewBox="0 0 24 24"
-                      className="h-4 w-4"
-                      fill="none"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="m9 5 7 7-7 7"
-                        stroke="currentColor"
-                        strokeWidth="1.6"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              ) : null}
-
-              {profileUrl ? (
-                <MagneticLink
-                  href={profileUrl}
-                  variant="outline"
-                  size="md"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  withArrow
-                >
-                  Read all reviews on Google
-                </MagneticLink>
-              ) : null}
-            </div>
-
-            <p
-              className={cn(
-                "mt-6 max-w-2xl text-xs leading-relaxed text-stone",
-                centreText,
-                centreBlock,
-              )}
-            >
-              Google returns up to five reviews through its API. The rating and
-              count above cover every review on the profile — follow the link to
-              read them all.
-            </p>
+        {/* Rail */}
+        <div className="mt-12">
+          {/* A scrollable region needs to be reachable by keyboard, hence the
+              tabindex: without it the arrows are the only way through, and
+              they are hidden on a phone. `items-stretch` keeps every card the
+              height of the tallest so the rail reads as one band rather than a
+              ragged edge. */}
+          <div
+            ref={railRef}
+            onScroll={syncEdges}
+            tabIndex={0}
+            role="group"
+            aria-label="Customer reviews"
+            className="no-scrollbar -mx-5 flex snap-x snap-mandatory items-stretch gap-4 overflow-x-auto overscroll-x-contain px-5 pb-2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-bronze-light md:-mx-10 md:px-10 xl:-mx-14 xl:px-14"
+          >
+            {reviews.map((review) => (
+              <ReviewCard key={review.id} review={review} />
+            ))}
           </div>
-        ) : (
-          <div className={cn("mt-14 max-w-3xl", centreText, centreBlock)}>
-            <p className="font-serif text-4xl text-bronze-light italic md:text-5xl">
-              Customer reviews coming soon
-            </p>
-            <PlaceholderNotice className="mt-8 text-left">
-              <span className="block">
-                No reviews are shown because none could be read, and nothing
-                here is invented.
-              </span>
-              {data.diagnosis ? (
-                <span className="mt-3 block text-sand/85">
-                  <span className="font-medium text-bone">What is wrong:</span>{" "}
-                  {data.diagnosis}
-                </span>
-              ) : null}
-              <span className="mt-3 block">
-                Set <code>GOOGLE_PLACES_API_KEY</code> and{" "}
-                <code>GOOGLE_PLACE_ID</code> in <code>.env.local</code> (and in
-                the host&rsquo;s environment for production), then restart the
-                server. Kabura&rsquo;s real Google reviews then appear here
-                automatically, each attributed and linked back to Google.
-              </span>
-            </PlaceholderNotice>
 
-            {profileUrl ? (
-              <div className={cn("mt-8 flex flex-wrap", centreRow)}>
-                <MagneticLink
-                  href={profileUrl}
-                  variant="outline"
-                  size="md"
-                  target="_blank"
-                  rel="noopener noreferrer"
+          <div className={cn("mt-8 flex flex-wrap items-center gap-4", centreRow)}>
+            {reviews.length > 1 ? (
+              <div className="hidden items-center gap-2 sm:flex">
+                <button
+                  type="button"
+                  onClick={() => nudge(-1)}
+                  disabled={atStart}
+                  className="grid h-11 w-11 place-items-center rounded-full border border-stone/30 text-bone transition-colors hover:border-bronze-light hover:text-bronze-light disabled:pointer-events-none disabled:opacity-30"
                 >
-                  Read our Google reviews
-                </MagneticLink>
+                  <span className="sr-only">Previous reviews</span>
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
+                    <path d="M15 5 8 12l7 7" stroke="currentColor" strokeWidth="1.6" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => nudge(1)}
+                  disabled={atEnd}
+                  className="grid h-11 w-11 place-items-center rounded-full border border-stone/30 text-bone transition-colors hover:border-bronze-light hover:text-bronze-light disabled:pointer-events-none disabled:opacity-30"
+                >
+                  <span className="sr-only">More reviews</span>
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
+                    <path d="m9 5 7 7-7 7" stroke="currentColor" strokeWidth="1.6" />
+                  </svg>
+                </button>
               </div>
             ) : null}
+
+            {profileUrl ? (
+              <MagneticLink
+                href={profileUrl}
+                variant="outline"
+                size="md"
+                target="_blank"
+                rel="noopener noreferrer"
+                withArrow
+              >
+                Read all reviews on Google
+              </MagneticLink>
+            ) : null}
           </div>
-        )}
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+/**
+ * Shown only while developing, never in a production build.
+ *
+ * The reviews section renders nothing at all when there is nothing real to
+ * render. That is right for visitors and confusing for whoever is building the
+ * site, so this stands in its place locally and says exactly what is missing.
+ */
+function EmptyInDev() {
+  return (
+    <Section
+      id="reviews"
+      spacing="loose"
+      className="border-t border-stone/12 bg-ink"
+    >
+      <div className="border-y border-stone/10 bg-charcoal/40 py-3">
+        <Marquee items={TICKER} className="opacity-70" />
+      </div>
+
+      <div className="shell pt-16 md:pt-20">
+        <SectionLabel index="11" eyebrow="Reviews" className={centreRow} />
+        <div className={cn("mt-8 max-w-2xl", centreBlock)}>
+          <PlaceholderNotice className="text-left">
+            <span className="block">
+              No reviews are shown because none have been added yet, and none
+              are invented. This notice appears in <code>next dev</code> only —
+              a production build renders nothing here at all.
+            </span>
+            <span className="mt-3 block">
+              Transcribe the reviews into{" "}
+              <code>src/lib/reviews.ts</code>, word for word, or set{" "}
+              <code>GOOGLE_PLACES_API_KEY</code> and{" "}
+              <code>GOOGLE_PLACE_ID</code> to pull them live from the Google
+              Business Profile.
+            </span>
+          </PlaceholderNotice>
+        </div>
       </div>
     </Section>
   );

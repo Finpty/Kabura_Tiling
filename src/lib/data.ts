@@ -12,6 +12,7 @@ import {
   type GoogleReviews,
 } from "./google-reviews";
 import type { ReviewRow } from "./supabase/types";
+import { shownReviews } from "./reviews";
 
 /**
  * Read paths for public content.
@@ -83,19 +84,38 @@ export async function getProject(slug: string): Promise<Project | null> {
 }
 
 /**
- * Reviews shown on the site, from the two sources that can be trusted:
- * Kabura's live Google Business Profile, and rows an admin has explicitly
- * approved in Supabase. Google comes first — it is verifiable by anyone.
+ * Reviews shown on the site, from the three sources that can be trusted:
+ * Kabura's live Google Business Profile, reviews transcribed from that same
+ * profile in `src/lib/reviews.ts`, and rows an admin approved in Supabase.
  *
- * No review is ever authored here. Both sources empty is the expected state
- * before launch, and the UI says "reviews coming soon" rather than filling
- * the space with something invented.
+ * Order matters. Google's own API comes first — it is the only source a
+ * visitor can verify independently — then the transcribed list, then Supabase.
+ * A review that appears in both the API and the transcription is de-duplicated
+ * on author and opening words, so switching the API on does not double every
+ * card.
+ *
+ * No review is ever authored here. Every source empty is a valid state: the
+ * section renders nothing rather than filling the space with something
+ * invented.
  */
 export async function getReviews(): Promise<GoogleReviews> {
   const [google, supabase] = await Promise.all([
     getGoogleReviews(),
     createServerSupabase(),
   ]);
+
+  const transcribed: DisplayReview[] = shownReviews().map((review) => ({
+    id: review.id,
+    authorName: review.authorName,
+    authorPhotoUrl: null,
+    authorProfileUrl: null,
+    rating: review.rating,
+    body: review.body,
+    reviewedAt: null,
+    dateLabel: review.date ?? null,
+    reviewUrl: review.url ?? null,
+    source: review.source ?? "Google",
+  }));
 
   let approved: DisplayReview[] = [];
   if (supabase) {
@@ -122,7 +142,18 @@ export async function getReviews(): Promise<GoogleReviews> {
     }
   }
 
-  if (google.reviews.length === 0 && approved.length === 0) {
+  /** Same person, same opening — the API and the transcription overlapping. */
+  const fingerprint = (review: DisplayReview) =>
+    `${review.authorName.trim().toLowerCase()}|${review.body.trim().slice(0, 40).toLowerCase()}`;
+
+  const seen = new Set(google.reviews.map(fingerprint));
+  const localOnly = transcribed.filter((review) => !seen.has(fingerprint(review)));
+
+  if (
+    google.reviews.length === 0 &&
+    localOnly.length === 0 &&
+    approved.length === 0
+  ) {
     // Keep the diagnosis: it is the only thing that says *why* the section is
     // empty, and it is what the placeholder renders.
     return google;
@@ -131,6 +162,6 @@ export async function getReviews(): Promise<GoogleReviews> {
   return {
     ...google,
     status: "ok",
-    reviews: [...google.reviews, ...approved],
+    reviews: [...google.reviews, ...localOnly, ...approved],
   };
 }
