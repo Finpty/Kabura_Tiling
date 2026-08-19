@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   KABURA_MAP_STYLE,
   isMapsConfigured,
@@ -10,111 +10,83 @@ import {
 } from "@/lib/google-maps";
 import {
   SERVICE_AREAS,
+  keyServiceAreas,
   serviceRegionCentre,
   serviceRegionRadius,
-  type ServiceArea,
 } from "@/lib/service-areas";
 import { useInView } from "@/hooks/use-in-view";
+import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
 import { cn } from "@/lib/utils";
 
 /**
- * Compact coverage map.
+ * Coverage widget.
  *
- * Shows the suburbs Kabura has actually confirmed, and says so. The shaded
- * radius is a visual aid around those points — the card states in as many words
- * that the list is the authority, because a circle drawn on a map is not a
- * coverage promise and should never be read as one. Nothing here claims the
- * whole state.
+ * A small card, deliberately: the map is a reassurance that Kabura works near
+ * you, not a tool for exploring the metro area. It shows the region, a soft
+ * coverage wash and three anchor pins, then hands off to `/service-areas` for
+ * the real list. Everything that used to live inside it — the suburb pills,
+ * the selected-suburb panel — belongs on that page, where there is room.
  *
- * The Maps script is only fetched once the card scrolls into view, so a visitor
- * who never reaches it pays nothing. With no API key configured — or if the
- * script fails — the fallback panel renders instead and the page is unaffected.
+ * `gestureHandling: "cooperative"` matters more than it looks: a plain map
+ * swallows the wheel, and a widget that eats page scrolling is worse than no
+ * widget at all. Scroll passes straight through unless the visitor holds
+ * ⌘/Ctrl, and touch needs two fingers.
+ *
+ * The script is fetched only once the card is near the viewport. Without
+ * `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` — or if the script fails — the frame keeps
+ * its shape and renders a drawn coverage graphic instead.
  */
 
+/** Small bronze dot with a soft halo. A pin marker is too loud at this size. */
 const MARKER_ICON =
   "data:image/svg+xml;charset=UTF-8," +
   encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="34" viewBox="0 0 26 34">
-      <path d="M13 33C13 33 24 21.6 24 13A11 11 0 1 0 2 13c0 8.6 11 20 11 20Z" fill="#cf9d5f" stroke="#0b0a09" stroke-width="1.4"/>
-      <circle cx="13" cy="13" r="4" fill="#0b0a09"/>
+    `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22">
+      <circle cx="11" cy="11" r="9" fill="#cf9d5f" opacity="0.22"/>
+      <circle cx="11" cy="11" r="4.5" fill="#cf9d5f" stroke="#0b0a09" stroke-width="1.5"/>
     </svg>`,
   );
 
-function AreaChips({
-  active,
-  onSelect,
-}: {
-  active: string | null;
-  onSelect?: (area: ServiceArea) => void;
-}) {
-  return (
-    <ul className="flex flex-wrap gap-2">
-      {SERVICE_AREAS.map((area) =>
-        onSelect ? (
-          <li key={area.slug}>
-            <button
-              type="button"
-              onClick={() => onSelect(area)}
-              aria-pressed={active === area.slug}
-              className={cn(
-                "rounded-full border px-3.5 py-1.5 text-xs transition-colors duration-300",
-                active === area.slug
-                  ? "border-bronze-light bg-bronze-light/15 text-bronze-light"
-                  : "border-stone/25 text-sand/80 hover:border-stone/50 hover:text-bone",
-              )}
-            >
-              {area.name}
-            </button>
-          </li>
-        ) : (
-          <li key={area.slug}>
-            <Link
-              href={`/service-areas/${area.slug}`}
-              className="inline-block rounded-full border border-stone/25 px-3.5 py-1.5 text-xs text-sand/80 transition-colors duration-300 hover:border-bronze-light hover:text-bronze-light"
-            >
-              {area.name}
-            </Link>
-          </li>
-        ),
-      )}
-    </ul>
-  );
-}
+const ANCHORS = keyServiceAreas();
 
-/** Shown when Maps is unconfigured or unavailable. Never an error message. */
-function CoverageFallback() {
+/** Drawn coverage graphic. Used when Maps is unconfigured or unavailable. */
+function DrawnCoverage() {
   return (
-    <div className="relative overflow-hidden rounded-xl border border-stone/20 bg-charcoal">
+    <div className="absolute inset-0 overflow-hidden">
       <div
         aria-hidden="true"
-        className="absolute inset-0 opacity-[0.55]"
+        className="absolute inset-0"
         style={{
           backgroundImage:
-            "radial-gradient(circle at 30% 35%, color-mix(in oklab, var(--color-bronze) 26%, transparent), transparent 58%), radial-gradient(circle at 72% 68%, color-mix(in oklab, var(--color-slate) 40%, transparent), transparent 60%)",
+            "linear-gradient(color-mix(in oklab, var(--color-stone) 55%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in oklab, var(--color-stone) 55%, transparent) 1px, transparent 1px)",
+          backgroundSize: "38px 38px",
+          opacity: 0.08,
         }}
       />
+      {/* Coverage wash, matching the live map's circle. */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 opacity-[0.09]"
+        className="absolute top-1/2 left-1/2 h-[128%] w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full"
         style={{
-          backgroundImage:
-            "linear-gradient(var(--color-stone) 1px, transparent 1px), linear-gradient(90deg, var(--color-stone) 1px, transparent 1px)",
-          backgroundSize: "44px 44px",
+          background:
+            "radial-gradient(circle, color-mix(in oklab, var(--color-bronze) 30%, transparent) 0%, color-mix(in oklab, var(--color-bronze) 12%, transparent) 55%, transparent 72%)",
+          border:
+            "1px solid color-mix(in oklab, var(--color-bronze-light) 35%, transparent)",
         }}
       />
-      <div className="relative p-6 sm:p-8">
-        <p className="eyebrow text-bronze-light">Coverage</p>
-        <p className="mt-4 max-w-md text-lead text-bone">
-          The suburbs we have confirmed we service.
-        </p>
-        <div className="mt-6">
-          <AreaChips active={null} />
-        </div>
-        <p className="mt-6 max-w-md text-sm leading-relaxed text-sand/65">
-          Somewhere nearby that is not on the list? Send us the address — we
-          will tell you honestly whether we can get there.
-        </p>
-      </div>
+      {/* Anchor dots, laid out to echo the real north–south spread. */}
+      {[
+        { top: "24%", left: "56%" },
+        { top: "54%", left: "44%" },
+        { top: "78%", left: "42%" },
+      ].map((position, index) => (
+        <span
+          key={ANCHORS[index]?.slug ?? index}
+          aria-hidden="true"
+          className="absolute block h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-bronze-light shadow-[0_0_0_5px_color-mix(in_oklab,var(--color-bronze)_22%,transparent)]"
+          style={position}
+        />
+      ))}
     </div>
   );
 }
@@ -122,24 +94,21 @@ function CoverageFallback() {
 export function CoverageMap({ className }: { className?: string }) {
   const { ref: viewRef, inView } = useInView<HTMLDivElement>({
     once: true,
-    rootMargin: "200px",
+    rootMargin: "250px",
     threshold: 0,
   });
   const mapNode = useRef<HTMLDivElement>(null);
   const mapRef = useRef<GMapsMap | null>(null);
-
-  // Starts as "loading": the placeholder is what should be on screen until the
-  // map is actually drawn, whether or not the script has been asked for yet.
-  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const baseZoom = useRef<number | null>(null);
   const started = useRef(false);
-  const [active, setActive] = useState<ServiceArea | null>(null);
+  const reduced = usePrefersReducedMotion();
 
+  const [live, setLive] = useState(false);
   const configured = isMapsConfigured();
 
   useEffect(() => {
     if (!configured || !inView || started.current) return;
     started.current = true;
-
     let cancelled = false;
 
     loadGoogleMaps()
@@ -149,11 +118,12 @@ export function CoverageMap({ className }: { className?: string }) {
         const centre = serviceRegionCentre();
         const map = new maps.Map(mapNode.current, {
           center: centre,
-          zoom: 10,
+          zoom: 9,
           styles: KABURA_MAP_STYLE,
           disableDefaultUI: true,
-          zoomControl: true,
+          // Never let the widget capture the page's scroll.
           gestureHandling: "cooperative",
+          keyboardShortcuts: false,
           clickableIcons: false,
           backgroundColor: "#14120f",
         });
@@ -164,34 +134,39 @@ export function CoverageMap({ className }: { className?: string }) {
           center: centre,
           radius: serviceRegionRadius(),
           strokeColor: "#cf9d5f",
-          strokeOpacity: 0.5,
-          strokeWeight: 1.5,
+          strokeOpacity: 0.45,
+          strokeWeight: 1.25,
           fillColor: "#a9743d",
-          fillOpacity: 0.12,
+          fillOpacity: 0.14,
           clickable: false,
         });
 
-        const bounds = new maps.LatLngBounds();
-        for (const area of SERVICE_AREAS) {
-          bounds.extend(area.coords);
-          const marker = new maps.Marker({
+        for (const area of ANCHORS) {
+          new maps.Marker({
             map,
             position: area.coords,
             title: area.name,
+            clickable: false,
             icon: {
               url: MARKER_ICON,
-              scaledSize: new maps.Size(26, 34),
-              anchor: new maps.Point(13, 33),
+              scaledSize: new maps.Size(22, 22),
+              anchor: new maps.Point(11, 11),
             },
           });
-          marker.addListener("click", () => setActive(area));
         }
 
-        map.fitBounds(bounds, 56);
-        setStatus("ready");
+        const bounds = new maps.LatLngBounds();
+        for (const area of SERVICE_AREAS) bounds.extend(area.coords);
+        map.fitBounds(bounds, 34);
+        map.addListener("idle", () => {
+          baseZoom.current ??= map.getZoom() ?? 9;
+        });
+
+        setLive(true);
       })
       .catch(() => {
-        if (!cancelled) setStatus("error");
+        // Leave `live` false; the drawn coverage stays. Not an error state the
+        // visitor needs to know about.
       });
 
     return () => {
@@ -199,88 +174,81 @@ export function CoverageMap({ className }: { className?: string }) {
     };
   }, [configured, inView]);
 
-  if (!configured || status === "error") {
-    return (
-      <div ref={viewRef} className={className}>
-        <CoverageFallback />
-      </div>
-    );
-  }
-
-  const focus = (area: ServiceArea) => {
-    setActive(area);
-    const map = mapRef.current;
-    if (!map) return;
-    map.setCenter(area.coords);
-    map.setZoom(Math.max(map.getZoom() ?? 10, 12));
-  };
+  /** A half-step zoom on hover. Google animates it; reduced motion skips it. */
+  const zoomBy = useCallback(
+    (delta: number) => {
+      if (reduced || !live) return;
+      const map = mapRef.current;
+      const base = baseZoom.current;
+      if (!map || base === null) return;
+      map.setZoom(base + delta);
+    },
+    [reduced, live],
+  );
 
   return (
-    <div ref={viewRef} className={className}>
-      <div className="overflow-hidden rounded-xl border border-stone/20 bg-charcoal">
-        {/* Fixed aspect so the card never shifts the page while the map loads. */}
-        <div className="relative aspect-[4/3] w-full sm:aspect-[16/10] lg:aspect-[3/2]">
-          <div
-            ref={mapNode}
-            className="absolute inset-0 h-full w-full"
-            aria-label="Map of the suburbs Kabura Tiling services"
-            role="application"
-          />
-
-          {status !== "ready" ? (
-            <div
+    <div ref={viewRef} className={cn("w-full max-w-md", className)}>
+      <div
+        onMouseEnter={() => zoomBy(0.6)}
+        onMouseLeave={() => zoomBy(0)}
+        className="group glass relative overflow-hidden rounded-2xl border border-stone/25 shadow-[0_24px_60px_-32px_rgba(0,0,0,0.9)] transition-[transform,border-color,box-shadow] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:border-bronze-light/45 hover:shadow-[0_32px_70px_-30px_color-mix(in_oklab,var(--color-bronze)_45%,transparent)]"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between gap-3 border-b border-stone/15 px-5 py-3.5">
+          <span className="flex items-center gap-2.5">
+            <span
               aria-hidden="true"
-              className="absolute inset-0 grid place-items-center bg-charcoal"
-            >
-              <span className="flex items-center gap-3 text-xs tracking-[0.16em] text-stone uppercase">
-                <span className="block h-1.5 w-1.5 animate-pulse rounded-full bg-bronze-light" />
-                Loading map
-              </span>
-            </div>
-          ) : null}
-
-          {/* Selected suburb, styled in the site's own palette rather than an
-              InfoWindow, which cannot be themed to match. */}
-          {active && status === "ready" ? (
-            <div className="glass pointer-events-auto absolute inset-x-3 bottom-3 rounded-lg border border-stone/25 p-4 sm:inset-x-auto sm:left-4 sm:max-w-xs">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="eyebrow text-bronze-light">{active.region}</p>
-                  <p className="mt-1.5 font-display text-xl font-medium tracking-[-0.02em] text-bone">
-                    {active.name}
-                  </p>
-                  <p className="mt-1 text-xs text-stone tabular-nums">
-                    {active.postcodes.join(" · ")}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setActive(null)}
-                  className="grid h-7 w-7 shrink-0 place-items-center rounded-full border border-stone/30 text-sand transition-colors hover:border-bronze-light hover:text-bronze-light"
-                >
-                  <span className="sr-only">Close</span>
-                  <svg viewBox="0 0 12 12" className="h-2.5 w-2.5" fill="none" aria-hidden="true">
-                    <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.7" />
-                  </svg>
-                </button>
-              </div>
-              <Link
-                href={`/service-areas/${active.slug}`}
-                className="link-underline mt-3 inline-block text-sm text-bronze-light"
-              >
-                {active.name} tiling
-              </Link>
-            </div>
-          ) : null}
+              className="block h-1.5 w-1.5 rounded-full bg-bronze-light shadow-[0_0_0_4px_color-mix(in_oklab,var(--color-bronze)_25%,transparent)]"
+            />
+            <span className="eyebrow text-stone-light">Service coverage</span>
+          </span>
+          <span className="text-xs text-stone tabular-nums">
+            {SERVICE_AREAS.length} areas
+          </span>
         </div>
 
-        {/* Suburb shortcuts — also the accessible, non-map route to every area. */}
-        <div className="border-t border-stone/15 p-4 sm:p-5">
-          <AreaChips active={active?.slug ?? null} onSelect={focus} />
-          <p className="mt-4 text-xs leading-relaxed text-stone">
-            The shaded area is a guide. The suburbs listed above are the ones we
-            have confirmed — ask us about anywhere else.
+        {/* Map */}
+        <div className="relative aspect-[16/11] w-full">
+          <DrawnCoverage />
+          <div
+            ref={mapNode}
+            aria-label="Map of the region Kabura Tiling services"
+            role="img"
+            className={cn(
+              "absolute inset-0 h-full w-full transition-opacity duration-1000",
+              live ? "opacity-100" : "opacity-0",
+            )}
+          />
+          {/* Inner vignette keeps the tiles inside the card's own lighting. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 shadow-[inset_0_0_60px_20px_color-mix(in_oklab,var(--color-ink)_55%,transparent)]"
+          />
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between gap-4 border-t border-stone/15 px-5 py-4">
+          <p className="min-w-0 truncate text-xs text-sand/70">
+            {ANCHORS.map((area) => area.name).join(" · ")}
           </p>
+          <Link
+            href="/service-areas"
+            className="group/link inline-flex shrink-0 items-center gap-2 rounded-full border border-stone/30 px-3.5 py-2 text-[0.64rem] font-semibold tracking-[0.13em] text-sand uppercase transition-colors duration-400 hover:border-bronze-light hover:bg-bronze/12 hover:text-bronze-light"
+          >
+            All areas
+            <svg
+              viewBox="0 0 12 12"
+              fill="none"
+              aria-hidden="true"
+              className="h-2.5 w-2.5 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover/link:translate-x-0.5"
+            >
+              <path
+                d="M1 6h9M6 1.5 10.5 6 6 10.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              />
+            </svg>
+          </Link>
         </div>
       </div>
     </div>

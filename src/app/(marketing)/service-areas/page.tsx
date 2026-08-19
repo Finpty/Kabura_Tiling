@@ -66,11 +66,12 @@ export default function ServiceAreasPage() {
                 centreBlock,
               )}
             >
-              Tap a marker or a suburb to see what we cover there.
+              The region we work across, and the suburbs we have confirmed
+              inside it.
             </p>
           </div>
 
-          <Reveal className="mx-auto mt-12 max-w-4xl">
+          <Reveal className="mt-12 flex justify-center">
             <CoverageMap />
           </Reveal>
 

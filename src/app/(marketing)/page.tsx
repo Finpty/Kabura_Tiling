@@ -9,6 +9,7 @@ import { VideoRail } from "@/components/home/VideoRail";
 import { WhyKabura } from "@/components/home/WhyKabura";
 import { TileWall } from "@/components/home/TileWall";
 import { BathroomVisualiser } from "@/components/home/BathroomVisualiser";
+import { LatestWork } from "@/components/home/LatestWork";
 import { Testimonials } from "@/components/home/Testimonials";
 import { ServiceAreasSection } from "@/components/home/ServiceAreasSection";
 import { CTASection } from "@/components/home/CTASection";
@@ -76,6 +77,7 @@ export default async function HomePage() {
       <WhyKabura />
       <TileWall />
       <BathroomVisualiser />
+      <LatestWork />
       <Testimonials data={reviews} />
       <ServiceAreasSection />
 

@@ -197,3 +197,17 @@ export const serviceRegionRadius = () => {
   );
   return Math.round(furthest + 6_000);
 };
+
+/**
+ * The anchors shown as markers on the compact coverage widget.
+ *
+ * Not every serviced suburb: eight pins in a card that size is a cluster, not a
+ * map. These three span the region, and the widget links straight through to
+ * the full list. Change the slugs here to change the pins.
+ */
+const KEY_AREA_SLUGS = ["perth", "rockingham", "mandurah"] as const;
+
+export const keyServiceAreas = (): ServiceArea[] =>
+  KEY_AREA_SLUGS.map((slug) => getServiceArea(slug)).filter(
+    (area): area is ServiceArea => area !== undefined,
+  );

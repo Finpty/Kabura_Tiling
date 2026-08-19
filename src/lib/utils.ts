@@ -1,5 +1,32 @@
 import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { extendTailwindMerge } from "tailwind-merge";
+
+/**
+ * The site's display scale, declared in the `@theme` block in globals.css.
+ *
+ * tailwind-merge has to be told about these. Out of the box it only knows the
+ * stock font sizes, so `text-headline` looked to it like an unknown `text-*`
+ * utility — the same shape as a colour — and `cn("… text-headline text-bone")`
+ * resolved the "conflict" by keeping the colour and dropping the size. Every
+ * display heading then rendered at body size. Naming them here puts them in the
+ * font-size group, where they conflict with each other and with nothing else.
+ */
+const FONT_SIZES = [
+  "display",
+  "hero",
+  "headline",
+  "title",
+  "lead",
+  "micro",
+] as const;
+
+const twMerge = extendTailwindMerge({
+  extend: {
+    classGroups: {
+      "font-size": [{ text: [...FONT_SIZES] }],
+    },
+  },
+});
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

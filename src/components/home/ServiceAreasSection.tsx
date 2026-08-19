@@ -88,7 +88,7 @@ export function ServiceAreasSection() {
           </div>
 
           <div className="flex flex-col gap-8 lg:sticky lg:top-32 lg:self-start">
-            <CoverageMap />
+            <CoverageMap className="mx-auto lg:mx-0" />
 
             <div className="border border-stone/20 bg-ink/50 p-7">
               <p className="eyebrow text-bronze-light">{area.region}</p>

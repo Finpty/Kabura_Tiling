@@ -69,6 +69,24 @@ export type DisplayReview = {
   source: string;
 };
 
+/**
+ * Why the reviews list is empty.
+ *
+ * Without this the section fails the same silent way whether nobody set the
+ * keys, the wrong API is enabled, or the Place ID is a typo — three problems
+ * with three different fixes and no way to tell them apart from the page.
+ */
+export type ReviewsStatus =
+  | "ok"
+  | "missing_key"
+  | "missing_place_id"
+  | "missing_both"
+  | "api_denied"
+  | "place_not_found"
+  | "api_error"
+  | "network_error"
+  | "no_reviews";
+
 export type GoogleReviews = {
   reviews: DisplayReview[];
   /** Overall score across all ratings, not just the five returned. */
@@ -76,20 +94,44 @@ export type GoogleReviews = {
   total: number | null;
   /** Link to the full listing, for the "read them all" action. */
   profileUrl: string | null;
+  status: ReviewsStatus;
+  /**
+   * One sentence naming the exact problem and its fix. Safe to render: it
+   * names environment variables and Google console settings, never a key or
+   * any part of one.
+   */
+  diagnosis: string | null;
 };
 
-export const EMPTY_GOOGLE_REVIEWS: GoogleReviews = {
+const empty = (
+  status: ReviewsStatus,
+  diagnosis: string | null = null,
+): GoogleReviews => ({
   reviews: [],
   rating: null,
   total: null,
   profileUrl: null,
-};
+  status,
+  diagnosis,
+});
+
+export const EMPTY_GOOGLE_REVIEWS: GoogleReviews = empty("missing_both");
 
 export const isGoogleReviewsConfigured = () =>
   Boolean(
     process.env.GOOGLE_PLACES_API_KEY?.trim() &&
     process.env.GOOGLE_PLACE_ID?.trim(),
   );
+
+/** Which of the two variables are missing, if either. */
+export function missingReviewEnv(): ReviewsStatus | null {
+  const hasKey = Boolean(process.env.GOOGLE_PLACES_API_KEY?.trim());
+  const hasPlace = Boolean(process.env.GOOGLE_PLACE_ID?.trim());
+  if (!hasKey && !hasPlace) return "missing_both";
+  if (!hasKey) return "missing_key";
+  if (!hasPlace) return "missing_place_id";
+  return null;
+}
 
 /**
  * Google serves avatars at whatever size the URL asks for. Requesting the size
@@ -110,10 +152,21 @@ function sizedPhoto(uri: string | undefined, px: number): string | null {
   }
 }
 
+const MISSING_MESSAGES: Record<string, string> = {
+  missing_both:
+    "Neither GOOGLE_PLACES_API_KEY nor GOOGLE_PLACE_ID is set, so there is nothing to fetch.",
+  missing_key: "GOOGLE_PLACE_ID is set but GOOGLE_PLACES_API_KEY is not.",
+  missing_place_id: "GOOGLE_PLACES_API_KEY is set but GOOGLE_PLACE_ID is not.",
+};
+
 export async function getGoogleReviews(): Promise<GoogleReviews> {
-  const key = process.env.GOOGLE_PLACES_API_KEY?.trim();
-  const placeId = process.env.GOOGLE_PLACE_ID?.trim();
-  if (!key || !placeId) return EMPTY_GOOGLE_REVIEWS;
+  const missing = missingReviewEnv();
+  if (missing) {
+    return empty(missing, MISSING_MESSAGES[missing] ?? null);
+  }
+
+  const key = process.env.GOOGLE_PLACES_API_KEY!.trim();
+  const placeId = process.env.GOOGLE_PLACE_ID!.trim();
 
   try {
     const response = await fetch(`${ENDPOINT}/${encodeURIComponent(placeId)}`, {
@@ -127,10 +180,20 @@ export async function getGoogleReviews(): Promise<GoogleReviews> {
     });
 
     if (!response.ok) {
-      console.error(
-        `Google Places returned ${response.status}. Check the API key, its restrictions, and that Places API (New) is enabled.`,
+      // Google puts the real reason in the body. Read it, name it, and never
+      // echo the key itself.
+      const detail = await response.text().catch(() => "");
+      const reason = /"message"\s*:\s*"([^"]+)"/.exec(detail)?.[1] ?? "";
+
+      const { status, diagnosis } = describeHttpFailure(
+        response.status,
+        reason,
       );
-      return EMPTY_GOOGLE_REVIEWS;
+      console.error(
+        `Google Places ${response.status} (${status}): ${diagnosis}` +
+          (reason ? ` — Google said: ${reason}` : ""),
+      );
+      return empty(status, diagnosis);
     }
 
     const data = (await response.json()) as GooglePlaceResponse;
@@ -157,15 +220,72 @@ export async function getGoogleReviews(): Promise<GoogleReviews> {
       })
       .filter((review): review is DisplayReview => review !== null);
 
+    const rating = typeof data.rating === "number" ? data.rating : null;
+    const total =
+      typeof data.userRatingCount === "number" ? data.userRatingCount : null;
+
+    if (reviews.length === 0) {
+      // The call worked — the profile simply has no written reviews yet, or
+      // Google chose to return none. Nothing to fix, and nothing to invent.
+      console.warn(
+        `Google Places returned no reviews for ${placeId}. The profile may have ratings but no written reviews yet.`,
+      );
+      return {
+        reviews,
+        rating,
+        total,
+        profileUrl: data.googleMapsUri ?? null,
+        status: "no_reviews",
+        diagnosis:
+          "Google answered, but returned no written reviews for this Place ID. Check GOOGLE_PLACE_ID points at the right listing.",
+      };
+    }
+
     return {
       reviews,
-      rating: typeof data.rating === "number" ? data.rating : null,
-      total:
-        typeof data.userRatingCount === "number" ? data.userRatingCount : null,
+      rating,
+      total,
       profileUrl: data.googleMapsUri ?? null,
+      status: "ok",
+      diagnosis: null,
     };
   } catch (error) {
     console.error("Google reviews fetch failed", error);
-    return EMPTY_GOOGLE_REVIEWS;
+    return empty(
+      "network_error",
+      "The request to Google could not be completed. Check outbound network access from the server.",
+    );
   }
+}
+
+/** Maps an HTTP failure onto the thing that actually has to be changed. */
+function describeHttpFailure(
+  code: number,
+  reason: string,
+): { status: ReviewsStatus; diagnosis: string } {
+  if (code === 403 || /API_KEY|PERMISSION|blocked|referer/i.test(reason)) {
+    return {
+      status: "api_denied",
+      diagnosis:
+        "Google rejected the key. Enable \u201cPlaces API (New)\u201d for the project, and make sure the key has no HTTP-referrer restriction \u2014 this call is made from the server, not the browser.",
+    };
+  }
+  if (code === 404) {
+    return {
+      status: "place_not_found",
+      diagnosis:
+        "Google could not find that Place ID. Check GOOGLE_PLACE_ID \u2014 it should look like ChIJ\u2026 and come from the Place ID finder, not from the profile URL.",
+    };
+  }
+  if (code === 429) {
+    return {
+      status: "api_error",
+      diagnosis:
+        "Google rate-limited the request. Check the quota and billing on the Cloud project.",
+    };
+  }
+  return {
+    status: "api_error",
+    diagnosis: `Google returned HTTP ${code}. Check the Cloud project's Places API (New) setup and billing.`,
+  };
 }

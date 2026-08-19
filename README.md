@@ -151,6 +151,22 @@ supplied" placeholder rather than inventing a number, address or registration.
 | `SUPABASE_SERVICE_ROLE_KEY` | for photos + admin | **Server only.** Never prefix with `NEXT_PUBLIC_`, never commit. Without it enquiries are still captured through the anon key, but photo uploads are skipped and `/admin` stays off |
 | `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | — | Search Console token |
 
+## Social posts ("Latest from Kabura")
+
+The section on the home and services pages renders real published posts only,
+listed by hand in `src/lib/social-posts.ts`. It ships empty and shows a follow
+panel until entries are added.
+
+There is no live feed, deliberately. Instagram and Facebook need a Meta app plus
+a long-lived Page token that expires every 60 days; TikTok needs an approved
+Display API app. Scraping the public pages or hot-linking their CDN breaks all
+three platforms' terms and stops working without warning. YouTube is the
+exception — its thumbnails and embeds are public and documented, so a
+`youtubeId` is all an entry needs.
+
+For everything else: save the image into `public/media/social/`, then add an
+entry with the real post URL. The file documents the shape.
+
 ## Supabase setup
 
 1. Create a project at [supabase.com](https://supabase.com).

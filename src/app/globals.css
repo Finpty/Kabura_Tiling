@@ -93,7 +93,15 @@
   html.lenis body {
     height: auto;
   }
-  .lenis.lenis-smooth {
+  /**
+   * Native smooth scrolling MUST be off while Lenis is running, or the two
+   * animate the same scroll position against each other — every wheel notch
+   * lands short, anchor jumps overshoot, and the page reads as if it is
+   * sticking. Guarded on `.lenis`, which Lenis puts on <html> in its
+   * constructor. It previously read `.lenis.lenis-smooth`, a compound this
+   * version never applies, so the guard silently matched nothing.
+   */
+  html.lenis {
     scroll-behavior: auto !important;
   }
   .lenis.lenis-stopped {
@@ -251,5 +259,5 @@
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
-  .lenis.lenis-smooth { scroll-behavior: auto !important; }
+  html.lenis { scroll-behavior: auto !important; }
 }

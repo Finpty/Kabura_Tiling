@@ -1,21 +1,21 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
 import { AmbientVideo } from "@/components/ui/AmbientVideo";
 import { SectionLabel } from "@/components/ui/Section";
 import { img, video } from "@/lib/media";
-import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
-import { useIsDesktop } from "@/hooks/use-media-query";
 import { centreBlock, centreRow, centreText } from "@/lib/align";
 import { cn, pad } from "@/lib/utils";
 
 /**
  * Horizontal film strip.
  *
- * On desktop the section pins and the rail translates with scroll. On touch it
- * degrades to a native horizontal scroller with snap points — no scroll
- * hijacking on the devices least able to afford it.
+ * A native snap scroller at every breakpoint. It used to pin the section for
+ * three viewport heights on desktop and translate the rail with scroll — which
+ * meant three screens of wheel input that moved the page sideways instead of
+ * down. That is indistinguishable from a broken page: the wheel works, but
+ * nothing you expect to happen happens. A real horizontal scroller is better on
+ * every count — it works with trackpad, touch, shift-wheel, keyboard and the
+ * scrollbar, on every browser, and it never touches vertical scrolling.
  *
  * Only panels that are actually on screen mount a video, and each one pauses the
  * moment it leaves, so at most one or two ever decode at once.
@@ -67,23 +67,12 @@ const PANELS = [
 ];
 
 export function VideoRail() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const reduced = usePrefersReducedMotion();
-  const isDesktop = useIsDesktop();
-
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end end"],
-  });
-  const x = useTransform(scrollYProgress, [0, 1], ["2%", "-66%"]);
-  const pinned = isDesktop && !reduced;
-
   const panels = PANELS.map((panel, index) => {
     const clip = panel.videoKey ? video(panel.videoKey) : null;
     return (
       <article
         key={panel.id}
-        className="relative flex h-[62vh] w-[78vw] shrink-0 snap-center flex-col overflow-hidden rounded-sm bg-charcoal-2 md:h-[66vh] md:w-[38vw] lg:w-[30vw]"
+        className="relative flex aspect-[3/4] w-[78vw] shrink-0 snap-center flex-col overflow-hidden rounded-xl bg-charcoal-2 sm:aspect-[4/5] sm:w-[22rem] lg:w-[24rem]"
       >
         <AmbientVideo
           video={clip}
@@ -114,13 +103,12 @@ export function VideoRail() {
 
   return (
     <section
-      ref={sectionRef}
       id="film"
       aria-labelledby="film-heading"
-      className="relative border-t border-stone/12 bg-ink lg:h-[300svh]"
+      className="relative border-t border-stone/12 bg-ink"
     >
-      <div className="lg:sticky lg:top-0 lg:flex lg:h-svh lg:flex-col lg:justify-center lg:overflow-hidden">
-        <div className="shell pt-20 pb-10 lg:pt-0 lg:pb-12">
+      <div className="py-20 md:py-28">
+        <div className="shell pb-10">
           <SectionLabel index="07" eyebrow="On site" className={centreRow} />
           <h2
             id="film-heading"
@@ -134,18 +122,11 @@ export function VideoRail() {
           </h2>
         </div>
 
-        {pinned ? (
-          <motion.div
-            style={{ x }}
-            className="flex gap-5 pl-[5vw] will-change-transform"
-          >
-            {panels}
-          </motion.div>
-        ) : (
-          <div className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-20 md:px-10 lg:pb-0">
-            {panels}
-          </div>
-        )}
+        {/* `overscroll-x-contain` keeps a horizontal fling inside the rail
+            instead of turning into a browser back-navigation gesture. */}
+        <div className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto overscroll-x-contain px-5 pb-2 md:gap-5 md:px-10 xl:px-14">
+          {panels}
+        </div>
       </div>
     </section>
   );

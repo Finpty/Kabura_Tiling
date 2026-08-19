@@ -349,11 +349,23 @@ export function Testimonials({ data }: { data: GoogleReviews }) {
               Customer reviews coming soon
             </p>
             <PlaceholderNotice className="mt-8 text-left">
-              No reviews are shown because none have been connected yet, and
-              nothing here is invented. Set <code>GOOGLE_PLACES_API_KEY</code>{" "}
-              and <code>GOOGLE_PLACE_ID</code> and Kabura&rsquo;s real Google
-              reviews appear here automatically, each attributed and linked back
-              to Google.
+              <span className="block">
+                No reviews are shown because none could be read, and nothing
+                here is invented.
+              </span>
+              {data.diagnosis ? (
+                <span className="mt-3 block text-sand/85">
+                  <span className="font-medium text-bone">What is wrong:</span>{" "}
+                  {data.diagnosis}
+                </span>
+              ) : null}
+              <span className="mt-3 block">
+                Set <code>GOOGLE_PLACES_API_KEY</code> and{" "}
+                <code>GOOGLE_PLACE_ID</code> in <code>.env.local</code> (and in
+                the host&rsquo;s environment for production), then restart the
+                server. Kabura&rsquo;s real Google reviews then appear here
+                automatically, each attributed and linked back to Google.
+              </span>
             </PlaceholderNotice>
 
             {profileUrl ? (

@@ -34,7 +34,8 @@ function SlabFallback({ progress }: { progress: number }) {
               transform: `translateY(-50%) rotateX(58deg) rotateZ(-38deg) translate3d(${index * 14 * progress}px, ${index * 34 * progress - index * 6}px, ${-index * 26}px)`,
               opacity: index === 0 ? 1 : 0.45 + 0.55 * progress,
               zIndex: SLAB_LAYERS.length - index,
-              transition: "transform 700ms cubic-bezier(0.16,1,0.3,1), opacity 700ms",
+              transition:
+                "transform 700ms cubic-bezier(0.16,1,0.3,1), opacity 700ms",
             }}
           />
         ))}
@@ -48,7 +49,7 @@ export function SlabStage() {
   const progressRef = useRef(0);
   const [progress, setProgress] = useState(0);
   const [near, setNear] = useState(false);
-  const { ready, allow3d } = useDeviceCapability();
+  const { ready, allow3d, reducedMotion } = useDeviceCapability();
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -80,8 +81,27 @@ export function SlabStage() {
     return () => observer.disconnect();
   }, []);
 
-  const headingOpacity = useTransform(scrollYProgress, [0, 0.12, 0.8, 1], [1, 1, 1, 0.35]);
+  const headingOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.12, 0.8, 1],
+    [1, 1, 1, 0.35],
+  );
   const use3d = ready && allow3d && near;
+
+  /**
+   * Whether to pin the stage at all.
+   *
+   * Pinning is the only reason this section is taller than its content, and a
+   * long pin is what makes a page feel like it has stopped scrolling: the
+   * wheel keeps working but the screen barely changes. So it is now one extra
+   * viewport of travel instead of two-and-a-bit, and only where it earns its
+   * place — a wide viewport, with motion allowed.
+   *
+   * Below `lg`, and for anyone who asked for reduced motion, the section is an
+   * ordinary block: no sticky child, no viewport-unit height, and therefore
+   * nothing that can interact with a phone browser's collapsing chrome.
+   */
+  const pinned = !reducedMotion;
   const activeIndex = Math.min(
     SLAB_LAYERS.length - 1,
     Math.floor(progress * SLAB_LAYERS.length),
@@ -92,9 +112,18 @@ export function SlabStage() {
       ref={sectionRef}
       id="under-the-tile"
       aria-labelledby="under-the-tile-heading"
-      className="relative h-[210svh] bg-ink lg:h-[320svh]"
+      className={cn("relative bg-ink", pinned && "lg:h-[190vh]")}
     >
-      <div className="sticky top-0 flex h-svh flex-col overflow-hidden">
+      <div
+        className={cn(
+          "relative flex flex-col",
+          // `min-h` rather than a fixed height: on a short laptop the heading,
+          // the five labels and the closing line together need more than one
+          // viewport, and clipping them would be a worse bug than a slightly
+          // taller pin.
+          pinned && "lg:sticky lg:top-0 lg:min-h-svh lg:overflow-hidden",
+        )}
+      >
         {/* Ambient backdrop */}
         <div aria-hidden="true" className="absolute inset-0">
           <Image
@@ -107,7 +136,7 @@ export function SlabStage() {
           <div className="absolute inset-0 bg-gradient-to-b from-ink via-ink/60 to-ink" />
         </div>
 
-        <div className="shell relative z-10 flex flex-1 flex-col pt-24 pb-24 md:pt-28 lg:pb-10">
+        <div className="shell relative z-10 flex flex-1 flex-col py-24 md:pt-28 lg:pb-12">
           <motion.div style={{ opacity: headingOpacity }} className="max-w-3xl">
             <p className="eyebrow text-bronze-light">02 — The build-up</p>
             <h2

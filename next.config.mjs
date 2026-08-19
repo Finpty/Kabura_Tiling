@@ -21,6 +21,14 @@ const nextConfig = {
         protocol: "https",
         hostname: "**.googleusercontent.com",
       },
+      /**
+       * YouTube thumbnails for configured posts in the "Latest from Kabura"
+       * rail. A documented public URL — no API key, nothing scraped.
+       */
+      {
+        protocol: "https",
+        hostname: "i.ytimg.com",
+      },
     ],
   },
 };

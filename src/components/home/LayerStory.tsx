@@ -128,7 +128,11 @@ export function LayerStory() {
     >
       <div className="shell">
         <div className="grid gap-12 lg:grid-cols-[minmax(0,26rem)_1fr] lg:gap-20">
-          <div className={cn("lg:sticky lg:top-32 lg:self-start", centreText)}>
+          {/* Deliberately not sticky. It used to pin here, directly after the
+              build-up stage's own pin — two pinned runs back to back meant
+              several screens of scrolling where almost nothing moved, which is
+              what "the page is stuck" actually looked like. */}
+          <div className={cn("lg:self-start", centreText)}>
             <SectionLabel
               index="03"
               eyebrow="The sequence"

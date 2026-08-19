@@ -83,12 +83,31 @@ export function SocialLinks({
             rel="noopener noreferrer me"
             title={social.label}
             className={cn(
-              "group relative grid place-items-center rounded-full border border-stone/25 bg-charcoal/40 text-sand transition-[color,border-color,background-color,transform] duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:border-bronze-light/70 hover:bg-bronze/12 hover:text-bronze-light",
+              "group relative grid place-items-center overflow-hidden rounded-full border border-stone/25 text-sand",
+              "transition-[color,border-color,transform,box-shadow] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
+              "hover:-translate-y-1 hover:border-bronze-light/70 hover:text-ink",
+              "hover:shadow-[0_12px_28px_-14px_color-mix(in_oklab,var(--color-bronze)_75%,transparent)]",
+              "focus-visible:-translate-y-1 focus-visible:border-bronze-light/70",
               SIZES[size],
             )}
           >
             <span className="sr-only">{social.label}</span>
-            <SocialIcon name={social.key} />
+
+            {/* Bronze fill wipes up from the bottom rather than fading in —
+                the same easing as the buttons, so the whole site moves alike. */}
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 translate-y-full rounded-full bg-gradient-to-t from-bronze to-bronze-light transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-y-0 group-focus-visible:translate-y-0"
+            />
+            {/* Hairline ring that blooms outward on hover. */}
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 rounded-full ring-1 ring-bronze-light/0 transition-[transform,box-shadow] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:shadow-[0_0_0_5px_color-mix(in_oklab,var(--color-bronze)_16%,transparent)]"
+            />
+            <SocialIcon
+              name={social.key}
+              className="relative h-[1.05rem] w-[1.05rem] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-110"
+            />
           </a>
         </li>
       ))}

@@ -7,7 +7,6 @@ import {
   type ProjectCategory,
 } from "./projects";
 import {
-  EMPTY_GOOGLE_REVIEWS,
   getGoogleReviews,
   type DisplayReview,
   type GoogleReviews,
@@ -124,8 +123,14 @@ export async function getReviews(): Promise<GoogleReviews> {
   }
 
   if (google.reviews.length === 0 && approved.length === 0) {
-    return EMPTY_GOOGLE_REVIEWS;
+    // Keep the diagnosis: it is the only thing that says *why* the section is
+    // empty, and it is what the placeholder renders.
+    return google;
   }
 
-  return { ...google, reviews: [...google.reviews, ...approved] };
+  return {
+    ...google,
+    status: "ok",
+    reviews: [...google.reviews, ...approved],
+  };
 }
