@@ -241,14 +241,6 @@ export function Footer() {
           </ul>
         </div>
       </div>
-
-      {/* Oversized watermark wordmark */}
-      <p
-        aria-hidden="true"
-        className="pointer-events-none -mb-[0.22em] w-full text-center font-display text-[19vw] leading-none font-semibold tracking-[-0.05em] text-bone/[0.035] select-none"
-      >
-        KABURA
-      </p>
     </footer>
   );
 }

@@ -64,6 +64,7 @@ export default function AboutPage() {
       <PageHero
         eyebrow="About"
         title="Built around the details most people never notice."
+        titleFace="serif"
         imageKey="cornerDetail"
         breadcrumbs={[{ name: "About", path: "/about" }]}
       />

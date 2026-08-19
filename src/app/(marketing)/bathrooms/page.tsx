@@ -90,6 +90,7 @@ export default function BathroomsPage() {
       <PageHero
         eyebrow="Bathrooms"
         title="The hardest room in the house to get right."
+        titleFace="serif"
         lead={`Complete bathroom renovations across ${site.state} — demolition through to final grout, by one team.`}
         imageKey="bathroom"
         breadcrumbs={[{ name: "Bathrooms", path: "/bathrooms" }]}

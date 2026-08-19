@@ -133,6 +133,72 @@ export function loadGoogleMaps(): Promise<GoogleMapsApi> {
  * ID would override this and force the styling into the Google Cloud console,
  * putting the site's own look behind someone else's dashboard.
  */
+/**
+ * Light basemap for the coverage widget.
+ *
+ * Deliberately not the dark site palette: a coverage radius reads instantly on
+ * a pale map — the shaded region is the subject and everything under it is
+ * context. Roads stay as faint structure, labels stay legible, and everything
+ * that would compete with the radius (points of interest, transit, terrain) is
+ * switched off.
+ */
+export const KABURA_MAP_STYLE_LIGHT = [
+  { elementType: "geometry", stylers: [{ color: "#f4f4f5" }] },
+  { elementType: "labels.icon", stylers: [{ visibility: "off" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#7b7b85" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }] },
+  {
+    featureType: "administrative",
+    elementType: "geometry.stroke",
+    stylers: [{ color: "#d9d9df" }],
+  },
+  {
+    featureType: "administrative.land_parcel",
+    stylers: [{ visibility: "off" }],
+  },
+  {
+    featureType: "administrative.neighborhood",
+    stylers: [{ visibility: "off" }],
+  },
+  { featureType: "poi", stylers: [{ visibility: "off" }] },
+  { featureType: "transit", stylers: [{ visibility: "off" }] },
+  {
+    featureType: "landscape.natural",
+    elementType: "geometry",
+    stylers: [{ color: "#f0f0f2" }],
+  },
+  {
+    featureType: "road",
+    elementType: "geometry",
+    stylers: [{ color: "#ffffff" }],
+  },
+  {
+    featureType: "road",
+    elementType: "labels",
+    stylers: [{ visibility: "off" }],
+  },
+  {
+    featureType: "road.arterial",
+    elementType: "geometry",
+    stylers: [{ color: "#ededf1" }],
+  },
+  {
+    featureType: "road.highway",
+    elementType: "geometry",
+    stylers: [{ color: "#e2e2e8" }],
+  },
+  {
+    featureType: "water",
+    elementType: "geometry",
+    stylers: [{ color: "#dfe6ef" }],
+  },
+  {
+    featureType: "water",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#9aa6b4" }],
+  },
+] as const;
+
 export const KABURA_MAP_STYLE = [
   { elementType: "geometry", stylers: [{ color: "#14120f" }] },
   { elementType: "labels.icon", stylers: [{ visibility: "off" }] },

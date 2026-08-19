@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Hero } from "@/components/home/Hero";
-import { SlabStage } from "@/components/three/SlabStage";
+import { BuildUp } from "@/components/home/BuildUp";
 import { LayerStory } from "@/components/home/LayerStory";
 import { ServicesShowcase } from "@/components/home/ServicesShowcase";
 import { ProjectsShowcase } from "@/components/home/ProjectsShowcase";
@@ -68,7 +68,7 @@ export default async function HomePage() {
         className="border-y border-stone/12 bg-charcoal py-4"
       />
 
-      <SlabStage />
+      <BuildUp />
       <LayerStory />
       <ServicesShowcase />
       <ProjectsShowcase projects={projects} />

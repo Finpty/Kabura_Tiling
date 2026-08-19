@@ -15,6 +15,7 @@ const FONT_SIZES = [
   "display",
   "hero",
   "headline",
+  "feature",
   "title",
   "lead",
   "micro",

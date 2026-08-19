@@ -88,3 +88,72 @@ export const displayablePosts = (): SocialPost[] =>
   SOCIAL_POSTS.filter(
     (post) => Boolean(post.thumbnail) || Boolean(post.youtubeId),
   );
+
+/* ------------------------------- embedding ------------------------------- */
+
+/**
+ * Official embed URLs.
+ *
+ * Every one of these is the platform's own documented embed endpoint — the
+ * same iframe their "Embed" button hands you. Nothing here scrapes a page,
+ * lifts a CDN file or works around a restriction; if a platform ever turns its
+ * endpoint off, the card falls back to a link and nothing breaks.
+ *
+ * Instagram and TikTok embeds render their own chrome (avatar, caption,
+ * controls) and cannot be restyled from outside the iframe. That is the deal
+ * their terms require, and it is why the cards below give them a clean frame
+ * rather than trying to skin them.
+ */
+
+/** `https://www.instagram.com/reel/ABC123/` → `ABC123` */
+export function instagramCode(url: string): string | null {
+  return (
+    /instagram\.com\/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/.exec(url)?.[1] ??
+    null
+  );
+}
+
+/** `https://www.tiktok.com/@user/video/12345` → `12345` */
+export function tiktokId(url: string): string | null {
+  return /tiktok\.com\/@[^/]+\/video\/(\d+)/.exec(url)?.[1] ?? null;
+}
+
+/** Handles `watch?v=`, `youtu.be/` and `/shorts/`. */
+export function youtubeId(url: string): string | null {
+  return (
+    /(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/.exec(
+      url,
+    )?.[1] ?? null
+  );
+}
+
+/**
+ * The embed URL for a post, or null when the platform cannot be embedded from
+ * the URL given — in which case the card links out instead.
+ */
+export function embedUrl(post: SocialPost): string | null {
+  if (post.youtubeId) return youtubeEmbed(post.youtubeId);
+
+  switch (post.platform) {
+    case "youtube": {
+      const id = youtubeId(post.url);
+      return id ? youtubeEmbed(id) : null;
+    }
+    case "instagram": {
+      const code = instagramCode(post.url);
+      return code ? `https://www.instagram.com/p/${code}/embed/` : null;
+    }
+    case "tiktok": {
+      const id = tiktokId(post.url);
+      return id ? `https://www.tiktok.com/embed/v2/${id}` : null;
+    }
+    case "facebook":
+      return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(post.url)}&show_text=false`;
+    default:
+      return null;
+  }
+}
+
+/** Posts that can actually be played in place. */
+export const embeddablePosts = (): SocialPost[] =>
+  SOCIAL_POSTS.filter((post) => embedUrl(post) !== null);

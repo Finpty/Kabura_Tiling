@@ -1,95 +1,102 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-  KABURA_MAP_STYLE,
+  KABURA_MAP_STYLE_LIGHT,
   isMapsConfigured,
   loadGoogleMaps,
   type GMapsMap,
 } from "@/lib/google-maps";
 import {
   SERVICE_AREAS,
-  keyServiceAreas,
   serviceRegionCentre,
   serviceRegionRadius,
 } from "@/lib/service-areas";
 import { useInView } from "@/hooks/use-in-view";
-import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
 import { cn } from "@/lib/utils";
 
 /**
- * Coverage widget.
+ * Coverage radius widget.
  *
- * A small card, deliberately: the map is a reassurance that Kabura works near
- * you, not a tool for exploring the metro area. It shows the region, a soft
- * coverage wash and three anchor pins, then hands off to `/service-areas` for
- * the real list. Everything that used to live inside it — the suburb pills,
- * the selected-suburb panel — belongs on that page, where there is room.
+ * A square, pale map with the serviced region shaded over it and a pin on every
+ * suburb — the shape a coverage map is expected to take, so it is read at a
+ * glance rather than studied. The radius is the subject; the basemap is only
+ * there to tell you where you are.
  *
- * `gestureHandling: "cooperative"` matters more than it looks: a plain map
+ * The frame stays dark to sit in the site, the map inside stays light so the
+ * shaded region reads. That contrast is the point: on a dark basemap a
+ * translucent wash disappears into the background.
+ *
+ * `gestureHandling: "cooperative"` matters more than it looks — a plain map
  * swallows the wheel, and a widget that eats page scrolling is worse than no
- * widget at all. Scroll passes straight through unless the visitor holds
- * ⌘/Ctrl, and touch needs two fingers.
- *
- * The script is fetched only once the card is near the viewport. Without
- * `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` — or if the script fails — the frame keeps
- * its shape and renders a drawn coverage graphic instead.
+ * widget at all. Scroll passes straight through unless ⌘/Ctrl is held, and
+ * touch needs two fingers.
  */
 
-/** Small bronze dot with a soft halo. A pin marker is too loud at this size. */
-const MARKER_ICON =
+/* ------------------------------- markers -------------------------------- */
+
+const pin = (fill: string) =>
   "data:image/svg+xml;charset=UTF-8," +
   encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 22 22">
-      <circle cx="11" cy="11" r="9" fill="#cf9d5f" opacity="0.22"/>
-      <circle cx="11" cy="11" r="4.5" fill="#cf9d5f" stroke="#0b0a09" stroke-width="1.5"/>
+    `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="40" viewBox="0 0 30 40">
+      <path d="M15 39C15 39 28 24.5 28 15A13 13 0 1 0 2 15C2 24.5 15 39 15 39Z"
+            fill="${fill}" stroke="#ffffff" stroke-width="2.4" stroke-linejoin="round"/>
+      <circle cx="15" cy="14.5" r="5" fill="#ffffff"/>
     </svg>`,
   );
 
-const ANCHORS = keyServiceAreas();
+/** Suburbs we service. */
+const AREA_PIN = pin("#4f8ff7");
+/** The centre of the region, called out so the radius has an obvious origin. */
+const BASE_PIN = pin("#f0b429");
 
-/** Drawn coverage graphic. Used when Maps is unconfigured or unavailable. */
+/* ------------------------------- fallback ------------------------------- */
+
+/**
+ * Drawn coverage. Used when Maps is unconfigured or the script fails — same
+ * square, same pale ground, same shaded radius, so the card never changes
+ * shape and never shows an error.
+ */
 function DrawnCoverage() {
   return (
-    <div className="absolute inset-0 overflow-hidden">
+    <div className="absolute inset-0 overflow-hidden bg-[#f4f4f5]">
       <div
         aria-hidden="true"
         className="absolute inset-0"
         style={{
           backgroundImage:
-            "linear-gradient(color-mix(in oklab, var(--color-stone) 55%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in oklab, var(--color-stone) 55%, transparent) 1px, transparent 1px)",
-          backgroundSize: "38px 38px",
-          opacity: 0.08,
+            "linear-gradient(#ffffff 2px, transparent 2px), linear-gradient(90deg, #ffffff 2px, transparent 2px), linear-gradient(#e6e6ec 1px, transparent 1px), linear-gradient(90deg, #e6e6ec 1px, transparent 1px)",
+          backgroundSize: "96px 96px, 96px 96px, 24px 24px, 24px 24px",
         }}
       />
-      {/* Coverage wash, matching the live map's circle. */}
       <div
         aria-hidden="true"
-        className="absolute top-1/2 left-1/2 h-[128%] w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle, color-mix(in oklab, var(--color-bronze) 30%, transparent) 0%, color-mix(in oklab, var(--color-bronze) 12%, transparent) 55%, transparent 72%)",
-          border:
-            "1px solid color-mix(in oklab, var(--color-bronze-light) 35%, transparent)",
-        }}
+        className="absolute top-1/2 left-1/2 h-[74%] w-[74%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#4b45c6]/50 bg-[#6c63e8]/45"
       />
-      {/* Anchor dots, laid out to echo the real north–south spread. */}
       {[
-        { top: "24%", left: "56%" },
-        { top: "54%", left: "44%" },
-        { top: "78%", left: "42%" },
-      ].map((position, index) => (
+        { top: "26%", left: "58%" },
+        { top: "40%", left: "40%" },
+        { top: "56%", left: "62%" },
+        { top: "68%", left: "38%" },
+        { top: "80%", left: "52%" },
+      ].map((position) => (
         <span
-          key={ANCHORS[index]?.slug ?? index}
+          key={`${position.top}-${position.left}`}
           aria-hidden="true"
-          className="absolute block h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-bronze-light shadow-[0_0_0_5px_color-mix(in_oklab,var(--color-bronze)_22%,transparent)]"
+          className="absolute block h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#4f8ff7]"
           style={position}
         />
       ))}
+      <span
+        aria-hidden="true"
+        className="absolute top-1/2 left-1/2 block h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#f0b429]"
+      />
     </div>
   );
 }
+
+/* -------------------------------- widget -------------------------------- */
 
 export function CoverageMap({ className }: { className?: string }) {
   const { ref: viewRef, inView } = useInView<HTMLDivElement>({
@@ -99,11 +106,9 @@ export function CoverageMap({ className }: { className?: string }) {
   });
   const mapNode = useRef<HTMLDivElement>(null);
   const mapRef = useRef<GMapsMap | null>(null);
-  const baseZoom = useRef<number | null>(null);
   const started = useRef(false);
-  const reduced = usePrefersReducedMotion();
-
   const [live, setLive] = useState(false);
+
   const configured = isMapsConfigured();
 
   useEffect(() => {
@@ -119,13 +124,14 @@ export function CoverageMap({ className }: { className?: string }) {
         const map = new maps.Map(mapNode.current, {
           center: centre,
           zoom: 9,
-          styles: KABURA_MAP_STYLE,
+          styles: KABURA_MAP_STYLE_LIGHT,
           disableDefaultUI: true,
+          zoomControl: true,
           // Never let the widget capture the page's scroll.
           gestureHandling: "cooperative",
           keyboardShortcuts: false,
           clickableIcons: false,
-          backgroundColor: "#14120f",
+          backgroundColor: "#f4f4f5",
         });
         mapRef.current = map;
 
@@ -133,40 +139,51 @@ export function CoverageMap({ className }: { className?: string }) {
           map,
           center: centre,
           radius: serviceRegionRadius(),
-          strokeColor: "#cf9d5f",
-          strokeOpacity: 0.45,
-          strokeWeight: 1.25,
-          fillColor: "#a9743d",
-          fillOpacity: 0.14,
+          strokeColor: "#4b45c6",
+          strokeOpacity: 0.55,
+          strokeWeight: 1.5,
+          fillColor: "#6c63e8",
+          fillOpacity: 0.45,
           clickable: false,
         });
 
-        for (const area of ANCHORS) {
+        // Origin of the radius.
+        new maps.Marker({
+          map,
+          position: centre,
+          title: "Kabura Tiling Group",
+          clickable: false,
+          zIndex: 30,
+          icon: {
+            url: BASE_PIN,
+            scaledSize: new maps.Size(32, 43),
+            anchor: new maps.Point(16, 43),
+          },
+        });
+
+        const bounds = new maps.LatLngBounds();
+        for (const area of SERVICE_AREAS) {
+          bounds.extend(area.coords);
           new maps.Marker({
             map,
             position: area.coords,
             title: area.name,
             clickable: false,
+            zIndex: 20,
             icon: {
-              url: MARKER_ICON,
-              scaledSize: new maps.Size(22, 22),
-              anchor: new maps.Point(11, 11),
+              url: AREA_PIN,
+              scaledSize: new maps.Size(26, 35),
+              anchor: new maps.Point(13, 35),
             },
           });
         }
 
-        const bounds = new maps.LatLngBounds();
-        for (const area of SERVICE_AREAS) bounds.extend(area.coords);
-        map.fitBounds(bounds, 34);
-        map.addListener("idle", () => {
-          baseZoom.current ??= map.getZoom() ?? 9;
-        });
-
+        map.fitBounds(bounds, 28);
         setLive(true);
       })
       .catch(() => {
-        // Leave `live` false; the drawn coverage stays. Not an error state the
-        // visitor needs to know about.
+        // Leave `live` false; the drawn coverage stays. Not something the
+        // visitor needs to be told about.
       });
 
     return () => {
@@ -174,68 +191,51 @@ export function CoverageMap({ className }: { className?: string }) {
     };
   }, [configured, inView]);
 
-  /** A half-step zoom on hover. Google animates it; reduced motion skips it. */
-  const zoomBy = useCallback(
-    (delta: number) => {
-      if (reduced || !live) return;
-      const map = mapRef.current;
-      const base = baseZoom.current;
-      if (!map || base === null) return;
-      map.setZoom(base + delta);
-    },
-    [reduced, live],
-  );
-
   return (
-    <div ref={viewRef} className={cn("w-full max-w-md", className)}>
-      <div
-        onMouseEnter={() => zoomBy(0.6)}
-        onMouseLeave={() => zoomBy(0)}
-        className="group glass relative overflow-hidden rounded-2xl border border-stone/25 shadow-[0_24px_60px_-32px_rgba(0,0,0,0.9)] transition-[transform,border-color,box-shadow] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:border-bronze-light/45 hover:shadow-[0_32px_70px_-30px_color-mix(in_oklab,var(--color-bronze)_45%,transparent)]"
-      >
+    <div ref={viewRef} className={cn("w-full max-w-[22rem]", className)}>
+      <div className="group glass overflow-hidden rounded-2xl border border-stone/25 shadow-[0_24px_60px_-32px_rgba(0,0,0,0.9)] transition-[transform,border-color,box-shadow] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:border-bronze-light/45 hover:shadow-[0_32px_70px_-30px_color-mix(in_oklab,var(--color-bronze)_45%,transparent)]">
         {/* Header */}
-        <div className="flex items-center justify-between gap-3 border-b border-stone/15 px-5 py-3.5">
+        <div className="flex items-center justify-between gap-3 border-b border-stone/15 px-4 py-3">
           <span className="flex items-center gap-2.5">
             <span
               aria-hidden="true"
               className="block h-1.5 w-1.5 rounded-full bg-bronze-light shadow-[0_0_0_4px_color-mix(in_oklab,var(--color-bronze)_25%,transparent)]"
             />
-            <span className="eyebrow text-stone-light">Service coverage</span>
+            <span className="eyebrow text-stone-light">Areas we service</span>
           </span>
           <span className="text-xs text-stone tabular-nums">
-            {SERVICE_AREAS.length} areas
+            {SERVICE_AREAS.length}
           </span>
         </div>
 
-        {/* Map */}
-        <div className="relative aspect-[16/11] w-full">
+        {/* Square map */}
+        <div className="relative aspect-square w-full">
           <DrawnCoverage />
           <div
             ref={mapNode}
-            aria-label="Map of the region Kabura Tiling services"
+            aria-label={`Map of the ${SERVICE_AREAS.length} areas Kabura Tiling services`}
             role="img"
             className={cn(
               "absolute inset-0 h-full w-full transition-opacity duration-1000",
               live ? "opacity-100" : "opacity-0",
             )}
           />
-          {/* Inner vignette keeps the tiles inside the card's own lighting. */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 shadow-[inset_0_0_60px_20px_color-mix(in_oklab,var(--color-ink)_55%,transparent)]"
-          />
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between gap-4 border-t border-stone/15 px-5 py-4">
-          <p className="min-w-0 truncate text-xs text-sand/70">
-            {ANCHORS.map((area) => area.name).join(" · ")}
-          </p>
+        <div className="flex items-center justify-between gap-3 border-t border-stone/15 px-4 py-3">
+          <span className="flex items-center gap-2 text-[0.68rem] text-stone">
+            <span
+              aria-hidden="true"
+              className="block h-2 w-2 shrink-0 rounded-full bg-[#6c63e8]"
+            />
+            Coverage
+          </span>
           <Link
             href="/service-areas"
-            className="group/link inline-flex shrink-0 items-center gap-2 rounded-full border border-stone/30 px-3.5 py-2 text-[0.64rem] font-semibold tracking-[0.13em] text-sand uppercase transition-colors duration-400 hover:border-bronze-light hover:bg-bronze/12 hover:text-bronze-light"
+            className="group/link inline-flex shrink-0 items-center gap-2 rounded-full border border-stone/30 px-3.5 py-1.5 text-[0.62rem] font-semibold tracking-[0.13em] text-sand uppercase transition-colors duration-400 hover:border-bronze-light hover:bg-bronze/12 hover:text-bronze-light"
           >
-            All areas
+            View all areas
             <svg
               viewBox="0 0 12 12"
               fill="none"

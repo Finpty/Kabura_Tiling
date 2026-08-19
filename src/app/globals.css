@@ -47,6 +47,14 @@
   --text-headline--line-height: 0.95;
   --text-headline--letter-spacing: -0.035em;
 
+  /* Quiet display size for page headings set in the serif. Four steps down
+     from --text-display: the serif carries the page on its own without the
+     scale, and at this size the italic reads as a signature rather than a
+     banner. */
+  --text-feature: clamp(1.65rem, 3.2vw, 3.1rem);
+  --text-feature--line-height: 1.12;
+  --text-feature--letter-spacing: -0.012em;
+
   --text-title: clamp(1.5rem, 2.6vw, 2.5rem);
   --text-title--line-height: 1.06;
   --text-title--letter-spacing: -0.025em;
@@ -222,6 +230,47 @@
       color-mix(in oklab, var(--color-ink) 18%, transparent) 68%,
       transparent 100%
     );
+  }
+
+  /**
+   * The build-up slider. Native `input[type=range]` on purpose — it is
+   * keyboard-operable, works with touch and assistive technology for free, and
+   * a hand-built drag handle would give up all three to look the same.
+   */
+  .kb-range {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(
+      to right,
+      var(--color-bronze-light),
+      color-mix(in oklab, var(--color-stone) 45%, transparent)
+    );
+    cursor: grab;
+  }
+  .kb-range:active { cursor: grabbing; }
+
+  .kb-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 999px;
+    background: var(--color-bone);
+    border: 1px solid var(--color-bronze-light);
+    box-shadow: 0 6px 18px -6px color-mix(in oklab, var(--color-bronze) 85%, transparent);
+    transition: transform 0.4s var(--ease-out-expo);
+  }
+  .kb-range::-webkit-slider-thumb:hover { transform: scale(1.12); }
+
+  .kb-range::-moz-range-thumb {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 999px;
+    background: var(--color-bone);
+    border: 1px solid var(--color-bronze-light);
+    box-shadow: 0 6px 18px -6px color-mix(in oklab, var(--color-bronze) 85%, transparent);
   }
 
   .link-underline {

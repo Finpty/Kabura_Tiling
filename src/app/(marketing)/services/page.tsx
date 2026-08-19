@@ -65,6 +65,7 @@ export default function ServicesPage() {
       <PageHero
         eyebrow="Services"
         title="Everything between the substrate and the grout."
+        titleFace="serif"
         lead={`${SERVICES.length} services covering the whole job — preparation, protection, installation and repair — across ${site.state}.`}
         imageKey="floorTiling"
         breadcrumbs={[{ name: "Services", path: "/services" }]}

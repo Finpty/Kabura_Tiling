@@ -16,6 +16,13 @@ type Props = {
   className?: string;
   /** Shorter hero for detail pages. */
   size?: "sm" | "lg";
+  /**
+   * `display` is the big uppercase-scale sans. `serif` sets the heading in
+   * Instrument Serif italic at the much quieter `--text-feature` size — for
+   * pages where the sentence is doing the work and a nine-rem headline would
+   * only shout over it.
+   */
+  titleFace?: "display" | "serif";
 };
 
 /** Shared interior-page opener: image, scrim, breadcrumbs, display heading. */
@@ -28,6 +35,7 @@ export function PageHero({
   children,
   className,
   size = "lg",
+  titleFace = "display",
 }: Props) {
   return (
     <section
@@ -57,7 +65,10 @@ export function PageHero({
         ) : null}
 
         <div className={cn("flex items-center gap-4", centreRow)}>
-          <span aria-hidden="true" className="hidden h-px lg:block w-10 bg-bronze-light/80" />
+          <span
+            aria-hidden="true"
+            className="hidden h-px lg:block w-10 bg-bronze-light/80"
+          />
           <p className="eyebrow text-bronze-light">{eyebrow}</p>
         </div>
 
@@ -65,11 +76,16 @@ export function PageHero({
           as="h1"
           text={title}
           className={cn(
-            "mt-6 block max-w-4xl font-display text-bone",
+            "mt-6 block text-bone",
             centreBlock,
-            size === "lg" ? "text-display" : "text-headline",
+            titleFace === "serif"
+              ? "max-w-2xl font-serif text-feature italic"
+              : cn(
+                  "max-w-4xl font-display",
+                  size === "lg" ? "text-display" : "text-headline",
+                ),
           )}
-          stagger={0.05}
+          stagger={titleFace === "serif" ? 0.035 : 0.05}
         />
 
         {lead ? (

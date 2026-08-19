@@ -1,13 +1,12 @@
 /**
  * The build-up, as plain data.
  *
- * Deliberately its own module with no three.js imports. `SlabStage` needs these
- * layers to render its HTML labels and its CSS fallback, and if it read them
- * from `SlabScene` the static import would pull the entire three.js bundle into
- * the main chunk — defeating the dynamic import and costing every page on the
- * site a quarter of a megabyte it never uses.
+ * Five layers under a finished floor, top to bottom. `thickness`, `roughness`
+ * and `metalness` are left in place: they described the material to the 3D
+ * renderer this section used to carry, and they still describe the material
+ * accurately if anything wants them again.
  */
-export type SlabLayer = {
+export type BuildUpLayer = {
   id: string;
   label: string;
   detail: string;
@@ -18,7 +17,7 @@ export type SlabLayer = {
   metalness: number;
 };
 
-export const SLAB_LAYERS: SlabLayer[] = [
+export const BUILD_UP_LAYERS: BuildUpLayer[] = [
   {
     id: "tile",
     label: "Tile",
