@@ -47,3 +47,9 @@ next-env.d.ts
 
 # Editor
 .DS_Store
+
+# Next.js 16 regenerates these on every `next dev`. They describe the framework,
+# not this project, so they are noise in the diff rather than something to track.
+# Set `agentRules: false` in next.config.mjs if you would rather it stopped.
+/AGENTS.md
+/CLAUDE.md
