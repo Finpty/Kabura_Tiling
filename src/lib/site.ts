@@ -56,19 +56,30 @@ export const site = {
   /**
    * Social profiles. Key order is display order.
    *
-   * Every entry except Instagram is `null` until the matching environment
-   * variable is set — no URL here is guessed from the business name. A missing
-   * profile is hidden entirely rather than rendered as a dead icon.
+   * Committed as defaults because they are public business facts meant to be
+   * displayed — the same treatment as the phone number and ABN above. Supplied
+   * by Kabura on 19 Aug 2026; none of them is guessed. An environment variable
+   * still overrides any of them for a staging site.
+   *
+   * LinkedIn stays `null` until a URL is supplied, and a `null` profile is
+   * hidden entirely rather than rendered as a dead icon.
    */
   social: {
-    // Verified account, found via search. Everything else still unset.
     instagram:
       env(process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM) ??
       "https://www.instagram.com/kaburatilinggroupptyltd/",
-    facebook: env(process.env.NEXT_PUBLIC_SOCIAL_FACEBOOK),
-    tiktok: env(process.env.NEXT_PUBLIC_SOCIAL_TIKTOK),
-    youtube: env(process.env.NEXT_PUBLIC_SOCIAL_YOUTUBE),
-    google: env(process.env.NEXT_PUBLIC_SOCIAL_GOOGLE),
+    facebook:
+      env(process.env.NEXT_PUBLIC_SOCIAL_FACEBOOK) ??
+      "https://www.facebook.com/share/1FQu2QSG7m/",
+    tiktok:
+      env(process.env.NEXT_PUBLIC_SOCIAL_TIKTOK) ??
+      "https://www.tiktok.com/@kaburatilinggroupptyltd",
+    youtube:
+      env(process.env.NEXT_PUBLIC_SOCIAL_YOUTUBE) ??
+      "https://youtube.com/@kaburatilinggroupptyltd1",
+    google:
+      env(process.env.NEXT_PUBLIC_SOCIAL_GOOGLE) ??
+      "https://share.google/zosphBjpghNJg5OCT",
     linkedin: env(process.env.NEXT_PUBLIC_SOCIAL_LINKEDIN),
   },
 } as const;

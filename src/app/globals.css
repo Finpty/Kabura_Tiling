@@ -20,6 +20,12 @@
   --color-bronze-light: #cf9d5f;
   --color-bronze-glow: #e0b782;
 
+  /* Logo colours, from the Kabura Tiling Group Pty Ltd wordmark. They sit
+     outside the bronze/stone system on purpose — they belong to the mark, and
+     nothing else on the site should reach for them. */
+  --color-brand-red: #ed2a24;
+  --color-brand-navy: #131347;
+
   --font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-display: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;

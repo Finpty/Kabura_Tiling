@@ -137,12 +137,12 @@ supplied" placeholder rather than inventing a number, address or registration.
 | `NEXT_PUBLIC_BUSINESS_SUBURB` | — | Postal address in structured data |
 | `NEXT_PUBLIC_BUSINESS_POSTCODE` | — | Postal address in structured data |
 | `NEXT_PUBLIC_BUSINESS_HOURS` | — | Contact page, `openingHours` in schema |
-| `NEXT_PUBLIC_SOCIAL_INSTAGRAM` | — | Footer, contact page + `sameAs`. Blank hides that icon entirely |
+| `NEXT_PUBLIC_SOCIAL_INSTAGRAM` | — | **Already live** — real URL committed in `site.ts`. Set only to override |
 | `NEXT_PUBLIC_SOCIAL_FACEBOOK` | — | as above |
 | `NEXT_PUBLIC_SOCIAL_TIKTOK` | — | as above |
 | `NEXT_PUBLIC_SOCIAL_YOUTUBE` | — | as above |
 | `NEXT_PUBLIC_SOCIAL_GOOGLE` | — | as above, plus the "read our reviews" link |
-| `NEXT_PUBLIC_SOCIAL_LINKEDIN` | — | as above |
+| `NEXT_PUBLIC_SOCIAL_LINKEDIN` | — | No default. Hidden until a URL is supplied |
 | `GOOGLE_PLACES_API_KEY` | for reviews | **Server only.** Places API (New). Unset ⇒ "reviews coming soon" |
 | `GOOGLE_PLACE_ID` | for reviews | The business's Place ID |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | for the map | Maps JavaScript API. Browser key by necessity — restrict it by HTTP referrer. Unset ⇒ the coverage map renders its fallback panel. **Not** the same key as `GOOGLE_PLACES_API_KEY` |
@@ -371,9 +371,12 @@ appear across the site automatically.
 - [x] ~~On-site footage for the video rail~~ — four Higgsfield clips in use;
       real on-site footage would still be better where you have it
 - [x] ~~Hero footage~~ — Higgsfield bathroom clip in use
-- [ ] The official Kabura logo (SVG or high-resolution PNG with transparency).
-      `src/components/layout/Logo.tsx` is a typographic placeholder built for
-      this site
+- [ ] The official Kabura logo as a **vector file** (`.svg` or `.ai`).
+      `src/components/layout/Logo.tsx` now draws the real lockup — the house-K
+      mark, the diagonal two-tone KABURA wordmark and the full registered name
+      — but it is reconstructed from the supplied image, and the wordmark is
+      set in the site's own display face rather than the original typeface.
+      With the vector file the component can point at the genuine artwork
 - [x] ~~Google review content~~ — wired to the live Places API; supply the two
       keys above and real reviews appear, attributed and linked back to Google
 - [ ] Any company history, team detail or credentials you want on `/about`
