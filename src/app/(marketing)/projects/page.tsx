@@ -2,9 +2,13 @@ import type { Metadata } from "next";
 import { PageHero } from "@/components/layout/PageHero";
 import { Section } from "@/components/ui/Section";
 import { VideoWall } from "@/components/projects/VideoWall";
+import { resolveSocialPosts } from "@/lib/social-resolve";
 import { CTASection } from "@/components/home/CTASection";
 import { pageMetadata } from "@/lib/seo";
 import { site } from "@/lib/site";
+
+/** Re-render hourly so a failed TikTok lookup does not stick. */
+export const revalidate = 3600;
 
 export const metadata: Metadata = pageMetadata({
   title: "Projects",
@@ -13,7 +17,9 @@ export const metadata: Metadata = pageMetadata({
   path: "/projects",
 });
 
-export default function ProjectsPage() {
+export default async function ProjectsPage() {
+  const posts = await resolveSocialPosts();
+
   return (
     <>
       <PageHero
@@ -27,7 +33,7 @@ export default function ProjectsPage() {
 
       <Section spacing="loose" className="bg-ink">
         <div className="shell">
-          <VideoWall />
+          <VideoWall posts={posts} />
         </div>
       </Section>
 

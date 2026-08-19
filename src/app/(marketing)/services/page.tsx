@@ -6,6 +6,7 @@ import { RevealText } from "@/components/ui/RevealText";
 import { MagneticLink } from "@/components/ui/MagneticButton";
 import { CTASection } from "@/components/home/CTASection";
 import { LatestWork } from "@/components/home/LatestWork";
+import { resolveSocialPosts } from "@/lib/social-resolve";
 import { ServicesExplorer } from "@/components/services/ServicesExplorer";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { SERVICES, SERVICE_CATEGORIES } from "@/lib/services";
@@ -45,7 +46,9 @@ const STAGES = [
   },
 ];
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const posts = await resolveSocialPosts();
+
   return (
     <>
       <JsonLd
@@ -170,7 +173,7 @@ export default function ServicesPage() {
         </div>
       </Section>
 
-      <LatestWork />
+      <LatestWork posts={posts} />
 
       <CTASection imageKey="commercial" />
     </>

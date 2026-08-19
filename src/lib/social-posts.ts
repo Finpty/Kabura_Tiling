@@ -73,7 +73,49 @@ export type SocialPost = {
   orientation?: "portrait" | "landscape";
 };
 
-export const SOCIAL_POSTS: SocialPost[] = [];
+export const SOCIAL_POSTS: SocialPost[] = [
+  /* Supplied by Kabura, 19 Aug 2026. Short links straight from TikTok's share
+     sheet — resolved to their numeric video id at render time by
+     `src/lib/social-resolve.ts`, which also pulls each post's real caption and
+     cover frame from TikTok's own oEmbed endpoint. Nothing here is written by
+     hand, which is why none of them carries a caption below. */
+  {
+    id: "tt-zp8wglsa8",
+    platform: "tiktok",
+    url: "https://www.tiktok.com/t/ZP8WGLsA8/",
+    orientation: "portrait",
+  },
+  {
+    id: "tt-zp8wgyb7b",
+    platform: "tiktok",
+    url: "https://www.tiktok.com/t/ZP8WGYb7b/",
+    orientation: "portrait",
+  },
+  {
+    id: "tt-zp8wstcdd",
+    platform: "tiktok",
+    url: "https://www.tiktok.com/t/ZP8WsTcDD/",
+    orientation: "portrait",
+  },
+  {
+    id: "tt-zp8wgro8e",
+    platform: "tiktok",
+    url: "https://www.tiktok.com/t/ZP8WGro8e/",
+    orientation: "portrait",
+  },
+  {
+    id: "tt-zp8wgbxjx",
+    platform: "tiktok",
+    url: "https://www.tiktok.com/t/ZP8WGBxjX/",
+    orientation: "portrait",
+  },
+  {
+    id: "tt-zp8wso4h9",
+    platform: "tiktok",
+    url: "https://www.tiktok.com/t/ZP8Wso4H9/",
+    orientation: "portrait",
+  },
+];
 
 /** YouTube's documented public thumbnail. No API key, no scraping. */
 export const youtubeThumbnail = (id: string) =>
@@ -113,10 +155,20 @@ export function instagramCode(url: string): string | null {
   );
 }
 
-/** `https://www.tiktok.com/@user/video/12345` → `12345` */
+/**
+ * `https://www.tiktok.com/@user/video/12345` → `12345`
+ *
+ * Share links (`tiktok.com/t/ABC123/`) carry no id at all, so this returns
+ * null for them and `social-resolve.ts` looks the id up through TikTok's
+ * oEmbed endpoint instead.
+ */
 export function tiktokId(url: string): string | null {
   return /tiktok\.com\/@[^/]+\/video\/(\d+)/.exec(url)?.[1] ?? null;
 }
+
+/** True for a `tiktok.com/t/…` share link, which has to be resolved. */
+export const isTikTokShareLink = (url: string) =>
+  /tiktok\.com\/t\/[A-Za-z0-9]+/.test(url);
 
 /** Handles `watch?v=`, `youtu.be/` and `/shorts/`. */
 export function youtubeId(url: string): string | null {
@@ -154,6 +206,12 @@ export function embedUrl(post: SocialPost): string | null {
   }
 }
 
-/** Posts that can actually be played in place. */
+/**
+ * Posts that can be played in place — either because the URL already carries
+ * everything the embed needs, or because it is a share link the resolver can
+ * turn into one.
+ */
 export const embeddablePosts = (): SocialPost[] =>
-  SOCIAL_POSTS.filter((post) => embedUrl(post) !== null);
+  SOCIAL_POSTS.filter(
+    (post) => embedUrl(post) !== null || isTikTokShareLink(post.url),
+  );

@@ -1,10 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { SocialIcon } from "@/components/ui/SocialIcons";
 import { SocialLinks } from "@/components/ui/SocialLinks";
 import { PlaceholderNotice } from "@/components/ui/PlaceholderNotice";
-import { embedUrl, embeddablePosts, type SocialPost } from "@/lib/social-posts";
+import type { ResolvedPost } from "@/lib/social-resolve";
 import { SOCIAL_LABELS } from "@/lib/site";
 import { centreBlock, centreRow } from "@/lib/align";
 import { cn } from "@/lib/utils";
@@ -31,11 +32,11 @@ const ORIENTATION = {
   landscape: "aspect-video sm:col-span-2",
 } as const;
 
-function VideoTile({ post }: { post: SocialPost }) {
+function VideoTile({ post }: { post: ResolvedPost }) {
   const [playing, setPlaying] = useState(false);
-  const src = embedUrl(post);
+  const src = post.embedSrc;
   const orientation = post.orientation ?? "portrait";
-  const label = post.caption ?? `${SOCIAL_LABELS[post.platform]} post`;
+  const label = post.resolvedCaption ?? `${SOCIAL_LABELS[post.platform]} post`;
 
   return (
     <li
@@ -55,55 +56,109 @@ function VideoTile({ post }: { post: SocialPost }) {
           className="absolute inset-0 h-full w-full border-0"
         />
       ) : (
-        <button
-          type="button"
-          onClick={() => setPlaying(true)}
-          className="group absolute inset-0 flex h-full w-full flex-col items-center justify-center gap-5 transition-colors duration-700 hover:bg-charcoal"
-        >
-          <span className="sr-only">Play {label}</span>
-
-          {/* Poster: the platform's own colour language, not a photograph. */}
-          <span
-            aria-hidden="true"
-            className="absolute inset-0 opacity-70 transition-opacity duration-700 group-hover:opacity-100"
-            style={{
-              background:
-                "radial-gradient(circle at 50% 40%, color-mix(in oklab, var(--color-bronze) 22%, transparent) 0%, transparent 64%)",
-            }}
-          />
-
-          <span
-            aria-hidden="true"
-            className="relative grid h-16 w-16 place-items-center rounded-full border border-bone/25 bg-ink/60 text-bone backdrop-blur-sm transition-[transform,border-color,background-color] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-110 group-hover:border-bronze-light group-hover:bg-bronze/30"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              className="ml-1 h-6 w-6"
-              fill="currentColor"
-            >
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          </span>
-
-          <span className="relative flex items-center gap-2 text-xs tracking-[0.16em] text-sand/80 uppercase">
-            <SocialIcon name={post.platform} className="h-3.5 w-3.5" />
-            {SOCIAL_LABELS[post.platform]}
-          </span>
-
-          {post.caption ? (
-            <span className="relative max-w-[22ch] px-6 text-center text-sm leading-snug text-bone/90">
-              {post.caption}
-            </span>
-          ) : null}
-        </button>
+        <Poster
+          post={post}
+          label={label}
+          onPlay={src ? () => setPlaying(true) : undefined}
+        />
       )}
     </li>
   );
 }
 
-export function VideoWall() {
-  const posts = embeddablePosts();
+/**
+ * The tile before it is played.
+ *
+ * A button when there is something to play in place, a link to the original
+ * post when there is not — because a resolution that failed must still leave
+ * the visitor somewhere to go, not a control that does nothing.
+ */
+function Poster({
+  post,
+  label,
+  onPlay,
+}: {
+  post: ResolvedPost;
+  label: string;
+  onPlay?: () => void;
+}) {
+  const inner = (
+    <>
+      <span className="sr-only">
+        {onPlay
+          ? `Play ${label}`
+          : `${label} — open on ${SOCIAL_LABELS[post.platform]}`}
+      </span>
 
+      {/* The post's own cover frame, when the platform supplied one. */}
+      {post.thumbnailUrl ? (
+        <>
+          <Image
+            src={post.thumbnailUrl}
+            alt=""
+            fill
+            unoptimized
+            sizes="(min-width: 1024px) 30vw, (min-width: 640px) 46vw, 92vw"
+            className="object-cover transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.06]"
+          />
+          <span
+            aria-hidden="true"
+            className="absolute inset-0 bg-gradient-to-t from-ink/92 via-ink/40 to-ink/25 transition-opacity duration-700 group-hover:from-ink/85"
+          />
+        </>
+      ) : (
+        <span
+          aria-hidden="true"
+          className="absolute inset-0 opacity-70 transition-opacity duration-700 group-hover:opacity-100"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 40%, color-mix(in oklab, var(--color-bronze) 22%, transparent) 0%, transparent 64%)",
+          }}
+        />
+      )}
+
+      <span
+        aria-hidden="true"
+        className="relative grid h-16 w-16 place-items-center rounded-full border border-bone/25 bg-ink/60 text-bone backdrop-blur-sm transition-[transform,border-color,background-color] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-110 group-hover:border-bronze-light group-hover:bg-bronze/30"
+      >
+        <svg viewBox="0 0 24 24" className="ml-1 h-6 w-6" fill="currentColor">
+          <path d="M8 5v14l11-7z" />
+        </svg>
+      </span>
+
+      <span className="relative flex items-center gap-2 text-xs tracking-[0.16em] text-sand/80 uppercase">
+        <SocialIcon name={post.platform} className="h-3.5 w-3.5" />
+        {SOCIAL_LABELS[post.platform]}
+      </span>
+
+      {post.resolvedCaption ? (
+        <span className="relative line-clamp-3 max-w-[24ch] px-6 text-center text-sm leading-snug text-bone/90">
+          {post.resolvedCaption}
+        </span>
+      ) : null}
+    </>
+  );
+
+  const shell =
+    "group absolute inset-0 flex h-full w-full flex-col items-center justify-center gap-5 transition-colors duration-700 hover:bg-charcoal";
+
+  return onPlay ? (
+    <button type="button" onClick={onPlay} className={shell}>
+      {inner}
+    </button>
+  ) : (
+    <a
+      href={post.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={shell}
+    >
+      {inner}
+    </a>
+  );
+}
+
+export function VideoWall({ posts }: { posts: ResolvedPost[] }) {
   if (posts.length === 0) {
     return (
       <div className={cn("max-w-3xl", centreBlock)}>

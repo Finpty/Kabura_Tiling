@@ -29,6 +29,13 @@ const nextConfig = {
         protocol: "https",
         hostname: "i.ytimg.com",
       },
+      /**
+       * TikTok cover frames, from the URL its own oEmbed response hands back.
+       * The hostname varies by region and signing pool, hence the wildcards.
+       */
+      { protocol: "https", hostname: "**.tiktokcdn.com" },
+      { protocol: "https", hostname: "**.tiktokcdn-us.com" },
+      { protocol: "https", hostname: "**.tiktokcdn-eu.com" },
     ],
   },
 };

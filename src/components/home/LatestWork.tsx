@@ -7,12 +7,8 @@ import { MagneticLink } from "@/components/ui/MagneticButton";
 import { PlaceholderNotice } from "@/components/ui/PlaceholderNotice";
 import { SocialIcon } from "@/components/ui/SocialIcons";
 import { SocialLinks } from "@/components/ui/SocialLinks";
-import {
-  displayablePosts,
-  youtubeEmbed,
-  youtubeThumbnail,
-  type SocialPost,
-} from "@/lib/social-posts";
+import { youtubeEmbed } from "@/lib/social-posts";
+import type { ResolvedPost } from "@/lib/social-resolve";
 import { SOCIAL_LABELS, configuredSocials, site } from "@/lib/site";
 import { centreBlock, centreRow, centreText } from "@/lib/align";
 import { cn } from "@/lib/utils";
@@ -37,13 +33,14 @@ const ORIENTATION = {
   landscape: "aspect-video w-[84vw] sm:w-[26rem]",
 } as const;
 
-function PostCard({ post }: { post: SocialPost }) {
+function PostCard({ post }: { post: ResolvedPost }) {
   const [playing, setPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const orientation = post.orientation ?? "portrait";
-  const thumbnail =
-    post.thumbnail ??
-    (post.youtubeId ? youtubeThumbnail(post.youtubeId) : null);
+  const thumbnail = post.thumbnailUrl;
+  const caption = post.resolvedCaption;
+  /** Anything with a player, whichever platform it came from. */
+  const playable = Boolean(post.embedSrc);
 
   const hover = (on: boolean) => {
     const node = videoRef.current;
@@ -55,8 +52,8 @@ function PostCard({ post }: { post: SocialPost }) {
     }
   };
 
-  // A YouTube post plays where it sits, once the visitor asks for it.
-  if (post.youtubeId && playing) {
+  // Plays where it sits, once the visitor asks for it.
+  if (playable && playing) {
     return (
       <li
         className={cn(
@@ -65,8 +62,8 @@ function PostCard({ post }: { post: SocialPost }) {
         )}
       >
         <iframe
-          src={youtubeEmbed(post.youtubeId)}
-          title={post.caption ?? "Kabura Tiling video"}
+          src={post.embedSrc ?? youtubeEmbed("")}
+          title={caption ?? "Kabura Tiling video"}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           className="absolute inset-0 h-full w-full"
@@ -80,9 +77,9 @@ function PostCard({ post }: { post: SocialPost }) {
       {thumbnail ? (
         <Image
           src={thumbnail}
-          alt={post.caption ?? `${SOCIAL_LABELS[post.platform]} post`}
+          alt={caption ?? `${SOCIAL_LABELS[post.platform]} post`}
           fill
-          unoptimized={Boolean(post.youtubeId)}
+          unoptimized
           sizes="(min-width: 640px) 26rem, 84vw"
           className="object-cover transition-transform duration-[1100ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.07]"
         />
@@ -112,7 +109,7 @@ function PostCard({ post }: { post: SocialPost }) {
       </span>
 
       {/* Play affordance for anything with motion */}
-      {post.youtubeId || post.video ? (
+      {playable || post.video ? (
         <span
           aria-hidden="true"
           className="absolute top-1/2 left-1/2 grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-bone/30 bg-ink/50 text-bone backdrop-blur-sm transition-[transform,background-color,border-color] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-110 group-hover:border-bronze-light group-hover:bg-bronze/25"
@@ -128,9 +125,9 @@ function PostCard({ post }: { post: SocialPost }) {
       ) : null}
 
       <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4">
-        {post.caption ? (
-          <span className="text-sm leading-snug text-bone/95 [text-wrap:balance]">
-            {post.caption}
+        {caption ? (
+          <span className="line-clamp-2 text-sm leading-snug text-bone/95 [text-wrap:balance]">
+            {caption}
           </span>
         ) : (
           <span />
@@ -161,14 +158,14 @@ function PostCard({ post }: { post: SocialPost }) {
       onMouseEnter={() => hover(true)}
       onMouseLeave={() => hover(false)}
     >
-      {post.youtubeId ? (
+      {playable ? (
         <button
           type="button"
           onClick={() => setPlaying(true)}
           className={cn(shell, "text-left")}
         >
           <span className="sr-only">
-            Play {post.caption ?? "this video"} from YouTube
+            Play {caption ?? "this video"} from {SOCIAL_LABELS[post.platform]}
           </span>
           {inner}
         </button>
@@ -180,7 +177,7 @@ function PostCard({ post }: { post: SocialPost }) {
           className={shell}
         >
           <span className="sr-only">
-            {post.caption ?? "View this post"} on {SOCIAL_LABELS[post.platform]}
+            {caption ?? "View this post"} on {SOCIAL_LABELS[post.platform]}
           </span>
           {inner}
         </a>
@@ -189,8 +186,13 @@ function PostCard({ post }: { post: SocialPost }) {
   );
 }
 
-export function LatestWork({ className }: { className?: string }) {
-  const posts = displayablePosts();
+export function LatestWork({
+  posts,
+  className,
+}: {
+  posts: ResolvedPost[];
+  className?: string;
+}) {
   const socials = configuredSocials();
 
   const railRef = useRef<HTMLUListElement>(null);

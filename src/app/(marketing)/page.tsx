@@ -10,6 +10,7 @@ import { WhyKabura } from "@/components/home/WhyKabura";
 import { TileWall } from "@/components/home/TileWall";
 import { BathroomVisualiser } from "@/components/home/BathroomVisualiser";
 import { LatestWork } from "@/components/home/LatestWork";
+import { resolveSocialPosts } from "@/lib/social-resolve";
 import { Testimonials } from "@/components/home/Testimonials";
 import { ServiceAreasSection } from "@/components/home/ServiceAreasSection";
 import { CTASection } from "@/components/home/CTASection";
@@ -55,7 +56,11 @@ const HOME_FAQS = [
 ];
 
 export default async function HomePage() {
-  const [projects, reviews] = await Promise.all([getProjects(), getReviews()]);
+  const [projects, reviews, posts] = await Promise.all([
+    getProjects(),
+    getReviews(),
+    resolveSocialPosts(),
+  ]);
 
   return (
     <>
@@ -77,7 +82,7 @@ export default async function HomePage() {
       <WhyKabura />
       <TileWall />
       <BathroomVisualiser />
-      <LatestWork />
+      <LatestWork posts={posts} />
       <Testimonials data={reviews} />
       <ServiceAreasSection />
 
