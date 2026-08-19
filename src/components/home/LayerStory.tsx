@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Section, SectionLabel } from "@/components/ui/Section";
 import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
+import { centreBlock, centreRow, centreText } from "@/lib/align";
 import { cn } from "@/lib/utils";
 
 /**
@@ -71,7 +72,10 @@ function Step({
   const lineScale = useTransform(scrollYProgress, [0, 0.6], [0, 1]);
 
   return (
-    <li ref={ref} className="relative grid grid-cols-[auto_1fr] gap-6 pb-14 md:gap-10 md:pb-20">
+    <li
+      ref={ref}
+      className="relative grid grid-cols-[auto_1fr] gap-6 pb-14 md:gap-10 md:pb-20"
+    >
       {/* Spine */}
       <div className="relative flex flex-col items-center">
         <motion.span
@@ -124,15 +128,24 @@ export function LayerStory() {
     >
       <div className="shell">
         <div className="grid gap-12 lg:grid-cols-[minmax(0,26rem)_1fr] lg:gap-20">
-          <div className="lg:sticky lg:top-32 lg:self-start">
-            <SectionLabel index="03" eyebrow="The sequence" />
+          <div className={cn("lg:sticky lg:top-32 lg:self-start", centreText)}>
+            <SectionLabel
+              index="03"
+              eyebrow="The sequence"
+              className={centreRow}
+            />
             <h2
               id="process-heading"
               className="mt-6 font-display text-headline text-bone"
             >
               Built properly from the first layer.
             </h2>
-            <p className="mt-6 max-w-sm text-lead text-sand/70">
+            <p
+              className={cn(
+                "mt-6 max-w-sm text-lead text-sand/70",
+                centreBlock,
+              )}
+            >
               Seven stages, in order. Skip one and the finish will tell on you
               eventually — usually in the most visible corner of the room.
             </p>

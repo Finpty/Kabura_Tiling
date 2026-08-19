@@ -77,6 +77,14 @@ export function RevealText({
       <motion.span
         aria-hidden="true"
         className="block"
+        /**
+         * Each word carries a trailing 0.24em so words do not collide. On a
+         * centred heading that trailing space would shift the visible text
+         * half of it to the left; pulling the container's right edge in by the
+         * same amount cancels it exactly. Left-aligned headings are unaffected —
+         * the text still starts at the same place.
+         */
+        style={by === "word" ? { marginRight: "-0.24em" } : undefined}
         variants={container}
         initial="hidden"
         whileInView="shown"

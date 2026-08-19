@@ -8,6 +8,8 @@ import { RevealText } from "@/components/ui/RevealText";
 import { img, video } from "@/lib/media";
 import { site } from "@/lib/site";
 import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
+import { centreBlock, centreItems, centreRow, centreText } from "@/lib/align";
+import { cn } from "@/lib/utils";
 
 /**
  * Full-viewport cinematic opener.
@@ -58,14 +60,17 @@ export function Hero() {
         aria-hidden="true"
         className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/72 via-ink/34 to-ink/40"
       />
-      <div aria-hidden="true" className="scrim-bottom absolute inset-x-0 bottom-0 -z-10 h-3/4" />
+      <div
+        aria-hidden="true"
+        className="scrim-bottom absolute inset-x-0 bottom-0 -z-10 h-3/4"
+      />
 
       <motion.div
-        className="shell relative w-full pb-14 md:pb-20"
+        className={cn("shell relative w-full pb-14 md:pb-20", centreText)}
         style={reduced ? undefined : { y: contentY, opacity: contentOpacity }}
       >
-        <div className="flex items-center gap-4">
-          <span aria-hidden="true" className="h-px w-12 bg-bronze-light/80" />
+        <div className={cn("flex items-center gap-4", centreRow)}>
+          <span aria-hidden="true" className="hidden h-px lg:block w-12 bg-bronze-light/80" />
           <p className="eyebrow text-bronze-light">
             {site.state} · Tiling &amp; Waterproofing
           </p>
@@ -80,9 +85,14 @@ export function Hero() {
           delay={0.15}
         />
 
-        <div className="mt-9 flex flex-col gap-9 lg:flex-row lg:items-end lg:justify-between">
+        <div
+          className={cn(
+            "mt-9 flex flex-col gap-9 lg:flex-row lg:items-end lg:justify-between",
+            centreItems,
+          )}
+        >
           <motion.div
-            className="max-w-xl"
+            className={cn("max-w-xl", centreBlock)}
             initial={reduced ? false : { opacity: 0, y: 18 }}
             animate={reduced ? undefined : { opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}
@@ -94,7 +104,7 @@ export function Hero() {
           </motion.div>
 
           <motion.div
-            className="flex flex-wrap items-center gap-3"
+            className={cn("flex flex-wrap items-center gap-3", centreRow)}
             initial={reduced ? false : { opacity: 0, y: 18 }}
             animate={reduced ? undefined : { opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}

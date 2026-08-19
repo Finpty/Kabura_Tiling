@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ProjectCard } from "./ProjectCard";
 import { PROJECT_CATEGORIES, type Project } from "@/lib/projects";
 import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
+import { centreRow } from "@/lib/align";
 import { cn } from "@/lib/utils";
 
 /** Filterable portfolio grid. Filtering is client-side over an already-loaded list. */
@@ -30,7 +31,7 @@ export function ProjectsGrid({ projects }: { projects: Project[] }) {
       <div
         role="tablist"
         aria-label="Filter projects by category"
-        className="flex flex-wrap gap-2"
+        className={cn("flex flex-wrap gap-2", centreRow)}
       >
         {available.map((category) => (
           <button

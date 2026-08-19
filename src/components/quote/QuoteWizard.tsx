@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { AvailabilityCalendar } from "./AvailabilityCalendar";
 import { SelectField, TextArea, TextField } from "./Field";
 import { MagneticButton } from "@/components/ui/MagneticButton";
 import { PlaceholderNotice } from "@/components/ui/PlaceholderNotice";
@@ -13,7 +14,10 @@ import {
   EMPTY_DRAFT,
   MAX_FILES,
   START_TIMING_OPTIONS,
+  STEP_FIELDS,
   TILE_SIZE_OPTIONS,
+  calculateSqm,
+  fromISODate,
   validateAll,
   validateFile,
   validateStep,
@@ -22,24 +26,42 @@ import {
 } from "@/lib/quote-schema";
 import { site, hasEmail } from "@/lib/site";
 import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
+import { centreText } from "@/lib/align";
 import { cn, formatBytes } from "@/lib/utils";
 
 const STEPS = [
-  { title: "What do you need?", hint: "Pick the closest match — we'll sort the detail out later." },
-  { title: "Where is the project?", hint: "So we know whether we can get there." },
+  {
+    title: "What do you need?",
+    hint: "Pick the closest match — we'll sort the detail out later.",
+  },
+  {
+    title: "Where is the project?",
+    hint: "So we know whether we can get there.",
+  },
   { title: "Tell us about the project", hint: "Rough numbers are fine." },
-  { title: "Upload photos", hint: "The single most useful thing you can send us." },
+  {
+    title: "When would you like us?",
+    hint: "Pick a preferred start date — it's a request, not a booking.",
+  },
+  {
+    title: "Upload photos",
+    hint: "The single most useful thing you can send us.",
+  },
   { title: "Contact information", hint: "How we get the quote back to you." },
 ];
 
 type Status = "idle" | "submitting" | "success" | "error";
 
 /**
- * Five-step quote wizard.
+ * Six-step quote wizard.
  *
  * Behaviour worth noting:
- *  - Validation runs per step, so nobody reaches step five to be told step two
- *    was wrong. The same module validates again on the server.
+ *  - Validation runs per step, so nobody reaches the last step to be told step
+ *    two was wrong. The same module validates again on the server.
+ *  - Width × length/height fills in the approximate m² as it is typed, and
+ *    stops the moment the customer edits that field themselves.
+ *  - The date step reads day-level availability only. It cannot see whose job
+ *    is on, or where — see AvailabilityCalendar.
  *  - Each step moves focus to its heading, and errors are announced, so the flow
  *    is usable with a screen reader and by keyboard alone.
  *  - Images are previewed from object URLs which are revoked on removal.
@@ -55,6 +77,9 @@ export function QuoteWizard({ enabled }: { enabled: boolean }) {
   const [files, setFiles] = useState<File[]>([]);
   const [fileError, setFileError] = useState<string>();
   const [status, setStatus] = useState<Status>("idle");
+  // Once the customer edits the m² themselves we stop overwriting it, so the
+  // calculator assists rather than argues.
+  const [sqmEdited, setSqmEdited] = useState(false);
   const [reference, setReference] = useState<string>();
   const [serverError, setServerError] = useState<string>();
 
@@ -64,6 +89,37 @@ export function QuoteWizard({ enabled }: { enabled: boolean }) {
   const mounted = useRef(false);
   const reduced = usePrefersReducedMotion();
   const isLast = step === STEPS.length - 1;
+
+  const calculatedSqm = useMemo(
+    () => calculateSqm(draft.widthM, draft.lengthM),
+    [draft.widthM, draft.lengthM],
+  );
+
+  /**
+   * The draft as the form actually reads: width × length/height stands in for
+   * the m² until the customer edits that field themselves. Derived rather than
+   * written back into state, so there is no effect keeping two values in sync
+   * and no render where they disagree.
+   */
+  const formDraft = useMemo<QuoteDraft>(
+    () =>
+      sqmEdited || calculatedSqm === null
+        ? draft
+        : { ...draft, approxSqm: calculatedSqm },
+    [draft, sqmEdited, calculatedSqm],
+  );
+
+  const requestedDate = useMemo(() => {
+    const date = fromISODate(draft.preferredStartDate);
+    return date
+      ? new Intl.DateTimeFormat("en-AU", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }).format(date)
+      : null;
+  }, [draft.preferredStartDate]);
 
   const previews = useMemo(
     () => files.map((file) => ({ file, url: URL.createObjectURL(file) })),
@@ -98,7 +154,7 @@ export function QuoteWizard({ enabled }: { enabled: boolean }) {
   );
 
   const next = () => {
-    const stepErrors = validateStep(step, draft);
+    const stepErrors = validateStep(step, formDraft);
     if (Object.keys(stepErrors).length > 0) {
       setErrors(stepErrors);
       return;
@@ -141,17 +197,13 @@ export function QuoteWizard({ enabled }: { enabled: boolean }) {
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const allErrors = validateAll(draft);
+    const allErrors = validateAll(formDraft);
     if (Object.keys(allErrors).length > 0) {
       setErrors(allErrors);
       const firstBad = Object.keys(allErrors)[0] as keyof QuoteDraft;
-      const target = [
-        ["service"],
-        ["suburb", "postcode"],
-        ["approxSqm", "tileSize", "buildType", "startTiming", "description"],
-        [],
-        ["name", "phone", "email"],
-      ].findIndex((fields) => fields.includes(firstBad));
+      const target = STEP_FIELDS.findIndex((fields) =>
+        fields.includes(firstBad),
+      );
       if (target >= 0) setStep(target);
       return;
     }
@@ -161,7 +213,7 @@ export function QuoteWizard({ enabled }: { enabled: boolean }) {
 
     try {
       const body = new FormData();
-      for (const [key, value] of Object.entries(draft)) {
+      for (const [key, value] of Object.entries(formDraft)) {
         body.append(key, value ?? "");
       }
       for (const file of files) body.append("photos", file);
@@ -210,6 +262,13 @@ export function QuoteWizard({ enabled }: { enabled: boolean }) {
             </span>
           </p>
         ) : null}
+        {requestedDate ? (
+          <p className="mt-5 text-sm text-sand/70">
+            You asked to start on{" "}
+            <span className="font-medium text-bone">{requestedDate}</span>. We
+            will confirm that with you — it is a request, not a booking.
+          </p>
+        ) : null}
         <div className="mt-10 flex flex-wrap justify-center gap-3">
           <Link
             href="/projects"
@@ -244,8 +303,17 @@ export function QuoteWizard({ enabled }: { enabled: boolean }) {
               aria-current={index === step ? "step" : undefined}
             >
               {index < step ? (
-                <svg viewBox="0 0 12 12" className="h-3 w-3" fill="none" aria-hidden="true">
-                  <path d="m2 6 3 3 5-6" stroke="currentColor" strokeWidth="1.8" />
+                <svg
+                  viewBox="0 0 12 12"
+                  className="h-3 w-3"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="m2 6 3 3 5-6"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                  />
                 </svg>
               ) : (
                 index + 1
@@ -275,7 +343,7 @@ export function QuoteWizard({ enabled }: { enabled: boolean }) {
         ))}
       </ol>
 
-      <div className="mt-12">
+      <div className={cn("mt-12", centreText)}>
         <p className="eyebrow text-bronze-light">
           Step {step + 1} of {STEPS.length}
         </p>
@@ -297,7 +365,10 @@ export function QuoteWizard({ enabled }: { enabled: boolean }) {
             <>
               {" "}
               In the meantime, email{" "}
-              <a className="link-underline text-bone" href={`mailto:${site.email}`}>
+              <a
+                className="link-underline text-bone"
+                href={`mailto:${site.email}`}
+              >
                 {site.email}
               </a>
               .
@@ -309,7 +380,10 @@ export function QuoteWizard({ enabled }: { enabled: boolean }) {
       ) : null}
 
       {/* Honeypot — visually hidden, never announced, never focusable */}
-      <div aria-hidden="true" className="absolute h-px w-px overflow-hidden opacity-0">
+      <div
+        aria-hidden="true"
+        className="absolute h-px w-px overflow-hidden opacity-0"
+      >
         <label htmlFor="kb-company">Company</label>
         <input
           id="kb-company"
@@ -388,16 +462,75 @@ export function QuoteWizard({ enabled }: { enabled: boolean }) {
 
             {step === 2 ? (
               <div className="grid gap-6 sm:grid-cols-2">
-                <TextField
-                  label="Approximate square metres"
-                  name="approxSqm"
-                  optional
-                  inputMode="decimal"
-                  placeholder="e.g. 18"
-                  value={draft.approxSqm}
-                  hint="A rough estimate is fine."
-                  onChange={(event) => set("approxSqm", event.target.value)}
-                />
+                <div className="grid gap-6 sm:col-span-2 sm:grid-cols-3">
+                  <TextField
+                    label="Width (m)"
+                    name="widthM"
+                    optional
+                    inputMode="decimal"
+                    placeholder="e.g. 3.2"
+                    value={draft.widthM}
+                    error={errors.widthM}
+                    hint="Across the floor, or along the wall."
+                    onChange={(event) => set("widthM", event.target.value)}
+                  />
+                  <TextField
+                    label="Length / height (m)"
+                    name="lengthM"
+                    optional
+                    inputMode="decimal"
+                    placeholder="e.g. 2.4"
+                    value={draft.lengthM}
+                    error={errors.lengthM}
+                    hint="Length for floors, height for walls."
+                    onChange={(event) => set("lengthM", event.target.value)}
+                  />
+                  <TextField
+                    label="Approximate m²"
+                    name="approxSqm"
+                    optional
+                    inputMode="decimal"
+                    placeholder="e.g. 18"
+                    value={formDraft.approxSqm}
+                    error={errors.approxSqm}
+                    hint={
+                      calculatedSqm !== null && !sqmEdited
+                        ? "Worked out from your measurements — edit it if you like."
+                        : "A rough estimate is fine."
+                    }
+                    onChange={(event) => {
+                      setSqmEdited(true);
+                      set("approxSqm", event.target.value);
+                    }}
+                  />
+                </div>
+
+                {calculatedSqm !== null ? (
+                  <p
+                    aria-live="polite"
+                    className="-mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-sand/75 sm:col-span-2"
+                  >
+                    <span aria-hidden="true" className="text-bronze-light">
+                      ≈
+                    </span>
+                    <span>
+                      {draft.widthM} m × {draft.lengthM} m ={" "}
+                      <span className="font-medium text-bone tabular-nums">
+                        {calculatedSqm} m²
+                      </span>
+                    </span>
+                    {sqmEdited && formDraft.approxSqm !== calculatedSqm ? (
+                      <button
+                        type="button"
+                        onClick={() => setSqmEdited(false)}
+                        className="link-underline text-bronze-light"
+                      >
+                        Use this figure
+                      </button>
+                    ) : null}
+                  </p>
+                ) : null}
+
                 <SelectField
                   label="Tile size"
                   name="tileSize"
@@ -436,17 +569,35 @@ export function QuoteWizard({ enabled }: { enabled: boolean }) {
             ) : null}
 
             {step === 3 ? (
+              <AvailabilityCalendar
+                value={draft.preferredStartDate}
+                onChange={(value) => set("preferredStartDate", value)}
+                error={errors.preferredStartDate}
+              />
+            ) : null}
+
+            {step === 4 ? (
               <div>
                 <label
                   htmlFor="quote-photos"
                   className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-sm border border-dashed border-stone/40 px-6 py-14 text-center transition-colors duration-300 hover:border-bronze-light"
                 >
-                  <svg viewBox="0 0 24 24" className="h-7 w-7 text-bronze-light" fill="none" aria-hidden="true">
-                    <path d="M12 16V4m0 0L7 9m5-5 5 5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke="currentColor" strokeWidth="1.5" />
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-7 w-7 text-bronze-light"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M12 16V4m0 0L7 9m5-5 5 5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                    />
                   </svg>
                   <span className="text-bone">Add photos of the space</span>
                   <span className="text-xs text-stone">
-                    JPEG, PNG, WebP or HEIC · up to {MAX_FILES} photos · 10 MB each
+                    JPEG, PNG, WebP or HEIC · up to {MAX_FILES} photos · 10 MB
+                    each
                   </span>
                 </label>
                 <input
@@ -489,8 +640,17 @@ export function QuoteWizard({ enabled }: { enabled: boolean }) {
                           <span className="sr-only">
                             Remove {preview.file.name}
                           </span>
-                          <svg viewBox="0 0 12 12" className="h-3 w-3" fill="none" aria-hidden="true">
-                            <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.6" />
+                          <svg
+                            viewBox="0 0 12 12"
+                            className="h-3 w-3"
+                            fill="none"
+                            aria-hidden="true"
+                          >
+                            <path
+                              d="M2 2l8 8M10 2l-8 8"
+                              stroke="currentColor"
+                              strokeWidth="1.6"
+                            />
                           </svg>
                         </button>
                         <span className="mt-1.5 block truncate text-[0.65rem] text-stone">
@@ -508,7 +668,7 @@ export function QuoteWizard({ enabled }: { enabled: boolean }) {
               </div>
             ) : null}
 
-            {step === 4 ? (
+            {step === 5 ? (
               <div className="grid gap-6 sm:grid-cols-2">
                 <TextField
                   label="Name"
@@ -579,7 +739,12 @@ export function QuoteWizard({ enabled }: { enabled: boolean }) {
             {status === "submitting" ? "Sending…" : "Request My Free Quote"}
           </MagneticButton>
         ) : (
-          <MagneticButton type="button" onClick={next} variant="solid" size="lg">
+          <MagneticButton
+            type="button"
+            onClick={next}
+            variant="solid"
+            size="lg"
+          >
             Continue
           </MagneticButton>
         )}

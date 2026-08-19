@@ -7,7 +7,8 @@ import { SectionLabel } from "@/components/ui/Section";
 import { img, video } from "@/lib/media";
 import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
 import { useIsDesktop } from "@/hooks/use-media-query";
-import { pad } from "@/lib/utils";
+import { centreBlock, centreRow, centreText } from "@/lib/align";
+import { cn, pad } from "@/lib/utils";
 
 /**
  * Horizontal film strip.
@@ -21,12 +22,48 @@ import { pad } from "@/lib/utils";
  */
 
 const PANELS = [
-  { id: "stone", title: "Stone selection", videoKey: "stoneSlabs", imageKey: "stoneSlab", caption: "Slabs chosen and matched before anything is cut." },
-  { id: "cutting", title: "Precision cutting", videoKey: "largeFormat", imageKey: "largeFormat", caption: "Mitres, cut-outs and edges worked to the millimetre." },
-  { id: "waterproofing", title: "Waterproofing", videoKey: "waterproofing", imageKey: "waterproofing", caption: "The layer that decides whether the room lasts." },
-  { id: "screeding", title: "Screeding", videoKey: null, imageKey: "screed", caption: "Falls set from the waste, checked with a straight edge." },
-  { id: "large-format", title: "Large format", videoKey: "largeFormat", imageKey: "floorTiling", caption: "Full coverage, levelling systems, minimal joints." },
-  { id: "finish", title: "The finish", videoKey: "bathroomReveal", imageKey: "bathroomReveal", caption: "Grouted, sealed, cleaned down and handed over." },
+  {
+    id: "stone",
+    title: "Stone selection",
+    videoKey: "stoneSlabs",
+    imageKey: "stoneSlab",
+    caption: "Slabs chosen and matched before anything is cut.",
+  },
+  {
+    id: "cutting",
+    title: "Precision cutting",
+    videoKey: "largeFormat",
+    imageKey: "largeFormat",
+    caption: "Mitres, cut-outs and edges worked to the millimetre.",
+  },
+  {
+    id: "waterproofing",
+    title: "Waterproofing",
+    videoKey: "waterproofing",
+    imageKey: "waterproofing",
+    caption: "The layer that decides whether the room lasts.",
+  },
+  {
+    id: "screeding",
+    title: "Screeding",
+    videoKey: null,
+    imageKey: "screed",
+    caption: "Falls set from the waste, checked with a straight edge.",
+  },
+  {
+    id: "large-format",
+    title: "Large format",
+    videoKey: "largeFormat",
+    imageKey: "floorTiling",
+    caption: "Full coverage, levelling systems, minimal joints.",
+  },
+  {
+    id: "finish",
+    title: "The finish",
+    videoKey: "bathroomReveal",
+    imageKey: "bathroomReveal",
+    caption: "Grouted, sealed, cleaned down and handed over.",
+  },
 ];
 
 export function VideoRail() {
@@ -84,17 +121,24 @@ export function VideoRail() {
     >
       <div className="lg:sticky lg:top-0 lg:flex lg:h-svh lg:flex-col lg:justify-center lg:overflow-hidden">
         <div className="shell pt-20 pb-10 lg:pt-0 lg:pb-12">
-          <SectionLabel index="07" eyebrow="On site" />
+          <SectionLabel index="07" eyebrow="On site" className={centreRow} />
           <h2
             id="film-heading"
-            className="mt-6 max-w-2xl font-display text-headline text-bone"
+            className={cn(
+              "mt-6 max-w-2xl font-display text-headline text-bone",
+              centreText,
+              centreBlock,
+            )}
           >
             The work, frame by frame.
           </h2>
         </div>
 
         {pinned ? (
-          <motion.div style={{ x }} className="flex gap-5 pl-[5vw] will-change-transform">
+          <motion.div
+            style={{ x }}
+            className="flex gap-5 pl-[5vw] will-change-transform"
+          >
             {panels}
           </motion.div>
         ) : (

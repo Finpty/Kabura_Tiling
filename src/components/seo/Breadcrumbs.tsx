@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { JsonLd } from "./JsonLd";
 import { breadcrumbSchema } from "@/lib/seo";
+import { centreRow } from "@/lib/align";
 import { cn } from "@/lib/utils";
 
 type Crumb = { name: string; path: string };
@@ -18,7 +19,12 @@ export function Breadcrumbs({
   return (
     <>
       <nav aria-label="Breadcrumb" className={cn("text-xs", className)}>
-        <ol className="flex flex-wrap items-center gap-2 text-stone">
+        <ol
+          className={cn(
+            "flex flex-wrap items-center gap-2 text-stone",
+            centreRow,
+          )}
+        >
           {full.map((crumb, index) => {
             const last = index === full.length - 1;
             return (

@@ -1,10 +1,15 @@
 import "server-only";
 
 import { createServerSupabase } from "./supabase/server";
-import { PLACEHOLDER_PROJECTS, type Project, type ProjectCategory } from "./projects";
+import {
+  PLACEHOLDER_PROJECTS,
+  type Project,
+  type ProjectCategory,
+} from "./projects";
 import {
   EMPTY_GOOGLE_REVIEWS,
   getGoogleReviews,
+  type DisplayReview,
   type GoogleReviews,
 } from "./google-reviews";
 import type { ReviewRow } from "./supabase/types";
@@ -93,14 +98,29 @@ export async function getReviews(): Promise<GoogleReviews> {
     createServerSupabase(),
   ]);
 
-  let approved: ReviewRow[] = [];
+  let approved: DisplayReview[] = [];
   if (supabase) {
     const { data, error } = await supabase
       .from("reviews")
       .select("*")
       .eq("approved", true)
       .order("sort_order", { ascending: true });
-    if (!error && data) approved = data as ReviewRow[];
+
+    // Admin-approved rows carry no author photo or Google deep link — those
+    // belong to Google's own attribution and are not invented here.
+    if (!error && data) {
+      approved = (data as ReviewRow[]).map((row) => ({
+        id: row.id,
+        authorName: row.author_name,
+        authorPhotoUrl: null,
+        authorProfileUrl: null,
+        rating: row.rating,
+        body: row.body,
+        reviewedAt: row.reviewed_at,
+        reviewUrl: null,
+        source: row.source ?? "Kabura Tiling",
+      }));
+    }
   }
 
   if (google.reviews.length === 0 && approved.length === 0) {

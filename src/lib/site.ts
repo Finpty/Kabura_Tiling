@@ -44,7 +44,8 @@ export const site = {
      The ABN passes the ATO checksum. Anything below still reading only from
      env (address, hours, socials) has not been supplied yet. */
   phone: env(process.env.NEXT_PUBLIC_BUSINESS_PHONE) ?? "0481 000 331",
-  email: env(process.env.NEXT_PUBLIC_BUSINESS_EMAIL) ?? "Kaburatiling@gmail.com",
+  email:
+    env(process.env.NEXT_PUBLIC_BUSINESS_EMAIL) ?? "Kaburatiling@gmail.com",
   abn: env(process.env.NEXT_PUBLIC_BUSINESS_ABN) ?? "84 668 679 114",
   /** Street address is optional — many trade businesses operate without a shopfront. */
   streetAddress: env(process.env.NEXT_PUBLIC_BUSINESS_STREET),
@@ -52,14 +53,23 @@ export const site = {
   postalCode: env(process.env.NEXT_PUBLIC_BUSINESS_POSTCODE),
   openingHours: env(process.env.NEXT_PUBLIC_BUSINESS_HOURS),
 
+  /**
+   * Social profiles. Key order is display order.
+   *
+   * Every entry except Instagram is `null` until the matching environment
+   * variable is set — no URL here is guessed from the business name. A missing
+   * profile is hidden entirely rather than rendered as a dead icon.
+   */
   social: {
     // Verified account, found via search. Everything else still unset.
     instagram:
       env(process.env.NEXT_PUBLIC_SOCIAL_INSTAGRAM) ??
       "https://www.instagram.com/kaburatilinggroupptyltd/",
     facebook: env(process.env.NEXT_PUBLIC_SOCIAL_FACEBOOK),
-    linkedin: env(process.env.NEXT_PUBLIC_SOCIAL_LINKEDIN),
+    tiktok: env(process.env.NEXT_PUBLIC_SOCIAL_TIKTOK),
+    youtube: env(process.env.NEXT_PUBLIC_SOCIAL_YOUTUBE),
     google: env(process.env.NEXT_PUBLIC_SOCIAL_GOOGLE),
+    linkedin: env(process.env.NEXT_PUBLIC_SOCIAL_LINKEDIN),
   },
 } as const;
 
@@ -68,8 +78,23 @@ export type SocialKey = keyof typeof site.social;
 export const SOCIAL_LABELS: Record<SocialKey, string> = {
   instagram: "Instagram",
   facebook: "Facebook",
-  linkedin: "LinkedIn",
+  tiktok: "TikTok",
+  youtube: "YouTube",
   google: "Google Business Profile",
+  linkedin: "LinkedIn",
+};
+
+/** Shorter label for tight spaces such as the footer icon row. */
+export const SOCIAL_SHORT_LABELS: Record<SocialKey, string> = {
+  ...SOCIAL_LABELS,
+  google: "Google",
+};
+
+export type ConfiguredSocial = {
+  key: SocialKey;
+  label: string;
+  shortLabel: string;
+  href: string;
 };
 
 export const hasPhone = () => Boolean(site.phone);
@@ -77,11 +102,16 @@ export const hasEmail = () => Boolean(site.email);
 export const hasAddress = () =>
   Boolean(site.addressLocality && site.postalCode);
 
-/** Social links that are actually configured. */
-export const configuredSocials = () =>
+/** Social links that are actually configured, in display order. */
+export const configuredSocials = (): ConfiguredSocial[] =>
   (Object.keys(site.social) as SocialKey[])
     .filter((key) => Boolean(site.social[key]))
-    .map((key) => ({ key, label: SOCIAL_LABELS[key], href: site.social[key]! }));
+    .map((key) => ({
+      key,
+      label: SOCIAL_LABELS[key],
+      shortLabel: SOCIAL_SHORT_LABELS[key],
+      href: site.social[key]!,
+    }));
 
 /** Primary navigation — every entry resolves to a real route. */
 export const NAV_LINKS = [

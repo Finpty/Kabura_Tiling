@@ -137,10 +137,15 @@ supplied" placeholder rather than inventing a number, address or registration.
 | `NEXT_PUBLIC_BUSINESS_SUBURB` | — | Postal address in structured data |
 | `NEXT_PUBLIC_BUSINESS_POSTCODE` | — | Postal address in structured data |
 | `NEXT_PUBLIC_BUSINESS_HOURS` | — | Contact page, `openingHours` in schema |
-| `NEXT_PUBLIC_SOCIAL_INSTAGRAM` | — | Footer + `sameAs`. Blank hides the link |
+| `NEXT_PUBLIC_SOCIAL_INSTAGRAM` | — | Footer, contact page + `sameAs`. Blank hides that icon entirely |
 | `NEXT_PUBLIC_SOCIAL_FACEBOOK` | — | as above |
-| `NEXT_PUBLIC_SOCIAL_LINKEDIN` | — | as above |
+| `NEXT_PUBLIC_SOCIAL_TIKTOK` | — | as above |
+| `NEXT_PUBLIC_SOCIAL_YOUTUBE` | — | as above |
 | `NEXT_PUBLIC_SOCIAL_GOOGLE` | — | as above, plus the "read our reviews" link |
+| `NEXT_PUBLIC_SOCIAL_LINKEDIN` | — | as above |
+| `GOOGLE_PLACES_API_KEY` | for reviews | **Server only.** Places API (New). Unset ⇒ "reviews coming soon" |
+| `GOOGLE_PLACE_ID` | for reviews | The business's Place ID |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | for the map | Maps JavaScript API. Browser key by necessity — restrict it by HTTP referrer. Unset ⇒ the coverage map renders its fallback panel. **Not** the same key as `GOOGLE_PLACES_API_KEY` |
 | `NEXT_PUBLIC_SUPABASE_URL` | for quotes | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | for quotes | Publishable key — safe in the browser, every table is behind RLS |
 | `SUPABASE_SERVICE_ROLE_KEY` | for photos + admin | **Server only.** Never prefix with `NEXT_PUBLIC_`, never commit. Without it enquiries are still captured through the anon key, but photo uploads are skipped and `/admin` stays off |
@@ -176,7 +181,16 @@ supplied" placeholder rather than inventing a number, address or registration.
 | `quote_request_notes` | Internal staff notes — never rendered publicly |
 | `projects` / `project_media` | Portfolio content. `is_placeholder` defaults to `true` |
 | `reviews` | Ships empty. Nothing appears publicly until `approved = true` |
+| `jobs` | The private job calendar — customer names, addresses, notes. **Staff only**: RLS requires `private.is_admin()`, there is no `anon` policy, and base privileges are revoked from `anon`. The public site never reads it |
 | `admin_users` | Staff allow-list. Signing up grants nothing on its own |
+
+The public availability calendar does not read `jobs`. It calls
+`public.service_availability(from_date, to_date)`, a `SECURITY DEFINER`
+function that aggregates first and returns exactly two things per day: the
+date, and one of `available` / `limited` / `booked`. There is no column in its
+result type for a name, an address or a job — not even a count. Change the
+`daily_capacity` constant inside that function to tune how many concurrent jobs
+count as fully booked.
 
 Storage bucket `quote-uploads` is **private** — no object is readable by URL.
 

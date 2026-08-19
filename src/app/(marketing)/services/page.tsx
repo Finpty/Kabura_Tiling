@@ -10,7 +10,8 @@ import { SERVICES, SERVICE_CATEGORIES } from "@/lib/services";
 import { imageFill } from "@/lib/media";
 import { pageMetadata, absoluteUrl } from "@/lib/seo";
 import { site } from "@/lib/site";
-import { pad } from "@/lib/utils";
+import { centreRow } from "@/lib/align";
+import { cn, pad } from "@/lib/utils";
 
 export const metadata: Metadata = pageMetadata({
   title: "Tiling Services",
@@ -52,7 +53,12 @@ export default function ServicesPage() {
 
             return (
               <div key={category} className="mb-20 last:mb-0">
-                <div className="flex items-baseline gap-4 border-b border-stone/18 pb-4">
+                <div
+                  className={cn(
+                    "flex items-baseline gap-4 border-b border-stone/18 pb-4",
+                    centreRow,
+                  )}
+                >
                   <h2 className="font-display text-title text-bone">{category}</h2>
                   <span className="text-xs text-stone tabular-nums">
                     {pad(services.length)}

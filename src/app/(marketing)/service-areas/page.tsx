@@ -5,10 +5,12 @@ import { Section, SectionLabel } from "@/components/ui/Section";
 import { Reveal } from "@/components/ui/Reveal";
 import { CTASection } from "@/components/home/CTASection";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { CoverageMap } from "@/components/service-areas/CoverageMap";
 import { SERVICE_AREAS } from "@/lib/service-areas";
 import { absoluteUrl, pageMetadata } from "@/lib/seo";
 import { site } from "@/lib/site";
-import { pad } from "@/lib/utils";
+import { centreBlock, centreRow, centreText } from "@/lib/align";
+import { cn, pad } from "@/lib/utils";
 
 export const metadata: Metadata = pageMetadata({
   title: "Service Areas",
@@ -43,7 +45,36 @@ export default function ServiceAreasPage() {
 
       <Section spacing="loose" className="bg-ink">
         <div className="shell">
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <div className={cn("mx-auto max-w-2xl", centreText, centreBlock)}>
+            <SectionLabel
+              eyebrow="Areas we service"
+              className={cn("mb-6", centreRow)}
+            />
+            <h2
+              className={cn(
+                "font-display text-headline text-bone",
+                centreText,
+                centreBlock,
+              )}
+            >
+              Our coverage.
+            </h2>
+            <p
+              className={cn(
+                "mt-5 text-lead text-sand/75",
+                centreText,
+                centreBlock,
+              )}
+            >
+              Tap a marker or a suburb to see what we cover there.
+            </p>
+          </div>
+
+          <Reveal className="mx-auto mt-12 max-w-4xl">
+            <CoverageMap />
+          </Reveal>
+
+          <div className="mt-20 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {SERVICE_AREAS.map((area, index) => (
               <Reveal key={area.slug} delay={index * 0.05}>
                 <Link
@@ -56,7 +87,9 @@ export default function ServiceAreasPage() {
                   <span className="mt-4 font-display text-3xl font-medium tracking-[-0.03em] text-bone">
                     {area.name}
                   </span>
-                  <span className="mt-1.5 text-xs text-stone">{area.region}</span>
+                  <span className="mt-1.5 text-xs text-stone">
+                    {area.region}
+                  </span>
                   <span className="mt-5 flex-1 text-sm leading-relaxed text-sand/70">
                     {area.intro}
                   </span>
@@ -68,13 +101,19 @@ export default function ServiceAreasPage() {
             ))}
           </div>
 
-          <div className="mt-16 max-w-3xl border-l border-bronze/50 bg-bronze/[0.06] px-6 py-5">
-            <SectionLabel eyebrow="Somewhere else?" />
+          <div
+            className={cn(
+              "mt-16 max-w-3xl border-l border-bronze/50 bg-bronze/[0.06] px-6 py-5",
+              centreText,
+              centreBlock,
+            )}
+          >
+            <SectionLabel eyebrow="Somewhere else?" className={centreRow} />
             <p className="mt-4 leading-relaxed text-sand/80">
               We have not listed every suburb in {site.state}, and we are not
-              going to claim coverage we cannot deliver. Send us the address with
-              your enquiry and we will tell you straight away whether we can get
-              there.
+              going to claim coverage we cannot deliver. Send us the address
+              with your enquiry and we will tell you straight away whether we
+              can get there.
             </p>
           </div>
         </div>

@@ -8,6 +8,7 @@ import { BeforeAfterSlider } from "@/components/ui/BeforeAfterSlider";
 import { PlaceholderNotice } from "@/components/ui/PlaceholderNotice";
 import { CTASection } from "@/components/home/CTASection";
 import { getProject, getProjects } from "@/lib/data";
+import { centreRow } from "@/lib/align";
 import { pageMetadata } from "@/lib/seo";
 import { PLACEHOLDER_PROJECTS } from "@/lib/projects";
 
@@ -74,14 +75,17 @@ export default async function ProjectPage({ params }: Params) {
 
           <div className="grid gap-14 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-20">
             <div>
-              <SectionLabel eyebrow="Gallery" />
+              <SectionLabel eyebrow="Gallery" className={centreRow} />
               <div className="mt-8">
                 <ProjectGallery images={project.gallery} />
               </div>
 
               {project.beforeAfter ? (
                 <div className="mt-16">
-                  <SectionLabel eyebrow="Before / after" />
+                  <SectionLabel
+                    eyebrow="Before / after"
+                    className={centreRow}
+                  />
                   <BeforeAfterSlider
                     beforeKey={project.beforeAfter.before}
                     afterKey={project.beforeAfter.after}
@@ -135,9 +139,12 @@ export default async function ProjectPage({ params }: Params) {
       </Section>
 
       {others.length > 0 ? (
-        <Section spacing="normal" className="border-t border-stone/12 bg-charcoal">
+        <Section
+          spacing="normal"
+          className="border-t border-stone/12 bg-charcoal"
+        >
           <div className="shell">
-            <SectionLabel eyebrow="More projects" />
+            <SectionLabel eyebrow="More projects" className={centreRow} />
             <ul className="mt-8 border-t border-stone/18">
               {others.map((other) => (
                 <li key={other.slug} className="border-b border-stone/18">

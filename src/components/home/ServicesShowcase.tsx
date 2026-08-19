@@ -10,6 +10,7 @@ import { SERVICES } from "@/lib/services";
 import { imageFill } from "@/lib/media";
 import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
 import { useIsDesktop } from "@/hooks/use-media-query";
+import { centreBlock, centreItems, centreRow, centreText } from "@/lib/align";
 import { cn, pad } from "@/lib/utils";
 
 /**
@@ -60,12 +61,24 @@ export function ServicesShowcase() {
       </div>
 
       <div className="shell relative">
-        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <div>
-            <SectionLabel index="04" eyebrow="What we do" />
+        <div
+          className={cn(
+            "flex flex-col gap-6 md:flex-row md:items-end md:justify-between",
+            centreItems,
+          )}
+        >
+          <div className={centreText}>
+            <SectionLabel
+              index="04"
+              eyebrow="What we do"
+              className={centreRow}
+            />
             <h2
               id="services-heading"
-              className="mt-6 max-w-xl font-display text-headline text-bone"
+              className={cn(
+                "mt-6 max-w-xl font-display text-headline text-bone",
+                centreBlock,
+              )}
             >
               Twelve ways we finish a room properly.
             </h2>

@@ -13,12 +13,23 @@ import type {
   QuoteRequestNote,
 } from "@/lib/supabase/types";
 import { QUOTE_SERVICE_OPTIONS } from "@/lib/services";
-import { formatBytes, formatDateTime, telHref } from "@/lib/utils";
+import { formatBytes, formatDate, formatDateTime, telHref } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
+/** "3.2 m × 2.4 m", or whichever single measurement was given. */
+function measurements(request: QuoteRequest) {
+  const width = request.width_m;
+  const length = request.length_m;
+  if (width !== null && length !== null) return `${width} m × ${length} m`;
+  if (width !== null) return `Width ${width} m`;
+  if (length !== null) return `Length / height ${length} m`;
+  return null;
+}
+
 const serviceLabel = (value: string) =>
-  QUOTE_SERVICE_OPTIONS.find((option) => option.value === value)?.label ?? value;
+  QUOTE_SERVICE_OPTIONS.find((option) => option.value === value)?.label ??
+  value;
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -61,10 +72,17 @@ export default async function EnquiryPage({ params }: Params) {
     ["Service", serviceLabel(request.service)],
     ["Suburb", request.suburb],
     ["Postcode", request.postcode],
+    ["Measurements", measurements(request)],
     ["Approx. m²", request.approx_sqm],
     ["Tile size", request.tile_size],
     ["Build type", request.build_type],
     ["Start timing", request.start_timing],
+    [
+      "Requested date",
+      request.preferred_start_date
+        ? `${formatDate(request.preferred_start_date)} (requested, not booked)`
+        : null,
+    ],
   ];
 
   return (
@@ -197,8 +215,8 @@ export default async function EnquiryPage({ params }: Params) {
                   })}
                 </ul>
                 <p className="mt-4 text-xs text-stone">
-                  Links are signed and expire after five minutes. Reload the page
-                  to generate fresh ones.
+                  Links are signed and expire after five minutes. Reload the
+                  page to generate fresh ones.
                 </p>
               </>
             )}

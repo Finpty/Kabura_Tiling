@@ -3,6 +3,11 @@ import type { ReactNode } from "react";
 import { Logo } from "@/components/layout/Logo";
 import { signOut } from "@/app/admin/actions";
 
+const SECTIONS = [
+  { href: "/admin", label: "Enquiries" },
+  { href: "/admin/calendar", label: "Calendar" },
+] as const;
+
 export function AdminShell({
   email,
   children,
@@ -22,6 +27,18 @@ export function AdminShell({
             <span className="hidden rounded-full border border-stone/30 px-3 py-1 text-[0.6rem] font-medium tracking-[0.16em] text-stone-light uppercase sm:inline-block">
               Admin
             </span>
+
+            <nav aria-label="Dashboard" className="flex items-center gap-1">
+              {SECTIONS.map((section) => (
+                <Link
+                  key={section.href}
+                  href={section.href}
+                  className="rounded-full px-3 py-1.5 text-xs text-stone transition-colors hover:bg-charcoal-2 hover:text-sand"
+                >
+                  {section.label}
+                </Link>
+              ))}
+            </nav>
           </div>
 
           <div className="flex items-center gap-5">
@@ -32,7 +49,9 @@ export function AdminShell({
               View site
             </Link>
             {email ? (
-              <span className="hidden text-xs text-stone md:block">{email}</span>
+              <span className="hidden text-xs text-stone md:block">
+                {email}
+              </span>
             ) : null}
             <form action={signOut}>
               <button

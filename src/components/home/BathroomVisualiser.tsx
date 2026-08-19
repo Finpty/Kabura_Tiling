@@ -5,6 +5,7 @@ import { Section, SectionLabel } from "@/components/ui/Section";
 import { PlaceholderNotice } from "@/components/ui/PlaceholderNotice";
 import { MagneticLink } from "@/components/ui/MagneticButton";
 import { MATERIAL_LIST } from "@/lib/media";
+import { centreBlock, centreRow, centreText } from "@/lib/align";
 import { cn } from "@/lib/utils";
 
 /**
@@ -47,12 +48,7 @@ function TilePattern({
   grout: string;
 }) {
   return (
-    <pattern
-      id={id}
-      width={tileW}
-      height={tileH}
-      patternUnits="userSpaceOnUse"
-    >
+    <pattern id={id} width={tileW} height={tileH} patternUnits="userSpaceOnUse">
       <rect width={tileW} height={tileH} fill={grout} />
       <image
         href={src}
@@ -104,8 +100,12 @@ export function BathroomVisualiser() {
       aria-labelledby="visualiser-heading"
     >
       <div className="shell">
-        <div className="max-w-2xl">
-          <SectionLabel index="10" eyebrow="Bathroom visualiser" />
+        <div className={cn("max-w-2xl", centreText, centreBlock)}>
+          <SectionLabel
+            index="10"
+            eyebrow="Bathroom visualiser"
+            className={centreRow}
+          />
           <h2
             id="visualiser-heading"
             className="mt-6 font-display text-headline text-bone"
@@ -113,8 +113,8 @@ export function BathroomVisualiser() {
             Try it on the room.
           </h2>
           <p className="mt-5 text-lead text-sand/70">
-            Pick a surface, then a finish. It is a quick way to work out what you
-            like before anyone measures anything.
+            Pick a surface, then a finish. It is a quick way to work out what
+            you like before anyone measures anything.
           </p>
         </div>
 
@@ -152,21 +152,38 @@ export function BathroomVisualiser() {
 
                   <linearGradient id="shade-left" x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%" stopColor="#050403" stopOpacity="0.62" />
-                    <stop offset="100%" stopColor="#050403" stopOpacity="0.18" />
+                    <stop
+                      offset="100%"
+                      stopColor="#050403"
+                      stopOpacity="0.18"
+                    />
                   </linearGradient>
                   <linearGradient id="shade-right" x1="1" y1="0" x2="0" y2="0">
                     <stop offset="0%" stopColor="#050403" stopOpacity="0.7" />
-                    <stop offset="100%" stopColor="#050403" stopOpacity="0.24" />
+                    <stop
+                      offset="100%"
+                      stopColor="#050403"
+                      stopOpacity="0.24"
+                    />
                   </linearGradient>
                   <linearGradient id="shade-floor" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#050403" stopOpacity="0.42" />
-                    <stop offset="100%" stopColor="#050403" stopOpacity="0.08" />
+                    <stop
+                      offset="100%"
+                      stopColor="#050403"
+                      stopOpacity="0.08"
+                    />
                   </linearGradient>
                   <linearGradient id="glow" x1="0.5" y1="0" x2="0.5" y2="1">
                     <stop offset="0%" stopColor="#fff2dc" stopOpacity="0.4" />
                     <stop offset="100%" stopColor="#fff2dc" stopOpacity="0" />
                   </linearGradient>
-                  <radialGradient id="room-vignette" cx="0.5" cy="0.42" r="0.75">
+                  <radialGradient
+                    id="room-vignette"
+                    cx="0.5"
+                    cy="0.42"
+                    r="0.75"
+                  >
                     <stop offset="55%" stopColor="#050403" stopOpacity="0" />
                     <stop offset="100%" stopColor="#050403" stopOpacity="0.6" />
                   </radialGradient>
@@ -175,25 +192,86 @@ export function BathroomVisualiser() {
                 {/* Ceiling */}
                 <polygon points="0,0 1200,0 890,150 310,150" fill="#1b1815" />
                 {/* Left wall */}
-                <polygon points="0,0 310,150 310,620 0,800" fill="url(#pat-wall)" />
-                <polygon points="0,0 310,150 310,620 0,800" fill="url(#shade-left)" />
+                <polygon
+                  points="0,0 310,150 310,620 0,800"
+                  fill="url(#pat-wall)"
+                />
+                <polygon
+                  points="0,0 310,150 310,620 0,800"
+                  fill="url(#shade-left)"
+                />
                 {/* Right wall */}
-                <polygon points="1200,0 890,150 890,620 1200,800" fill="url(#pat-wall)" />
-                <polygon points="1200,0 890,150 890,620 1200,800" fill="url(#shade-right)" />
+                <polygon
+                  points="1200,0 890,150 890,620 1200,800"
+                  fill="url(#pat-wall)"
+                />
+                <polygon
+                  points="1200,0 890,150 890,620 1200,800"
+                  fill="url(#shade-right)"
+                />
                 {/* Back / feature wall */}
-                <rect x="310" y="150" width="580" height="470" fill="url(#pat-feature)" />
+                <rect
+                  x="310"
+                  y="150"
+                  width="580"
+                  height="470"
+                  fill="url(#pat-feature)"
+                />
                 {/* Floor */}
-                <polygon points="310,620 890,620 1200,800 0,800" fill="url(#pat-floor)" />
-                <polygon points="310,620 890,620 1200,800 0,800" fill="url(#shade-floor)" />
+                <polygon
+                  points="310,620 890,620 1200,800 0,800"
+                  fill="url(#pat-floor)"
+                />
+                <polygon
+                  points="310,620 890,620 1200,800 0,800"
+                  fill="url(#shade-floor)"
+                />
 
                 {/* Concealed cove light above the feature wall */}
-                <rect x="330" y="150" width="540" height="120" fill="url(#glow)" />
+                <rect
+                  x="330"
+                  y="150"
+                  width="540"
+                  height="120"
+                  fill="url(#glow)"
+                />
 
                 {/* Suggested joinery — flat silhouettes, never the subject */}
-                <rect x="430" y="470" width="340" height="70" rx="4" fill="#0d0c0b" opacity="0.82" />
-                <rect x="452" y="486" width="120" height="10" rx="5" fill="#cf9d5f" opacity="0.5" />
-                <rect x="560" y="300" width="80" height="8" rx="4" fill="#cf9d5f" opacity="0.55" />
-                <ellipse cx="1010" cy="700" rx="150" ry="46" fill="#0d0c0b" opacity="0.55" />
+                <rect
+                  x="430"
+                  y="470"
+                  width="340"
+                  height="70"
+                  rx="4"
+                  fill="#0d0c0b"
+                  opacity="0.82"
+                />
+                <rect
+                  x="452"
+                  y="486"
+                  width="120"
+                  height="10"
+                  rx="5"
+                  fill="#cf9d5f"
+                  opacity="0.5"
+                />
+                <rect
+                  x="560"
+                  y="300"
+                  width="80"
+                  height="8"
+                  rx="4"
+                  fill="#cf9d5f"
+                  opacity="0.55"
+                />
+                <ellipse
+                  cx="1010"
+                  cy="700"
+                  rx="150"
+                  ry="46"
+                  fill="#0d0c0b"
+                  opacity="0.55"
+                />
 
                 <rect width="1200" height="800" fill="url(#room-vignette)" />
               </svg>
@@ -260,7 +338,9 @@ export function BathroomVisualiser() {
             </fieldset>
 
             <fieldset className="border-0 p-0">
-              <legend className="eyebrow mb-3 text-stone-light">Grout tone</legend>
+              <legend className="eyebrow mb-3 text-stone-light">
+                Grout tone
+              </legend>
               <div className="flex flex-wrap gap-2">
                 {GROUTS.map((item) => (
                   <button
@@ -313,8 +393,9 @@ export function BathroomVisualiser() {
         </div>
 
         <PlaceholderNotice className="mt-10 max-w-3xl">
-          A visual guide only. Finishes are representative swatches, not specific
-          products, and on-screen colour will not match a physical sample.
+          A visual guide only. Finishes are representative swatches, not
+          specific products, and on-screen colour will not match a physical
+          sample.
         </PlaceholderNotice>
       </div>
     </Section>
