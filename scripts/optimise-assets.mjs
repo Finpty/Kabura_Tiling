@@ -176,6 +176,47 @@ const IMAGES = [
     from: ["tiler-is-putting-spacer-ceramic-tiles.jpg"], crop: [0.04, 0.42, 0.5, 0.4],
     scene: { material: "concrete-pearl", lightAngle: 150, lightStrength: 0.36, vignette: 0.5, mottle: 0.52 } },
 
+  /* ---------------------------------------------------------------------- *
+   * The build-up — one image per layer of the interactive slab.
+   *
+   * These are material scans, not scenes: the camera is straight overhead and
+   * the whole frame is the same material, because each one is mapped onto the
+   * face of a plate in the exploded stack and any perspective baked into the
+   * photograph would fight the isometric it is drawn in. `focus: "centre"`
+   * for the same reason — salience detection looks for a subject, and a scan
+   * has none.
+   *
+   * Each slot names a commissioned scan first and falls back to a real
+   * photograph of the same material already in the repository, so the section
+   * ships with real imagery today and upgrades with no code change the moment
+   * `npm run assets:fetch` brings the commissioned files down.
+   * ---------------------------------------------------------------------- */
+  { key: "layerTile", file: "layer-tile.jpg", width: 1400, ratio: 3, focus: "centre",
+    alt: "Overhead scan of a large-format porcelain tile face with soft grey and bronze veining.",
+    hf: ["12-layer-tile.png", "03-stone-slab.png"],
+    scene: { material: "calacatta-bianco", tile: [700, 700], joint: 4, grout: "#a49a8c", bond: "stack", lightAngle: 128, lightStrength: 0.3, vignette: 0.3, mottle: 0.22 } },
+
+  { key: "layerAdhesive", file: "layer-adhesive.jpg", width: 1400, ratio: 3, focus: "centre",
+    alt: "Overhead view of tile adhesive combed into even ridges with a notched trowel.",
+    hf: ["13-layer-adhesive.png"],
+    from: ["worker-putting-tiles-wall-kitchen.jpg"], crop: [0.19, 0.1, 0.41, 0.3],
+    scene: { material: "concrete-ash", lightAngle: 180, lightStrength: 0.5, vignette: 0.34, mottle: 0.5 } },
+
+  { key: "layerWaterproofing", file: "layer-waterproofing.jpg", width: 1400, ratio: 3, focus: "centre",
+    alt: "Overhead view of a waterproofing membrane rolled out in an unbroken coat.",
+    hf: ["14-layer-waterproofing.png", { file: "05-waterproofing.png", crop: [0.3, 0.1, 0.26, 0.34] }],
+    scene: { material: "concrete-charcoal", lightAngle: 145, lightStrength: 0.24, vignette: 0.36, mottle: 0.3 } },
+
+  { key: "layerScreed", file: "layer-screed.jpg", width: 1400, ratio: 3, focus: "centre",
+    alt: "Overhead view of a sand-and-cement screed bed floated flat.",
+    hf: ["15-layer-screed.png", { file: "07-screed.png", crop: [0.55, 0.6, 0.44, 0.38] }],
+    scene: { material: "concrete-pearl", lightAngle: 160, lightStrength: 0.4, vignette: 0.34, mottle: 0.46 } },
+
+  { key: "layerSubstrate", file: "layer-substrate.jpg", width: 1400, ratio: 3, focus: "centre",
+    alt: "Overhead view of a bare concrete substrate before anything is laid on it.",
+    hf: ["16-layer-substrate.png", { file: "05-waterproofing.png", crop: [0.02, 0.7, 0.3, 0.28] }],
+    scene: { material: "concrete-ash", lightAngle: 150, lightStrength: 0.3, vignette: 0.4, mottle: 0.55 } },
+
   { key: "repairs", file: "repairs.jpg", width: 1600, ratio: 3 / 2,
     alt: "Close detail of the grout joint and trim where two large-format tiles meet.",
     hf: "10-corner-detail.png", hfCrop: [0.02, 0.46, 0.56, 0.52],
@@ -198,14 +239,22 @@ function resolveByBasename(dir, name) {
 }
 
 async function resolveSource(spec) {
-  if (spec.hf) {
+  // `hf` takes one generation or an ordered list of them, and an entry may
+  // carry its own crop. The list is what lets a slot name the generation it
+  // actually wants first and still resolve to an existing one behind it — so a
+  // commissioned image that has not been downloaded yet degrades to real
+  // photography rather than all the way to a procedural field.
+  for (const entry of [spec.hf ?? []].flat()) {
+    const { file, crop } = typeof entry === "string" ? { file: entry } : entry;
     // Match on the basename, not the extension: Higgsfield returns png or jpg
     // depending on the model and resolution, and a slot should not silently fall
     // back to a procedural field just because the file arrived as the other one.
-    const found = resolveByBasename(HF, spec.hf);
+    const found = resolveByBasename(HF, file);
     // `hfCrop` lets one generation serve several slots at different framings —
     // without it, e.g. the stone feature wall appears twice, identically.
-    if (found) return { input: found, kind: "higgsfield", crop: spec.hfCrop ?? null };
+    if (found) {
+      return { input: found, kind: "higgsfield", crop: crop ?? spec.hfCrop ?? null };
+    }
   }
   for (const name of spec.from ?? []) {
     const p = path.join(RAW, name);
@@ -249,7 +298,9 @@ async function buildImages() {
 
     const height = spec.ratio ? Math.round(spec.width / spec.ratio) : null;
     pipe = pipe.resize(spec.width, height ?? undefined,
-      height ? { fit: "cover", position: "attention" } : { fit: "inside" });
+      height
+        ? { fit: "cover", position: spec.focus ?? "attention" }
+        : { fit: "inside" });
 
     if (resolved.kind !== "procedural") {
       pipe = grade(pipe, {
