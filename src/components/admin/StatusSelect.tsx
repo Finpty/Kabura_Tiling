@@ -4,10 +4,10 @@ import { useActionState, useEffect, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { updateStatus, type ActionState } from "@/app/admin/actions";
 import {
-  ENQUIRY_STATUSES,
-  ENQUIRY_STATUS_LABELS,
-  type EnquiryStatus,
-} from "@/lib/supabase/types";
+  QUOTE_STATUSES,
+  QUOTE_STATUS_LABELS,
+  normaliseQuoteStatus,
+} from "@/lib/supabase/portal-types";
 
 function Pending() {
   const { pending } = useFormStatus();
@@ -24,7 +24,8 @@ export function StatusSelect({
   status,
 }: {
   id: string;
-  status: EnquiryStatus;
+  /** Any value the column holds — legacy statuses fold onto the current list. */
+  status: string;
 }) {
   const [state, action] = useActionState<ActionState, FormData>(
     updateStatus,
@@ -47,18 +48,18 @@ export function StatusSelect({
     <form ref={formRef} action={action} className="flex items-center gap-3">
       <input type="hidden" name="id" value={id} />
       <label htmlFor={`status-${id}`} className="sr-only">
-        Enquiry status
+        Quote status
       </label>
       <select
         id={`status-${id}`}
         name="status"
-        defaultValue={status}
+        defaultValue={normaliseQuoteStatus(status)}
         onChange={() => formRef.current?.requestSubmit()}
         className="rounded-sm border border-stone/30 bg-charcoal px-3 py-2 text-sm text-bone focus:border-bronze-light focus:outline-none"
       >
-        {ENQUIRY_STATUSES.map((value) => (
+        {QUOTE_STATUSES.map((value) => (
           <option key={value} value={value}>
-            {ENQUIRY_STATUS_LABELS[value]}
+            {QUOTE_STATUS_LABELS[value]}
           </option>
         ))}
       </select>

@@ -47,18 +47,23 @@ const STATUS_STYLES: Record<AvailabilityStatus, string> = {
   limited:
     "border-bronze/40 bg-bronze/[0.07] text-bone hover:border-bronze-light hover:bg-bronze/15",
   booked: "border-stone/12 bg-charcoal-2/40 text-stone/45",
+  // Blocked out by hand, outside the working week, or already gone. The
+  // customer is told it cannot be booked, never why.
+  unavailable: "border-stone/10 bg-charcoal-2/25 text-stone/30",
 };
 
 const STATUS_DOT: Record<AvailabilityStatus, string> = {
   available: "bg-emerald-400/70",
   limited: "bg-bronze-light",
   booked: "bg-stone/40",
+  unavailable: "bg-stone/25",
 };
 
 const STATUS_TEXT: Record<AvailabilityStatus, string> = {
   available: "Available",
   limited: "Limited availability",
   booked: "Fully booked",
+  unavailable: "Not available",
 };
 
 /** Monday-first weekday index, matching the Australian calendar convention. */
@@ -254,7 +259,11 @@ export function AvailabilityCalendar({ value, onChange, error }: Props) {
                 const past = cell.date < today;
                 const beyond = cell.date > horizon;
                 const status = statusFor(cell.iso);
-                const unavailable = past || beyond || status === "booked";
+                const unavailable =
+                  past ||
+                  beyond ||
+                  status === "booked" ||
+                  status === "unavailable";
                 const isSelected = value === cell.iso;
                 const isToday = cell.iso === toISODate(today);
 

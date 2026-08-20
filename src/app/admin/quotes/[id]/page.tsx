@@ -1,9 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { AdminShell } from "@/components/admin/AdminShell";
 import { StatusSelect } from "@/components/admin/StatusSelect";
 import { NoteForm } from "@/components/admin/NoteForm";
+import type { QuoteRow } from "@/lib/admin/data";
+import { QuoteCommercialsForm } from "@/components/admin/QuoteCommercialsForm";
 import { signUploadUrls } from "@/app/admin/actions";
 import { getAdminSession } from "@/lib/admin-auth";
 import { createServerSupabase } from "@/lib/supabase/server";
@@ -57,7 +58,9 @@ export default async function EnquiryPage({ params }: Params) {
 
   if (!enquiry) notFound();
 
-  const request = enquiry as QuoteRequest;
+  // The row carries the portal's commercial columns as well as the intake
+  // fields the customer filled in.
+  const request = enquiry as QuoteRow;
   const uploads = (files ?? []) as QuoteRequestFile[];
   const noteList = (notes ?? []) as QuoteRequestNote[];
 
@@ -86,7 +89,7 @@ export default async function EnquiryPage({ params }: Params) {
   ];
 
   return (
-    <AdminShell email={session.email}>
+    <>
       <Link
         href="/admin"
         className="text-xs text-stone transition-colors hover:text-sand"
@@ -236,6 +239,15 @@ export default async function EnquiryPage({ params }: Params) {
 
             <NoteForm id={request.id} />
 
+            <div className="mt-10 border-t border-stone/12 pt-8">
+              <h2 className="text-[0.68rem] tracking-[0.16em] text-stone-light uppercase">
+                Pricing and conversion
+              </h2>
+              <div className="mt-4">
+                <QuoteCommercialsForm quote={request} />
+              </div>
+            </div>
+
             <ul className="mt-8 flex flex-col gap-3">
               {noteList.length === 0 ? (
                 <li className="text-sm text-stone">No notes yet.</li>
@@ -279,6 +291,6 @@ export default async function EnquiryPage({ params }: Params) {
           </dl>
         </aside>
       </div>
-    </AdminShell>
+    </>
   );
 }

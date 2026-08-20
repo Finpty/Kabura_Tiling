@@ -22,7 +22,9 @@ import { cn } from "@/lib/utils";
 
 const STATUS_TONES: Record<JobStatus, string> = {
   tentative: "border-stone/45 bg-stone/12 text-stone-light",
+  booked: "border-bronze/50 bg-bronze/12 text-bronze-light",
   confirmed: "border-bronze-light/60 bg-bronze-light/14 text-bronze-light",
+  on_hold: "border-amber-400/40 bg-amber-400/10 text-amber-200",
   in_progress: "border-emerald-400/50 bg-emerald-400/12 text-emerald-300",
   completed: "border-bone/30 bg-bone/8 text-bone/80",
   cancelled: "border-stone/25 bg-transparent text-stone/60 line-through",

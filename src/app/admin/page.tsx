@@ -1,185 +1,403 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AdminShell } from "@/components/admin/AdminShell";
-import { StatusBadge } from "@/components/admin/StatusBadge";
 import { getAdminSession } from "@/lib/admin-auth";
-import { createServerSupabase } from "@/lib/supabase/server";
 import {
-  ENQUIRY_STATUSES,
-  ENQUIRY_STATUS_LABELS,
-  type EnquiryStatus,
-  type QuoteRequest,
-} from "@/lib/supabase/types";
-import { QUOTE_SERVICE_OPTIONS } from "@/lib/services";
-import { formatDate } from "@/lib/utils";
+  getBookings,
+  getExpenses,
+  getJobs,
+  getPayments,
+  getQuotes,
+  getBlockMap,
+  getSettings,
+} from "@/lib/admin/data";
+import {
+  addDays,
+  availabilityFor,
+  dateRange,
+  eachDay,
+  findGaps,
+  financialYear,
+  longDate,
+  shortDate,
+  thisMonth,
+  thisWeek,
+  todayISO,
+} from "@/lib/admin/dates";
+import {
+  ESTIMATE_NOTICE,
+  basSummary,
+  jobMoney,
+  money,
+  paymentState,
+  taxEstimate,
+} from "@/lib/admin/money";
+import {
+  JOB_STATUS_LABELS_FULL,
+  OPEN_QUOTE_STATUSES,
+  PAYMENT_STATE_LABELS,
+  normaliseQuoteStatus,
+} from "@/lib/supabase/portal-types";
+import {
+  Card,
+  Empty,
+  EstimateNote,
+  PageHeader,
+  Pill,
+  RowLink,
+  Section,
+  Stat,
+} from "@/components/admin/ui";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 
+export const metadata = { title: "Dashboard", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
-const serviceLabel = (value: string) =>
-  QUOTE_SERVICE_OPTIONS.find((option) => option.value === value)?.label ?? value;
-
-export default async function AdminPage() {
+/**
+ * The dashboard.
+ *
+ * Answers, in order: what is happening today, what is happening this week,
+ * where the business stands, and where the money is. Nothing on this page is
+ * an input — it is the screen you look at with one hand while holding a
+ * trowel, so every figure is a link to the place you would change it.
+ *
+ * Every number here is derived. Nothing is a stored total that could drift out
+ * of step with the jobs and payments underneath it.
+ */
+export default async function AdminDashboard() {
   const session = await getAdminSession();
   if (!session) redirect("/admin/login");
 
-  const supabase = await createServerSupabase();
-  const { data, error } = await supabase!
-    .from("quote_requests")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(500);
+  const today = todayISO();
+  const week = thisWeek(today);
+  const month = thisMonth(today);
+  const fy = financialYear(today, await getSettings());
 
-  const enquiries = (data ?? []) as QuoteRequest[];
+  const [settings, jobs, quotes, bookings, blocks, monthPayments, fyPayments, fyExpenses] =
+    await Promise.all([
+      getSettings(),
+      getJobs(addDays(today, -60), addDays(today, 120)),
+      getQuotes(200),
+      getBookings(50),
+      getBlockMap(today, addDays(today, 60)),
+      getPayments(month.from, month.to),
+      getPayments(fy.from, fy.to),
+      getExpenses(fy.from, fy.to),
+    ]);
 
-  const byStatus = Object.fromEntries(
-    ENQUIRY_STATUSES.map((status) => [
-      status,
-      enquiries.filter((enquiry) => enquiry.status === status),
-    ]),
-  ) as Record<EnquiryStatus, QuoteRequest[]>;
+  /* ------------------------------- today -------------------------------- */
+  const live = jobs.filter((job) => job.status !== "cancelled");
+  const todayJobs = live.filter(
+    (job) => job.starts_on <= today && today <= (job.actual_finish_on ?? job.ends_on),
+  );
+  const startingSoon = live
+    .filter((job) => job.starts_on > today && job.starts_on <= addDays(today, 7))
+    .slice(0, 6);
+
+  const openQuotes = quotes.filter((quote) =>
+    OPEN_QUOTE_STATUSES.includes(normaliseQuoteStatus(quote.status)),
+  );
+  const newBookings = bookings.filter(
+    (booking) => booking.status === "new" || booking.status === "reviewing",
+  );
+
+  /* ------------------------------ this week ------------------------------ */
+  const weekJobs = live.filter(
+    (job) => job.starts_on <= week.to && (job.actual_finish_on ?? job.ends_on) >= week.from,
+  );
+  const confirmedThisWeek = weekJobs.filter(
+    (job) => job.status === "confirmed" || job.status === "in_progress",
+  );
+  const tentativeThisWeek = weekJobs.filter(
+    (job) => job.status === "tentative" || job.status === "booked",
+  );
+  const freeDaysThisWeek = eachDay(week.from, week.to).filter(
+    (day) =>
+      availabilityFor(day, { jobs: live, blocks, settings, today }) === "available",
+  ).length;
+
+  const weekRevenueExGst = weekJobs.reduce(
+    (sum, job) => sum + (job.value_ex_gst ?? 0),
+    0,
+  );
+
+  /* --------------------------- business summary -------------------------- */
+  const accepted = quotes.filter((quote) => {
+    const status = normaliseQuoteStatus(quote.status);
+    return status === "accepted" || status === "converted";
+  });
+  const jobsInProgress = live.filter((job) => job.status === "in_progress");
+  const jobsCompleted = live.filter((job) => job.status === "completed");
+
+  const outstanding = live
+    .map((job) => ({ job, m: jobMoney(job, job.payments, settings) }))
+    .filter(({ m }) => m.outstanding > 0 && m.revenueIncGst > 0);
+  const outstandingTotal = outstanding.reduce((sum, { m }) => sum + m.outstanding, 0);
+  const receivedThisMonth = monthPayments.reduce(
+    (sum, payment) => sum + Number(payment.amount_inc_gst),
+    0,
+  );
+
+  /* --------------------------- financial summary ------------------------- */
+  const bas = basSummary(fyPayments, fyExpenses, settings);
+  const tax = taxEstimate(bas.salesExGst, bas.expensesExGst, settings);
+
+  const gaps = findGaps({ jobs: live, blocks, settings, from: today, days: 45 }).slice(0, 4);
+
+  if (!isSupabaseConfigured) {
+    return (
+      <>
+        <PageHeader title="Dashboard" />
+        <Section title="Not connected">
+          <Empty>
+            Supabase is not configured, so there is nothing to show. Add the
+            environment variables and run the migrations in{" "}
+            <code>supabase/migrations</code>.
+          </Empty>
+        </Section>
+      </>
+    );
+  }
 
   return (
-    <AdminShell email={session.email}>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl font-medium tracking-[-0.03em] text-bone md:text-4xl">
-            Enquiries
-          </h1>
-          <p className="mt-2 text-sm text-stone">
-            {enquiries.length} total · newest first
-          </p>
-        </div>
-      </div>
+    <>
+      <PageHeader
+        title="Today"
+        subtitle={longDate(today)}
+        action={
+          <Link
+            href="/admin/jobs/new"
+            className="rounded-full bg-bronze px-5 py-2.5 text-[0.7rem] font-semibold tracking-[0.14em] text-paper uppercase transition-colors hover:bg-bronze-light hover:text-ink"
+          >
+            Add job
+          </Link>
+        }
+      />
 
-      {error ? (
-        <p role="alert" className="mt-8 text-sm text-bronze-light">
-          Couldn&rsquo;t load enquiries. Check that the migration has been
-          applied and that your user id is in <code>admin_users</code>.
-        </p>
+      {/* ------------------------------ today ------------------------------ */}
+      <Section
+        title={`On today — ${todayJobs.length} job${todayJobs.length === 1 ? "" : "s"}`}
+      >
+        {todayJobs.length === 0 ? (
+          <Empty>Nothing scheduled for today.</Empty>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2">
+            {todayJobs.map((job) => (
+              <RowLink key={job.id} href={`/admin/jobs/${job.id}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-bone">
+                      {job.customer_name}
+                    </p>
+                    <p className="mt-0.5 truncate text-sm text-sand/70">
+                      {job.address ? `${job.address}, ` : ""}
+                      {job.suburb}
+                    </p>
+                    <p className="mt-1.5 text-xs text-stone">
+                      {job.job_type ?? "Tiling"}
+                      {job.start_time ? ` · from ${job.start_time.slice(0, 5)}` : ""}
+                    </p>
+                  </div>
+                  <Pill
+                    tone={job.status === "in_progress" ? "live" : "neutral"}
+                  >
+                    {JOB_STATUS_LABELS_FULL[job.status]}
+                  </Pill>
+                </div>
+              </RowLink>
+            ))}
+          </div>
+        )}
+      </Section>
+
+      {/* ------------------------- needs a response ------------------------ */}
+      <Section title="Waiting on you">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Link href="/admin/quotes">
+            <Stat
+              label="Quotes open"
+              value={String(openQuotes.length)}
+              hint="Not yet won or lost"
+              tone={openQuotes.length > 0 ? "warn" : "muted"}
+            />
+          </Link>
+          <Link href="/admin/bookings">
+            <Stat
+              label="Date requests"
+              value={String(newBookings.length)}
+              hint="Awaiting approval"
+              tone={newBookings.length > 0 ? "warn" : "muted"}
+            />
+          </Link>
+          <Stat
+            label="Owed to you"
+            value={money(outstandingTotal)}
+            hint={`${outstanding.length} job${outstanding.length === 1 ? "" : "s"} · incl GST`}
+            tone={outstandingTotal > 0 ? "warn" : "muted"}
+          />
+          <Stat
+            label="Banked this month"
+            value={money(receivedThisMonth)}
+            hint="Payments received, incl GST"
+            tone="good"
+          />
+        </div>
+
+        {outstanding.length > 0 ? (
+          <div className="mt-3 grid gap-2">
+            {outstanding.slice(0, 4).map(({ job, m }) => (
+              <RowLink key={job.id} href={`/admin/jobs/${job.id}`}>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm text-bone">
+                      {job.customer_name}
+                    </span>
+                    <span className="text-xs text-stone">
+                      {dateRange(job.starts_on, job.actual_finish_on ?? job.ends_on)}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-right">
+                    <span className="block text-sm text-bone tabular-nums">
+                      {money(m.outstanding)}
+                    </span>
+                    <span className="text-[0.65rem] text-stone">
+                      {PAYMENT_STATE_LABELS[paymentState(m, job)]}
+                    </span>
+                  </span>
+                </div>
+              </RowLink>
+            ))}
+          </div>
+        ) : null}
+      </Section>
+
+      {/* ---------------------------- this week ---------------------------- */}
+      <Section title={`This week — ${shortDate(week.from)} to ${shortDate(week.to)}`}>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Stat label="Confirmed" value={String(confirmedThisWeek.length)} />
+          <Stat
+            label="Tentative"
+            value={String(tentativeThisWeek.length)}
+            tone={tentativeThisWeek.length > 0 ? "warn" : "muted"}
+          />
+          <Stat
+            label="Days free"
+            value={String(freeDaysThisWeek)}
+            hint="Open to customers"
+            tone={freeDaysThisWeek > 0 ? "good" : "muted"}
+          />
+          <Stat
+            label="Booked value"
+            value={money(weekRevenueExGst)}
+            hint="Excl GST"
+          />
+        </div>
+
+        {startingSoon.length > 0 ? (
+          <div className="mt-3 grid gap-2 md:grid-cols-2">
+            {startingSoon.map((job) => (
+              <RowLink key={job.id} href={`/admin/jobs/${job.id}`}>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm text-bone">
+                      {job.customer_name} · {job.suburb}
+                    </span>
+                    <span className="text-xs text-stone">
+                      Starts {longDate(job.starts_on)}
+                    </span>
+                  </span>
+                  <Pill tone="neutral">
+                    {JOB_STATUS_LABELS_FULL[job.status]}
+                  </Pill>
+                </div>
+              </RowLink>
+            ))}
+          </div>
+        ) : null}
+      </Section>
+
+      {/* ------------------------------ gaps ------------------------------- */}
+      {gaps.length > 0 ? (
+        <Section
+          title="Openings in the next six weeks"
+          action={
+            <Link href="/admin/calendar" className="text-xs text-bronze-light">
+              Calendar →
+            </Link>
+          }
+        >
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            {gaps.map((gap) => (
+              <Card key={gap.from}>
+                <p className="font-display text-lg text-bone">{gap.label}</p>
+                <p className="mt-1 text-xs text-stone">
+                  {dateRange(gap.from, gap.to)}
+                </p>
+              </Card>
+            ))}
+          </div>
+        </Section>
       ) : null}
 
-      {/* Pipeline */}
-      <div className="no-scrollbar mt-10 flex gap-4 overflow-x-auto pb-4">
-        {ENQUIRY_STATUSES.map((status) => {
-          const items = byStatus[status];
-          return (
-            <section
-              key={status}
-              aria-labelledby={`col-${status}`}
-              className="flex w-[19rem] shrink-0 flex-col rounded-sm border border-stone/18 bg-charcoal"
-            >
-              <div className="flex items-center justify-between gap-3 border-b border-stone/18 px-4 py-3.5">
-                <h2
-                  id={`col-${status}`}
-                  className="text-[0.72rem] font-semibold tracking-[0.14em] text-bone uppercase"
-                >
-                  {ENQUIRY_STATUS_LABELS[status]}
-                </h2>
-                <span className="rounded-full bg-ink px-2.5 py-1 text-[0.68rem] text-stone tabular-nums">
-                  {items.length}
-                </span>
-              </div>
-
-              <ul className="flex flex-1 flex-col gap-px bg-stone/10">
-                {items.length === 0 ? (
-                  <li className="bg-charcoal px-4 py-8 text-center text-xs text-stone">
-                    Nothing here
-                  </li>
-                ) : (
-                  items.map((enquiry) => (
-                    <li key={enquiry.id} className="bg-charcoal">
-                      <Link
-                        href={`/admin/enquiries/${enquiry.id}`}
-                        className="block px-4 py-4 transition-colors hover:bg-ink"
-                      >
-                        <div className="flex items-baseline justify-between gap-3">
-                          <span className="font-medium text-bone">
-                            {enquiry.name}
-                          </span>
-                          <span className="shrink-0 text-[0.66rem] text-stone tabular-nums">
-                            {formatDate(enquiry.created_at)}
-                          </span>
-                        </div>
-                        <p className="mt-1.5 text-xs text-sand/70">
-                          {serviceLabel(enquiry.service)} · {enquiry.suburb}
-                        </p>
-                        <p className="mt-2 text-[0.66rem] text-stone tabular-nums">
-                          {enquiry.reference}
-                        </p>
-                      </Link>
-                    </li>
-                  ))
-                )}
-              </ul>
-            </section>
-          );
-        })}
-      </div>
-
-      {/* Full table */}
-      <section aria-labelledby="all-enquiries" className="mt-14">
-        <h2
-          id="all-enquiries"
-          className="text-[0.72rem] font-semibold tracking-[0.14em] text-bone uppercase"
-        >
-          All enquiries
-        </h2>
-
-        <div className="mt-5 overflow-x-auto rounded-sm border border-stone/18">
-          <table className="w-full min-w-[52rem] border-collapse text-sm">
-            <caption className="sr-only">
-              All quote enquiries, newest first
-            </caption>
-            <thead>
-              <tr className="border-b border-stone/18 bg-charcoal text-left">
-                <th scope="col" className="px-4 py-3 font-medium text-stone-light">Reference</th>
-                <th scope="col" className="px-4 py-3 font-medium text-stone-light">Name</th>
-                <th scope="col" className="px-4 py-3 font-medium text-stone-light">Service</th>
-                <th scope="col" className="px-4 py-3 font-medium text-stone-light">Suburb</th>
-                <th scope="col" className="px-4 py-3 font-medium text-stone-light">Received</th>
-                <th scope="col" className="px-4 py-3 font-medium text-stone-light">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {enquiries.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-stone">
-                    No enquiries yet. They will appear here as soon as the quote
-                    form is submitted.
-                  </td>
-                </tr>
-              ) : (
-                enquiries.map((enquiry) => (
-                  <tr
-                    key={enquiry.id}
-                    className="border-b border-stone/12 last:border-b-0 hover:bg-charcoal"
-                  >
-                    <td className="px-4 py-3 text-stone tabular-nums">
-                      <Link
-                        href={`/admin/enquiries/${enquiry.id}`}
-                        className="link-underline text-bone"
-                      >
-                        {enquiry.reference}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-bone">{enquiry.name}</td>
-                    <td className="px-4 py-3 text-sand/80">
-                      {serviceLabel(enquiry.service)}
-                    </td>
-                    <td className="px-4 py-3 text-sand/80">{enquiry.suburb}</td>
-                    <td className="px-4 py-3 text-stone tabular-nums">
-                      {formatDate(enquiry.created_at)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={enquiry.status} />
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+      {/* ------------------------ business summary ------------------------- */}
+      <Section title="Business">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Stat label="Quotes received" value={String(quotes.length)} />
+          <Stat label="Quotes accepted" value={String(accepted.length)} tone="good" />
+          <Stat label="Jobs in progress" value={String(jobsInProgress.length)} />
+          <Stat label="Jobs completed" value={String(jobsCompleted.length)} />
         </div>
-      </section>
-    </AdminShell>
+      </Section>
+
+      {/* ------------------------ financial summary ------------------------ */}
+      <Section
+        title={`Money — ${fy.label} to date`}
+        action={
+          <Link href="/admin/finance" className="text-xs text-bronze-light">
+            Full finance →
+          </Link>
+        }
+      >
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <Stat
+            label="Received (incl GST)"
+            value={money(bas.salesIncGst)}
+            hint="Payments banked this financial year"
+          />
+          <Stat
+            label="GST collected"
+            value={money(bas.gstOnSales)}
+            hint="Held for the ATO — not income"
+            tone="warn"
+          />
+          <Stat
+            label="Income (excl GST)"
+            value={money(bas.salesExGst)}
+            hint="The part that is actually revenue"
+            tone="good"
+          />
+          <Stat
+            label="Expenses (excl GST)"
+            value={money(bas.expensesExGst)}
+            hint="Recorded business expenses"
+          />
+          <Stat
+            label="Estimated profit"
+            value={money(tax.taxableProfit)}
+            hint="Income less expenses, before tax"
+            tone={tax.taxableProfit >= 0 ? "good" : "warn"}
+          />
+          <Stat
+            label="Estimated tax set-aside"
+            value={money(tax.provision)}
+            hint={`At ${(tax.rate * 100).toFixed(1)}% — estimate only`}
+            tone="muted"
+          />
+        </div>
+        <EstimateNote>
+          {ESTIMATE_NOTICE} GST collected is money held on behalf of the ATO and
+          is never counted as income or profit.
+        </EstimateNote>
+      </Section>
+    </>
   );
 }
