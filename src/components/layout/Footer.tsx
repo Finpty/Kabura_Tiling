@@ -171,6 +171,14 @@ export function Footer() {
                   About
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/book"
+                  className="link-underline text-sm text-sand/80 hover:text-bone"
+                >
+                  Check availability
+                </Link>
+              </li>
             </ul>
           </nav>
 

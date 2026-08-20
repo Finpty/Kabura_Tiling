@@ -189,6 +189,22 @@ export default async function FinancePage() {
           {ESTIMATE_NOTICE} Calculated on a cash basis from payments banked and
           expenses recorded in this portal.
         </EstimateNote>
+
+        {/* The file to email the bookkeeper: summary plus every line under it. */}
+        <div className="mt-4 flex flex-wrap gap-3">
+          <a
+            href="/admin/finance/export?period=quarter"
+            className="rounded-full border border-stone/30 px-5 py-2.5 text-[0.68rem] font-semibold tracking-[0.14em] text-sand uppercase transition-colors hover:border-bronze-light hover:text-bronze-light"
+          >
+            Download quarter CSV
+          </a>
+          <a
+            href="/admin/finance/export?period=fy"
+            className="rounded-full border border-stone/30 px-5 py-2.5 text-[0.68rem] font-semibold tracking-[0.14em] text-sand uppercase transition-colors hover:border-bronze-light hover:text-bronze-light"
+          >
+            Download financial-year CSV
+          </a>
+        </div>
       </Section>
 
       <Section title="Owed to you">

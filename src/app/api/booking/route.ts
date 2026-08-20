@@ -74,24 +74,45 @@ export async function POST(request: Request) {
     source_path: clean(body.sourcePath, 200) || null,
   };
 
-  // The anon client is enough: the INSERT policy permits exactly this and
-  // nothing more. The service-role client is only a fallback for a deployment
-  // that has not run the migration yet, and it writes the same row.
+  /**
+   * Which client writes the row matters here, and the test suite is why this
+   * is written the way it is (supabase/tests/portal.test.sql):
+   *
+   * anon may INSERT into booking_requests and may not SELECT from it — and
+   * RETURNING is a select, so an anon insert that asks for its reference back
+   * is refused wholesale. That is the privacy design working, not a bug. So
+   * the service-role client (server-only; this file cannot reach a browser)
+   * performs the insert and reads the reference back. If no service key is
+   * configured, the anon client still records the request — the row is what
+   * matters — and the customer simply gets a confirmation without a reference.
+   */
+  const admin = createAdminClient();
+  if (admin) {
+    const { data, error } = await admin
+      .from("booking_requests")
+      .insert(payload)
+      .select("reference")
+      .maybeSingle();
+
+    if (error) {
+      console.error("Booking request failed", error.message);
+      return NextResponse.json(
+        { error: "That didn't send. Please call us instead." },
+        { status: 500 },
+      );
+    }
+    return NextResponse.json({ ok: true, reference: data?.reference ?? null });
+  }
+
   const anon = await createServerSupabase();
-  const client = anon ?? createAdminClient();
-  if (!client) {
+  if (!anon) {
     return NextResponse.json(
       { error: "Requests are not available right now." },
       { status: 503 },
     );
   }
 
-  const { data, error } = await client
-    .from("booking_requests")
-    .insert(payload)
-    .select("reference")
-    .maybeSingle();
-
+  const { error } = await anon.from("booking_requests").insert(payload);
   if (error) {
     console.error("Booking request failed", error.message);
     return NextResponse.json(
@@ -99,6 +120,5 @@ export async function POST(request: Request) {
       { status: 500 },
     );
   }
-
-  return NextResponse.json({ ok: true, reference: data?.reference ?? null });
+  return NextResponse.json({ ok: true, reference: null });
 }

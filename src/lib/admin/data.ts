@@ -10,6 +10,7 @@ import {
   type CalendarBlockRow,
   type CustomerRow,
   type ExpenseRow,
+  type JobAssignmentRow,
   type JobNoteRow,
   type PaymentRow,
   type PortalJobRow,
@@ -114,6 +115,7 @@ export const getJob = cache(
     payments: PaymentRow[];
     notes: JobNoteRow[];
     expenses: ExpenseRow[];
+    assignments: JobAssignmentRow[];
   } | null> => {
     const ctx = await adminClient();
     if (!ctx) return null;
@@ -125,7 +127,7 @@ export const getJob = cache(
       .maybeSingle();
     if (error || !job) return null;
 
-    const [{ data: payments }, { data: notes }, { data: expenses }] =
+    const [{ data: payments }, { data: notes }, { data: expenses }, { data: assignments }] =
       await Promise.all([
         ctx.supabase
           .from("payments")
@@ -142,6 +144,11 @@ export const getJob = cache(
           .select("*")
           .eq("job_id", id)
           .order("spent_on", { ascending: false }),
+        ctx.supabase
+          .from("job_assignments")
+          .select("*")
+          .eq("job_id", id)
+          .order("created_at", { ascending: true }),
       ]);
 
     return {
@@ -149,6 +156,7 @@ export const getJob = cache(
       payments: (payments ?? []) as PaymentRow[],
       notes: (notes ?? []) as JobNoteRow[],
       expenses: (expenses ?? []) as ExpenseRow[],
+      assignments: (assignments ?? []) as JobAssignmentRow[],
     };
   },
 );

@@ -20,6 +20,7 @@ import {
 } from "@/lib/supabase/portal-types";
 import { JobEditor } from "@/components/admin/JobEditor";
 import { JobNoteForm, PaymentForm } from "@/components/admin/JobMoneyForms";
+import { CrewList } from "@/components/admin/CrewList";
 import {
   Card,
   Empty,
@@ -53,7 +54,7 @@ export default async function JobPage({
   const [data, settings] = await Promise.all([getJob(id), getSettings()]);
   if (!data) notFound();
 
-  const { job, payments, notes, expenses } = data;
+  const { job, payments, notes, expenses, assignments } = data;
   const m = jobMoney(job, payments, settings);
   const state = paymentState(m, job);
   const rate = settings.gst_registered ? settings.gst_rate : 0;
@@ -191,6 +192,12 @@ export default async function JobPage({
           </ul>
         </Section>
       ) : null}
+
+      <Section title="On the job">
+        <Card>
+          <CrewList jobId={job.id} assignments={assignments} />
+        </Card>
+      </Section>
 
       <Section title="Notes">
         <Card>

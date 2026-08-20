@@ -342,6 +342,55 @@ export async function addJobNote(
   return { ok: true };
 }
 
+/**
+ * Who is on the job. Free-text names on purpose: the crew changes week to
+ * week, subcontractors come and go, and a staff table to maintain would be
+ * more admin than the admin.
+ */
+export async function addAssignment(
+  _prev: Result,
+  form: FormData,
+): Promise<Result> {
+  const ctx = await session();
+  if (!ctx) return { error: "Not authorised." };
+
+  const jobId = text(form, "job_id");
+  const worker = text(form, "worker_name");
+  if (!UUID.test(jobId)) return { error: "Missing job." };
+  if (!worker) return { error: "Give them a name." };
+
+  const { error } = await ctx.supabase.from("job_assignments").insert({
+    job_id: jobId,
+    worker_name: worker,
+    role: optionalText(form, "role"),
+  });
+  if (error) return { error: "Couldn't add that person." };
+
+  revalidatePath(`/admin/jobs/${jobId}`);
+  return { ok: true };
+}
+
+export async function removeAssignment(
+  _prev: Result,
+  form: FormData,
+): Promise<Result> {
+  const ctx = await session();
+  if (!ctx) return { error: "Not authorised." };
+
+  const id = text(form, "id");
+  const jobId = text(form, "job_id");
+  if (!UUID.test(id) || !UUID.test(jobId)) return { error: "Missing assignment." };
+
+  const { error } = await ctx.supabase
+    .from("job_assignments")
+    .delete()
+    .eq("id", id);
+  if (error) return { error: "Couldn't remove that person." };
+
+  revalidatePath(`/admin/jobs/${jobId}`);
+  return { ok: true };
+}
+
 /* =============================== payments ================================ */
 
 export async function recordPayment(

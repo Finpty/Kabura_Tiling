@@ -20,8 +20,10 @@ begin
       and column_name  = 'suburb_postcode'   -- only the first-pass table had this
   ) then
     alter table public.quote_requests rename to quote_requests_legacy;
+    -- Inside the conditional on purpose: on a fresh project the archive table
+    -- never exists, and a comment on a missing table is an error that would
+    -- fail the whole migration.
+    comment on table public.quote_requests_legacy is
+      'Archived 2026-08-18. First-pass quote intake, replaced by public.quote_requests. RLS enabled with no policies BY DESIGN: readable only by the service role.';
   end if;
 end$$;
-
-comment on table public.quote_requests_legacy is
-  'Archived 2026-08-18. First-pass quote intake, replaced by public.quote_requests. RLS enabled with no policies BY DESIGN: readable only by the service role.';
