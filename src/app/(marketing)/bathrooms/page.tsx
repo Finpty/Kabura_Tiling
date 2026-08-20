@@ -7,7 +7,6 @@ import { BeforeAfterSlider } from "@/components/ui/BeforeAfterSlider";
 import { BathroomVisualiser } from "@/components/home/BathroomVisualiser";
 import { AmbientVideo } from "@/components/ui/AmbientVideo";
 import { CTASection } from "@/components/home/CTASection";
-import { PlaceholderNotice } from "@/components/ui/PlaceholderNotice";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { img, imageFill, video } from "@/lib/media";
 import { centreBlock, centreRow, centreText } from "@/lib/align";
@@ -195,11 +194,6 @@ export default function BathroomsPage() {
             afterKey="bathroom"
             className="mt-12 aspect-[16/10] w-full rounded-sm md:aspect-[16/8]"
           />
-          <PlaceholderNotice className="mt-8 max-w-3xl">
-            Placeholder comparison shown to demonstrate the slider — not one
-            room photographed before and after. Real matched pairs replace this
-            once Kabura supplies project photography.
-          </PlaceholderNotice>
         </div>
       </Section>
 

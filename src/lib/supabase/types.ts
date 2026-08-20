@@ -313,8 +313,13 @@ export type Database = {
       >;
       business_settings: Table<BusinessSettingsRow, Partial<BusinessSettingsRow>>;
       admin_users: Table<
-        { user_id: string; email: string | null; created_at: string },
-        { user_id: string; email?: string | null }
+        {
+          user_id: string;
+          email: string | null;
+          username: string | null;
+          created_at: string;
+        },
+        { user_id: string; email?: string | null; username?: string | null }
       >;
     };
     Views: Record<never, never>;

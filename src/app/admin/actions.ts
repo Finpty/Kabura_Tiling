@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { Database } from "@/lib/supabase/types";
 import { getAdminSession } from "@/lib/admin-auth";
 import { QUOTE_UPLOAD_BUCKET } from "@/lib/supabase/types";
 import { QUOTE_STATUSES, type QuoteStatus } from "@/lib/supabase/portal-types";
@@ -11,16 +12,44 @@ import { site } from "@/lib/site";
 
 export type ActionState = { error?: string; ok?: boolean };
 
+/**
+ * Resolves a typed identifier to the email Supabase authenticates with.
+ *
+ * "rez" maps to the email on that admin's allow-list row. The lookup runs on
+ * the service-role client because it happens BEFORE authentication, when the
+ * caller is nobody — and it stays server-side, so which usernames exist is
+ * never observable from a browser. Anything that fails resolves to the input
+ * itself, which then fails password sign-in with the same generic message as
+ * every other wrong guess.
+ */
+async function resolveSignInEmail(identifier: string): Promise<string> {
+  if (identifier.includes("@")) return identifier;
+
+  const admin = createAdminClient();
+  if (!admin) return identifier;
+
+  const { data } = await (admin as NonNullable<ReturnType<typeof createAdminClient>>)
+    .from("admin_users")
+    .select("email,username")
+    .not("username", "is", null)
+    .returns<Database["public"]["Tables"]["admin_users"]["Row"][]>();
+
+  const match = data?.find(
+    (row) => row.username?.toLowerCase() === identifier.toLowerCase(),
+  );
+  return match?.email ?? identifier;
+}
+
 /** Sign in. Deliberately returns one generic message for every failure mode. */
 export async function signIn(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const email = String(formData.get("email") ?? "").trim();
+  const identifier = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
-  if (!email || !password) {
-    return { error: "Enter your email address and password." };
+  if (!identifier || !password) {
+    return { error: "Enter your username or email, and your password." };
   }
 
   const supabase = await createServerSupabase();
@@ -28,6 +57,7 @@ export async function signIn(
     return { error: "The dashboard is not connected to Supabase yet." };
   }
 
+  const email = await resolveSignInEmail(identifier);
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
     // Never distinguish "no such account" from "wrong password".

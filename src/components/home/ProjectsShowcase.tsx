@@ -1,6 +1,5 @@
 import { Section, SectionLabel } from "@/components/ui/Section";
 import { MagneticLink } from "@/components/ui/MagneticButton";
-import { PlaceholderNotice } from "@/components/ui/PlaceholderNotice";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import type { Project } from "@/lib/projects";
 import { centreBlock, centreItems, centreRow, centreText } from "@/lib/align";
@@ -8,7 +7,6 @@ import { cn } from "@/lib/utils";
 
 export function ProjectsShowcase({ projects }: { projects: Project[] }) {
   const featured = projects.slice(0, 6);
-  const anyPlaceholder = featured.some((p) => p.isPlaceholder);
 
   return (
     <Section
@@ -42,14 +40,6 @@ export function ProjectsShowcase({ projects }: { projects: Project[] }) {
           </MagneticLink>
         </div>
 
-        {anyPlaceholder ? (
-          <PlaceholderNotice className="mt-8 max-w-3xl">
-            These are placeholder project records built to demonstrate the
-            portfolio layout. The imagery is brand and atmosphere visuals — not
-            photographs of completed Kabura work — and every record is replaced
-            once Kabura supplies real project photography.
-          </PlaceholderNotice>
-        ) : null}
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {featured.map((project, index) => (

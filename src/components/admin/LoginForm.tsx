@@ -28,12 +28,12 @@ export function LoginForm({ next }: { next?: string }) {
       {next ? <input type="hidden" name="next" value={next} /> : null}
       <div className="flex flex-col gap-2">
         <label htmlFor="admin-email" className="eyebrow text-stone-light">
-          Email
+          Username or email
         </label>
         <input
           id="admin-email"
           name="email"
-          type="email"
+          type="text"
           required
           autoComplete="username"
           className="w-full rounded-sm border border-stone/30 bg-charcoal px-4 py-3 text-bone focus:border-bronze-light focus:outline-none"
