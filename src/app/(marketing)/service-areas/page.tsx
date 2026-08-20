@@ -5,7 +5,7 @@ import { Section, SectionLabel } from "@/components/ui/Section";
 import { Reveal } from "@/components/ui/Reveal";
 import { CTASection } from "@/components/home/CTASection";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { CoverageMap } from "@/components/service-areas/CoverageMap";
+import { CoverageBoard } from "@/components/service-areas/CoverageBoard";
 import { SERVICE_AREAS } from "@/lib/service-areas";
 import { absoluteUrl, pageMetadata } from "@/lib/seo";
 import { site } from "@/lib/site";
@@ -72,7 +72,7 @@ export default function ServiceAreasPage() {
           </div>
 
           <Reveal className="mt-12 flex justify-center">
-            <CoverageMap />
+            <CoverageBoard />
           </Reveal>
 
           <div className="mt-20 grid gap-5 md:grid-cols-2 lg:grid-cols-3">

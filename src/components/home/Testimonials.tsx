@@ -1,13 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Section, SectionLabel } from "@/components/ui/Section";
 import { MagneticLink } from "@/components/ui/MagneticButton";
 import { Marquee } from "@/components/ui/Marquee";
 import { PlaceholderNotice } from "@/components/ui/PlaceholderNotice";
 import { SocialIcon } from "@/components/ui/SocialIcons";
 import type { DisplayReview, GoogleReviews } from "@/lib/google-reviews";
+import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
 import { centreBlock, centreRow, centreText } from "@/lib/align";
 import { site } from "@/lib/site";
 import { cn, formatDate } from "@/lib/utils";
@@ -23,8 +24,14 @@ import { cn, formatDate } from "@/lib/utils";
  *
  * The cards borrow Google's own review layout — avatar, name, star row, date,
  * body — because that is the shape people already trust, then wear the site's
- * palette rather than Google's. The rail is one component at every breakpoint:
- * swipe on a phone, arrows once there is room for them.
+ * palette rather than Google's.
+ *
+ * The rail drifts rather than waiting to be scrolled. A row of static cards
+ * reads as a wall of text and gets skipped; a slow, even drift is legible at a
+ * glance and makes it obvious there is more than fits on screen. It stops the
+ * moment a pointer is over it or anything inside takes focus, so nothing a
+ * visitor is trying to read ever moves out from under them, and it does not
+ * run at all under reduced motion — there the cards simply wrap.
  */
 
 /** Work the ticker names. Every one is a service the site already lists. */
@@ -41,6 +48,13 @@ const TICKER = [
 
 /** Character count past which a card offers to expand rather than clamp. */
 const LONG_REVIEW = 240;
+
+/**
+ * Seconds of drift per card. Multiplied by the number of reviews so the rail
+ * moves at one speed whether there are three cards or thirty — a fixed total
+ * duration would sprint through a long list and crawl through a short one.
+ */
+const DRIFT_SECONDS_PER_CARD = 9;
 
 function Stars({
   rating,
@@ -117,7 +131,7 @@ function ReviewCard({ review }: { review: DisplayReview }) {
     (review.reviewedAt ? formatDate(review.reviewedAt) : null);
 
   return (
-    <article className="glass flex w-[80vw] shrink-0 snap-center flex-col rounded-2xl border border-stone/20 p-6 text-left transition-[border-color,transform,box-shadow] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:border-bronze-light/40 hover:shadow-[0_28px_60px_-34px_color-mix(in_oklab,var(--color-bronze)_55%,transparent)] sm:w-[21rem] sm:p-7">
+    <article className="glass flex w-[80vw] shrink-0 flex-col rounded-2xl border border-stone/20 p-6 text-left transition-[border-color,transform,box-shadow] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:border-bronze-light/40 hover:shadow-[0_28px_60px_-34px_color-mix(in_oklab,var(--color-bronze)_55%,transparent)] sm:w-[21rem] sm:p-7">
       <header className="flex items-start justify-between gap-3">
         <span className="flex min-w-0 items-center gap-3.5">
           <Avatar review={review} />
@@ -178,30 +192,16 @@ export function Testimonials({ data }: { data: GoogleReviews }) {
   const reviews = data.reviews;
   const profileUrl = data.profileUrl ?? site.social.google;
 
-  const railRef = useRef<HTMLDivElement>(null);
-  const [atStart, setAtStart] = useState(true);
-  const [atEnd, setAtEnd] = useState(false);
-
-  const syncEdges = useCallback(() => {
-    const rail = railRef.current;
-    if (!rail) return;
-    setAtStart(rail.scrollLeft <= 4);
-    setAtEnd(rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 4);
-  }, []);
-
-  useEffect(() => {
-    syncEdges();
-    window.addEventListener("resize", syncEdges);
-    return () => window.removeEventListener("resize", syncEdges);
-  }, [syncEdges, reviews.length]);
-
-  const nudge = (direction: 1 | -1) => {
-    const rail = railRef.current;
-    if (!rail) return;
-    const card = rail.querySelector("article");
-    const step = card ? card.clientWidth + 16 : rail.clientWidth * 0.8;
-    rail.scrollBy({ left: direction * step, behavior: "smooth" });
-  };
+  const reduced = usePrefersReducedMotion();
+  /**
+   * Pausing is state rather than `:hover`/`:focus-within` classes because the
+   * duration has to be inline — it is derived from the number of reviews — and
+   * an inline `animation` shorthand resets play-state, so no class can pause
+   * it. Pointer events rather than mouse events so a finger on the rail stops
+   * it too.
+   */
+  const [pointerOver, setPointerOver] = useState(false);
+  const [focusInside, setFocusInside] = useState(false);
 
   /**
    * Nothing real to show means nothing at all — in production. An empty reviews
@@ -309,52 +309,57 @@ export function Testimonials({ data }: { data: GoogleReviews }) {
 
         {/* Rail */}
         <div className="mt-12">
-          {/* A scrollable region needs to be reachable by keyboard, hence the
-              tabindex: without it the arrows are the only way through, and
-              they are hidden on a phone. `items-stretch` keeps every card the
-              height of the tallest so the rail reads as one band rather than a
-              ragged edge. */}
-          <div
-            ref={railRef}
-            onScroll={syncEdges}
-            tabIndex={0}
-            role="group"
-            aria-label="Customer reviews"
-            className="no-scrollbar -mx-5 flex snap-x snap-mandatory items-stretch gap-4 overflow-x-auto overscroll-x-contain px-5 pb-2 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-bronze-light md:-mx-10 md:px-10 xl:-mx-14 xl:px-14"
-          >
-            {reviews.map((review) => (
-              <ReviewCard key={review.id} review={review} />
-            ))}
-          </div>
-
-          <div className={cn("mt-8 flex flex-wrap items-center gap-4", centreRow)}>
-            {reviews.length > 1 ? (
-              <div className="hidden items-center gap-2 sm:flex">
-                <button
-                  type="button"
-                  onClick={() => nudge(-1)}
-                  disabled={atStart}
-                  className="grid h-11 w-11 place-items-center rounded-full border border-stone/30 text-bone transition-colors hover:border-bronze-light hover:text-bronze-light disabled:pointer-events-none disabled:opacity-30"
-                >
-                  <span className="sr-only">Previous reviews</span>
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
-                    <path d="M15 5 8 12l7 7" stroke="currentColor" strokeWidth="1.6" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => nudge(1)}
-                  disabled={atEnd}
-                  className="grid h-11 w-11 place-items-center rounded-full border border-stone/30 text-bone transition-colors hover:border-bronze-light hover:text-bronze-light disabled:pointer-events-none disabled:opacity-30"
-                >
-                  <span className="sr-only">More reviews</span>
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
-                    <path d="m9 5 7 7-7 7" stroke="currentColor" strokeWidth="1.6" />
-                  </svg>
-                </button>
+          {reduced ? (
+            /* No drift, no clone: every card, wrapped and still. */
+            <ul className={cn("flex flex-wrap gap-4", centreRow)}>
+              {reviews.map((review) => (
+                <li key={review.id} className="contents">
+                  <ReviewCard review={review} />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div
+              onPointerEnter={() => setPointerOver(true)}
+              onPointerLeave={() => setPointerOver(false)}
+              onFocusCapture={() => setFocusInside(true)}
+              onBlurCapture={() => setFocusInside(false)}
+              className="-mx-5 flex overflow-hidden select-none md:-mx-10 xl:-mx-14"
+              style={{
+                // Fade the cards out at both edges rather than cutting them,
+                // so a card leaving the frame does not read as clipped.
+                maskImage:
+                  "linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent)",
+              }}
+            >
+              <div
+                className="flex shrink-0 gap-4 pr-4"
+                style={{
+                  animation: `marquee ${DRIFT_SECONDS_PER_CARD * reviews.length}s linear infinite`,
+                  // Longhand after the shorthand: this is what actually pauses.
+                  animationPlayState:
+                    pointerOver || focusInside ? "paused" : "running",
+                }}
+              >
+                {reviews.map((review) => (
+                  <ReviewCard key={review.id} review={review} />
+                ))}
+                {/*
+                  The second run is what makes the loop seamless — the track
+                  travels exactly its own half-width and starts again. It is
+                  hidden from assistive technology and taken out of the tab
+                  order so the same seven reviews are not announced twice.
+                */}
+                <div aria-hidden="true" className="flex shrink-0 gap-4" inert>
+                  {reviews.map((review) => (
+                    <ReviewCard key={`${review.id}-loop`} review={review} />
+                  ))}
+                </div>
               </div>
-            ) : null}
+            </div>
+          )}
 
+          <div className={cn("mt-10 flex flex-wrap items-center gap-4", centreRow)}>
             {profileUrl ? (
               <MagneticLink
                 href={profileUrl}

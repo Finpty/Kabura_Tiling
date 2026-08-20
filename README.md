@@ -145,7 +145,9 @@ supplied" placeholder rather than inventing a number, address or registration.
 | `NEXT_PUBLIC_SOCIAL_LINKEDIN` | — | No default. Hidden until a URL is supplied |
 | `GOOGLE_PLACES_API_KEY` | for reviews | **Server only.** Places API (New). Unset ⇒ "reviews coming soon" |
 | `GOOGLE_PLACE_ID` | for reviews | The business's Place ID |
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | for the map | Maps JavaScript API. Browser key by necessity — restrict it by HTTP referrer. Unset ⇒ the coverage map renders its fallback panel. **Not** the same key as `GOOGLE_PLACES_API_KEY` |
+
+> There is no Maps key. The coverage panel is drawn from the coordinates in `src/lib/service-areas.ts`, so it needs no Google Cloud project, no billing and no referrer allowlist — and cannot show "This page can't load Google Maps correctly" when one of those is wrong.
+
 | `NEXT_PUBLIC_SUPABASE_URL` | for quotes | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | for quotes | Publishable key — safe in the browser, every table is behind RLS |
 | `SUPABASE_SERVICE_ROLE_KEY` | for photos + admin | **Server only.** Never prefix with `NEXT_PUBLIC_`, never commit. Without it enquiries are still captured through the anon key, but photo uploads are skipped and `/admin` stays off |

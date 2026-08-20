@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Section, SectionLabel } from "@/components/ui/Section";
 import { MagneticLink } from "@/components/ui/MagneticButton";
-import { CoverageMap } from "@/components/service-areas/CoverageMap";
+import { CoverageBoard } from "@/components/service-areas/CoverageBoard";
 import { SERVICE_AREAS } from "@/lib/service-areas";
 import { site } from "@/lib/site";
 import { centreBlock, centreRow, centreText } from "@/lib/align";
@@ -88,7 +88,7 @@ export function ServiceAreasSection() {
           </div>
 
           <div className="flex flex-col gap-8 lg:sticky lg:top-32 lg:self-start">
-            <CoverageMap className="mx-auto lg:mx-0" />
+            <CoverageBoard className="mx-auto lg:mx-0" />
 
             <div className="border border-stone/20 bg-ink/50 p-7">
               <p className="eyebrow text-bronze-light">{area.region}</p>
