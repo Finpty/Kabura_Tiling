@@ -5,9 +5,14 @@ import { Logo } from "@/components/layout/Logo";
 import { getAdminSession } from "@/lib/admin-auth";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
-export default async function AdminLoginPage() {
+export default async function AdminLoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
   const session = await getAdminSession();
   if (session) redirect("/admin");
+  const { next } = await searchParams;
 
   return (
     <main className="flex flex-1 items-center justify-center px-6 py-24">
@@ -20,11 +25,11 @@ export default async function AdminLoginPage() {
           Staff sign in
         </h1>
         <p className="mt-3 text-sm text-sand/65">
-          Enquiries, statuses and internal notes.
+          Jobs, quotes, the calendar and the books.
         </p>
 
         {isSupabaseConfigured ? (
-          <LoginForm />
+          <LoginForm next={next} />
         ) : (
           <p className="mt-8 border-l border-bronze/50 bg-bronze/[0.06] px-4 py-3 text-sm leading-relaxed text-sand">
             Supabase is not configured, so the dashboard is switched off. Add{" "}

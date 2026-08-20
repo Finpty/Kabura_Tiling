@@ -11,9 +11,10 @@ import { JsonLd } from "@/components/seo/JsonLd";
 import { SERVICES, getService } from "@/lib/services";
 import { SERVICE_AREAS } from "@/lib/service-areas";
 import { img, imageFill, video } from "@/lib/media";
+import { centreBlock, centreRow, centreText } from "@/lib/align";
 import { faqSchema, pageMetadata, serviceSchema } from "@/lib/seo";
 import { site } from "@/lib/site";
-import { pad } from "@/lib/utils";
+import { cn, pad } from "@/lib/utils";
 
 export function generateStaticParams() {
   return SERVICES.map((service) => ({ slug: service.slug }));
@@ -79,10 +80,17 @@ export default async function ServicePage({ params }: Params) {
       <Section spacing="normal" className="bg-ink">
         <div className="shell grid gap-14 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-20">
           <div>
-            <SectionLabel eyebrow="The work" />
+            <SectionLabel eyebrow="The work" className={centreRow} />
             <div className="mt-8 flex flex-col gap-6">
               {service.body.map((paragraph) => (
-                <p key={paragraph} className="text-lead text-sand/80">
+                <p
+                  key={paragraph}
+                  className={cn(
+                    "text-lead text-sand/80",
+                    centreText,
+                    centreBlock,
+                  )}
+                >
                   {paragraph}
                 </p>
               ))}
@@ -133,7 +141,8 @@ export default async function ServicePage({ params }: Params) {
               <p className="eyebrow text-bronze-light">Next step</p>
               <p className="mt-4 text-sm leading-relaxed text-sand/75">
                 Send through the room, the rough size and a few photos and
-                we&rsquo;ll come back with a quote for {service.title.toLowerCase()}.
+                we&rsquo;ll come back with a quote for{" "}
+                {service.title.toLowerCase()}.
               </p>
               <Link
                 href="/quote"
@@ -146,9 +155,12 @@ export default async function ServicePage({ params }: Params) {
         </div>
       </Section>
 
-      <Section spacing="normal" className="border-t border-stone/12 bg-charcoal">
+      <Section
+        spacing="normal"
+        className="border-t border-stone/12 bg-charcoal"
+      >
         <div className="shell">
-          <SectionLabel eyebrow="Also available" />
+          <SectionLabel eyebrow="Also available" className={centreRow} />
           <div className="mt-8 grid gap-5 sm:grid-cols-3">
             {others.map((other, index) => (
               <Reveal key={other.slug} delay={index * 0.05}>

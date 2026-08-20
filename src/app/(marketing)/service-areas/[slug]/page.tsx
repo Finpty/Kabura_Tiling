@@ -7,9 +7,10 @@ import { CTASection } from "@/components/home/CTASection";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { SERVICE_AREAS, getServiceArea } from "@/lib/service-areas";
 import { SERVICES } from "@/lib/services";
+import { centreBlock, centreRow, centreText } from "@/lib/align";
 import { absoluteUrl, faqSchema, pageMetadata } from "@/lib/seo";
 import { site } from "@/lib/site";
-import { pad } from "@/lib/utils";
+import { cn, pad } from "@/lib/utils";
 
 export function generateStaticParams() {
   return SERVICE_AREAS.map((area) => ({ slug: area.slug }));
@@ -89,7 +90,10 @@ export default async function ServiceAreaPage({ params }: Params) {
       <Section spacing="normal" className="bg-ink">
         <div className="shell grid gap-14 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-20">
           <div>
-            <SectionLabel eyebrow={`What matters in ${area.name}`} />
+            <SectionLabel
+              eyebrow={`What matters in ${area.name}`}
+              className={centreRow}
+            />
             <ul className="mt-8 flex flex-col gap-6">
               {area.notes.map((note) => (
                 <li key={note} className="flex gap-4">
@@ -97,7 +101,15 @@ export default async function ServiceAreaPage({ params }: Params) {
                     aria-hidden="true"
                     className="mt-2.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-bronze-light"
                   />
-                  <span className="text-lead text-sand/80">{note}</span>
+                  <span
+                    className={cn(
+                      "text-lead text-sand/80",
+                      centreText,
+                      centreBlock,
+                    )}
+                  >
+                    {note}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -172,9 +184,12 @@ export default async function ServiceAreaPage({ params }: Params) {
         </div>
       </Section>
 
-      <Section spacing="normal" className="border-t border-stone/12 bg-charcoal">
+      <Section
+        spacing="normal"
+        className="border-t border-stone/12 bg-charcoal"
+      >
         <div className="shell">
-          <SectionLabel eyebrow="Questions" />
+          <SectionLabel eyebrow="Questions" className={centreRow} />
           <dl className="mt-8 border-t border-stone/18">
             {faqs.map((faq) => (
               <div key={faq.question} className="border-b border-stone/18 py-6">

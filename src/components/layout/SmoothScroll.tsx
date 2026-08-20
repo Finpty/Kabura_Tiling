@@ -36,6 +36,17 @@ export function SmoothScroll() {
       if (cancelled) return;
 
       const lenis = new Lenis({
+        /**
+         * Measure the BODY, not the default documentElement. This site sets
+         * `h-full` on <html>, so that element's border box is always exactly
+         * the viewport — it never grows with content, which means Lenis's
+         * ResizeObserver never fires and its page height goes stale the
+         * moment fonts, images or embeds finish after the first measure.
+         * A stale height is a clamp: scrolling hits an invisible floor short
+         * of the real end of the page and only "up" still works. The body's
+         * box does grow, so observing it keeps the limit honest.
+         */
+        content: document.body,
         duration: 1.05,
         easing: (t: number) => Math.min(1, 1.001 - 2 ** (-10 * t)),
         smoothWheel: true,

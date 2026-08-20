@@ -137,14 +137,35 @@ supplied" placeholder rather than inventing a number, address or registration.
 | `NEXT_PUBLIC_BUSINESS_SUBURB` | — | Postal address in structured data |
 | `NEXT_PUBLIC_BUSINESS_POSTCODE` | — | Postal address in structured data |
 | `NEXT_PUBLIC_BUSINESS_HOURS` | — | Contact page, `openingHours` in schema |
-| `NEXT_PUBLIC_SOCIAL_INSTAGRAM` | — | Footer + `sameAs`. Blank hides the link |
+| `NEXT_PUBLIC_SOCIAL_INSTAGRAM` | — | **Already live** — real URL committed in `site.ts`. Set only to override |
 | `NEXT_PUBLIC_SOCIAL_FACEBOOK` | — | as above |
-| `NEXT_PUBLIC_SOCIAL_LINKEDIN` | — | as above |
+| `NEXT_PUBLIC_SOCIAL_TIKTOK` | — | as above |
+| `NEXT_PUBLIC_SOCIAL_YOUTUBE` | — | as above |
 | `NEXT_PUBLIC_SOCIAL_GOOGLE` | — | as above, plus the "read our reviews" link |
+| `NEXT_PUBLIC_SOCIAL_LINKEDIN` | — | No default. Hidden until a URL is supplied |
+
+> There are no Google API keys. The reviews are transcribed into `src/lib/customer-reviews.ts` from the Google Business Profile, and the coverage panel is drawn from the coordinates in `src/lib/service-areas.ts` — so neither needs a Google Cloud project, billing or a referrer allowlist, and neither can fail at request time.
+
 | `NEXT_PUBLIC_SUPABASE_URL` | for quotes | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | for quotes | Publishable key — safe in the browser, every table is behind RLS |
 | `SUPABASE_SERVICE_ROLE_KEY` | for photos + admin | **Server only.** Never prefix with `NEXT_PUBLIC_`, never commit. Without it enquiries are still captured through the anon key, but photo uploads are skipped and `/admin` stays off |
 | `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | — | Search Console token |
+
+## Social posts ("Latest from Kabura")
+
+The section on the home and services pages renders real published posts only,
+listed by hand in `src/lib/social-posts.ts`. It ships empty and shows a follow
+panel until entries are added.
+
+There is no live feed, deliberately. Instagram and Facebook need a Meta app plus
+a long-lived Page token that expires every 60 days; TikTok needs an approved
+Display API app. Scraping the public pages or hot-linking their CDN breaks all
+three platforms' terms and stops working without warning. YouTube is the
+exception — its thumbnails and embeds are public and documented, so a
+`youtubeId` is all an entry needs.
+
+For everything else: save the image into `public/media/social/`, then add an
+entry with the real post URL. The file documents the shape.
 
 ## Supabase setup
 
@@ -176,7 +197,16 @@ supplied" placeholder rather than inventing a number, address or registration.
 | `quote_request_notes` | Internal staff notes — never rendered publicly |
 | `projects` / `project_media` | Portfolio content. `is_placeholder` defaults to `true` |
 | `reviews` | Ships empty. Nothing appears publicly until `approved = true` |
+| `jobs` | The private job calendar — customer names, addresses, notes. **Staff only**: RLS requires `private.is_admin()`, there is no `anon` policy, and base privileges are revoked from `anon`. The public site never reads it |
 | `admin_users` | Staff allow-list. Signing up grants nothing on its own |
+
+The public availability calendar does not read `jobs`. It calls
+`public.service_availability(from_date, to_date)`, a `SECURITY DEFINER`
+function that aggregates first and returns exactly two things per day: the
+date, and one of `available` / `limited` / `booked`. There is no column in its
+result type for a name, an address or a job — not even a count. Change the
+`daily_capacity` constant inside that function to tune how many concurrent jobs
+count as fully booked.
 
 Storage bucket `quote-uploads` is **private** — no object is readable by URL.
 
@@ -254,9 +284,12 @@ rather than by convention:
   schema.org markup is worse than an absent one.
 - **Projects** ship as placeholder records flagged `isPlaceholder`, badged in
   the UI, `noindex`, and excluded from the sitemap.
-- **Reviews** ship as an empty table with a "Customer reviews coming soon"
-  state. The carousel is fully built and takes over the moment approved rows
-  exist.
+- **Reviews** are the ten real reviews from the Google Business Profile,
+  transcribed word for word into `src/lib/customer-reviews.ts`. Punctuation and
+  obvious spelling slips are tidied; nothing that changes what a customer said
+  is touched. Where Google truncated a review behind "… More", the card shows
+  it as an extract and links out rather than inventing an ending. The site says
+  "from our Google Business Profile", never "live" or "synced".
 - **Generated imagery** is labelled wherever it appears in a portfolio context,
   and its provenance is recorded in `assets-src/higgsfield/manifest.json`.
 - **The layout tools** state plainly that the surfaces are representative
@@ -326,8 +359,8 @@ appear across the site automatically.
 - [ ] Street address, or confirmation that there is no public shopfront
 - [x] ~~Instagram~~ — @kaburatilinggroupptyltd
 - [ ] Facebook / LinkedIn URLs
-- [ ] Google Business Profile: set `GOOGLE_PLACES_API_KEY` + `GOOGLE_PLACE_ID`
-      to pull the real reviews (see `.env.example`)
+- [x] ~~Google Business Profile~~ — linked, and the ten reviews are transcribed
+      into `src/lib/customer-reviews.ts`. Append new ones there as they arrive
 - [ ] Any trade licence or certification numbers you want shown — with the
       registration numbers so they can be verified
 - [ ] Confirmation of the suburbs to list in `src/lib/service-areas.ts`
@@ -341,9 +374,12 @@ appear across the site automatically.
 - [x] ~~On-site footage for the video rail~~ — four Higgsfield clips in use;
       real on-site footage would still be better where you have it
 - [x] ~~Hero footage~~ — Higgsfield bathroom clip in use
-- [ ] The official Kabura logo (SVG or high-resolution PNG with transparency).
-      `src/components/layout/Logo.tsx` is a typographic placeholder built for
-      this site
+- [ ] The official Kabura logo as a **vector file** (`.svg` or `.ai`).
+      `src/components/layout/Logo.tsx` now draws the real lockup — the house-K
+      mark, the diagonal two-tone KABURA wordmark and the full registered name
+      — but it is reconstructed from the supplied image, and the wordmark is
+      set in the site's own display face rather than the original typeface.
+      With the vector file the component can point at the genuine artwork
 - [x] ~~Google review content~~ — wired to the live Places API; supply the two
       keys above and real reviews appear, attributed and linked back to Google
 - [ ] Any company history, team detail or credentials you want on `/about`

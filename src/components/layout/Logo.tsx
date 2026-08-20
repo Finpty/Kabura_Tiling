@@ -1,58 +1,59 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 type Props = {
   className?: string;
-  /** Hide the wordmark and show only the monogram. */
+  /** Hide the wordmark and show only the house-K mark. */
   markOnly?: boolean;
+  /**
+   * `reversed` is the dark-site treatment. The supplied artwork is navy and
+   * red on transparent, and navy on a near-black page is unreadable — so the
+   * reversed files carry the same mark with every navy pixel remapped to bone,
+   * the red untouched. `primary` is the original, for anything on white.
+   */
+  variant?: "reversed" | "primary";
 };
 
 /**
- * Wordmark drawn as SVG so it stays razor sharp at any size and inherits the
- * current text colour (the header inverts over the hero).
+ * The Kabura Tiling Group lockup.
  *
- * ⚠️  This is a typographic placeholder built for the site. Kabura's official
- * logo file has not been supplied — drop the real artwork in and replace this
- * component. See the asset checklist in README.md.
+ * Rendered from the supplied artwork in `public/media/brand/`, generated from
+ * `logo.png` at the repository root:
+ *
+ *   kabura-logo.png        the original, navy + red
+ *   kabura-logo-light.png  navy remapped to bone, for the dark site
+ *   kabura-mark.png        just the house-K, cropped from the original
+ *   kabura-mark-light.png  the same, reversed
+ *
+ * `unoptimized` on purpose: these are small transparent PNGs that must stay
+ * crisp and must never wait on an image-optimiser round trip in the header.
  */
-export function Logo({ className, markOnly = false }: Props) {
-  return (
-    <span className={cn("flex items-center gap-3", className)}>
-      <svg
-        viewBox="0 0 40 40"
-        className="h-8 w-8 shrink-0"
-        role="img"
-        aria-label="Kabura Tiling Group"
-        focusable="false"
-      >
-        <circle
-          cx="20"
-          cy="20"
-          r="19"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.2"
-          opacity="0.55"
-        />
-        {/* K formed from a stem, a bar and a diagonal — a tile set-out mark */}
-        <path
-          d="M13.4 11v18M13.4 20h7.4M20.8 11v18M20.8 20l6.2 9M20.8 20l6.2-9"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.9"
-          strokeLinecap="square"
-        />
-      </svg>
 
-      {markOnly ? null : (
-        <span className="flex flex-col leading-none">
-          <span className="text-[1.02rem] font-semibold tracking-[0.24em] uppercase">
-            Kabura
-          </span>
-          <span className="mt-1 text-[0.54rem] font-medium tracking-[0.34em] text-current/60 uppercase">
-            Tiling Group
-          </span>
-        </span>
-      )}
+/** Intrinsic sizes of the generated files, so nothing reflows while loading. */
+const ART = {
+  full: { src: "kabura-logo", width: 1600, height: 343 },
+  mark: { src: "kabura-mark", width: 254, height: 343 },
+} as const;
+
+export function Logo({
+  className,
+  markOnly = false,
+  variant = "reversed",
+}: Props) {
+  const art = markOnly ? ART.mark : ART.full;
+  const file = variant === "reversed" ? `${art.src}-light` : art.src;
+
+  return (
+    <span className={cn("inline-flex items-center", className)}>
+      <Image
+        src={`/media/brand/${file}.png`}
+        alt="Kabura Tiling Group Pty Ltd"
+        width={art.width}
+        height={art.height}
+        priority
+        unoptimized
+        className={cn("w-auto", markOnly ? "h-9" : "h-10 md:h-11")}
+      />
     </span>
   );
 }

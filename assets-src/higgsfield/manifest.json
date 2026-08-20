@@ -1,23 +1,191 @@
 {
-  "$comment": "Higgsfield generations commissioned for this site. Run 'npm run assets:fetch' to download them into this folder, then 'npm run assets:optimise' to transcode them into public/media. These are brand/atmosphere visuals — NOT photographs of completed Kabura customer projects. See assets-src/README.md.",
+  "$comment": "Higgsfield generations commissioned for this site. Run 'npm run assets:fetch' to download them into this folder, then 'npm run assets:optimise' to transcode them into public/media. These are brand/atmosphere visuals \u2014 NOT photographs of completed Kabura customer projects. See assets-src/README.md.",
   "generatedOn": "2026-08-18",
   "baseUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF",
   "assets": [
-    { "file": "01-hero-bathroom.png", "type": "image", "model": "nano_banana_2", "jobId": "79f66db9-f2f4-46ea-9557-04588b4bab8f", "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143451_79f66db9-f2f4-46ea-9557-04588b4bab8f.png", "usedFor": "Homepage hero still + poster, /bathrooms hero, bathroom service panel", "prompt": "Wide architectural interior photograph of an ultra-modern luxury bathroom in a high-end Australian home, floor-to-ceiling large-format warm greige stone porcelain, frameless glass walk-in shower, floating vanity, brushed bronze tapware, soft morning daylight. No people, no text, no logos." },
-    { "file": "02-bathroom-reveal-dark.png", "type": "image", "model": "nano_banana_2", "jobId": "b21cdebe-3f4d-4616-bddd-5dc8f36e6700", "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143423_b21cdebe-3f4d-4616-bddd-5dc8f36e6700.png", "usedFor": "Projects showcase / bathroom reveal panel", "prompt": "Dramatic dark luxury bathroom, honed charcoal basalt-look large-format tiles, backlit book-matched stone feature wall, sculptural freestanding bath, brushed bronze tapware, deep shadow. No people, no text, no logos." },
-    { "file": "03-stone-slab.png", "type": "image", "model": "nano_banana_2", "jobId": "623a9924-c44f-4233-a107-9dbd561792e3", "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143451_623a9924-c44f-4233-a107-9dbd561792e3.png", "usedFor": "Texture map for the interactive 3D slab (SlabScene) and the layer-story tile layer", "prompt": "Flat-on orthographic studio photograph of a large-format natural stone slab surface, warm greige quartzite with soft grey and faint bronze veining, honed matte finish, even studio lighting, no perspective, no edges. Material scan." },
-    { "file": "04-stone-feature.png", "type": "image", "model": "nano_banana_2", "jobId": "b71373b6-94da-4eb0-9625-91ebe2835a96", "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143508_b71373b6-94da-4eb0-9625-91ebe2835a96.png", "usedFor": "Natural stone installation service panel", "prompt": "Architectural detail of a book-matched travertine-look stone feature wall in a luxury Australian entry, grazing warm light from a concealed floor slot, slim bronze reveal. No people, no text, no logos." },
-    { "file": "05-waterproofing.png", "type": "image", "model": "nano_banana_2", "jobId": "394e31b0-11fc-4572-9975-f9cbd630d044", "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143423_394e31b0-11fc-4572-9975-f9cbd630d044.png", "usedFor": "Waterproofing service panel + poster for the waterproofing clip", "prompt": "Extreme close-up of liquid waterproofing membrane coating a shower recess, reinforcing fillet at the wall-to-floor junction, stainless linear floor waste. No people, no hands, no text, no branding." },
-    { "file": "06-large-format.png", "type": "image", "model": "nano_banana_2", "jobId": "cf15f5e1-d42f-4507-b8e7-dd4b14cb2ff5", "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143423_cf15f5e1-d42f-4507-b8e7-dd4b14cb2ff5.png", "usedFor": "Large-format service panel + poster for the large-format clip", "prompt": "Extreme close-up of a large-format porcelain slab set into combed adhesive, levelling clip and wedge at the joint, laser level line, consistent 3mm joint. No people, no hands, no text." },
-    { "file": "07-screed.png", "type": "image", "model": "nano_banana_2", "jobId": "663bbd48-7b5b-45af-925c-7c59224e0c62", "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143507_663bbd48-7b5b-45af-925c-7c59224e0c62.png", "usedFor": "Screeding service panel, layer-story screed layer", "prompt": "Close-up of a freshly screeded bathroom floor falling to a stainless linear drain, aluminium straight edge across the surface. No people, no hands, no text." },
-    { "file": "08-alfresco.png", "type": "image", "model": "nano_banana_2", "jobId": "7b4cd2ef-f177-40bc-bbde-22d7d812b17c", "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143423_7b4cd2ef-f177-40bc-bbde-22d7d812b17c.png", "usedFor": "Outdoor / alfresco service panel", "prompt": "Luxury Australian alfresco terrace paved in large-format limestone-look porcelain, flush transition through full-height sliding glass, lap pool with stone coping, late afternoon sun. No people, no text." },
-    { "file": "09-commercial.png", "type": "image", "model": "nano_banana_2", "jobId": "7ab08c80-fffb-4414-92bd-683a0200527a", "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143423_7ab08c80-fffb-4414-92bd-683a0200527a.png", "usedFor": "Commercial tiling service panel", "prompt": "Modern commercial lobby with a large-format stone-look porcelain floor in stack bond, honed stone reception desk, bronze detailing, tall glass facade. No people, no text, no signage." },
-    { "file": "10-corner-detail.png", "type": "image", "model": "nano_banana_2", "jobId": "b650654a-769c-4d82-a504-31f59f7f85c2", "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143423_b650654a-769c-4d82-a504-31f59f7f85c2.png", "usedFor": "Why Kabura precision panel, about page detail", "prompt": "Macro detail of two large-format porcelain tiles meeting in a mitred external corner with a razor-straight 2mm grout joint, raking light. No people, no text." },
-    { "file": "11-hero-bathroom-light.png", "type": "image", "model": "nano_banana_2", "jobId": "b681936b-6de2-498c-a2c3-bdbabecc3027", "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143507_b681936b-6de2-498c-a2c3-bdbabecc3027.png", "usedFor": "Secondary hero / bathrooms page editorial image", "prompt": "Serene luxury bathroom in warm off-white travertine-look large-format tiles, frameless glass shower, floating stone vanity, tall pivot window with diffused daylight. No people, no text." },
-
-    { "file": "kabura-hero-bathroom.mp4", "type": "video", "model": "seedance_2_0", "jobId": "dcf04599-a932-4d2a-bccc-81ff36417f97", "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_145231_dcf04599-a932-4d2a-bccc-81ff36417f97.mp4", "startImage": "01-hero-bathroom.png", "usedFor": "Homepage cinematic hero background video", "prompt": "Extremely slow, smooth architectural dolly push forward into the bathroom, gentle parallax past the freestanding bath, light shifting across the stone. Locked horizon, single continuous shot. No people, no text." },
-    { "file": "kabura-waterproofing.mp4", "type": "video", "model": "seedance_2_0", "jobId": "91d15a09-8474-4ef8-b6b2-d4ca4be5b7da", "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143939_91d15a09-8474-4ef8-b6b2-d4ca4be5b7da.mp4", "startImage": "05-waterproofing.png", "usedFor": "Video showcase rail + waterproofing service page", "prompt": "Very slow macro dolly along the waterproofing membrane and the wall-to-floor fillet, gentle focus rack to the floor waste. No people, no hands, no text." },
-    { "file": "kabura-large-format.mp4", "type": "video", "model": "seedance_2_0", "jobId": "1c21b278-8275-4eb9-ace4-f80cf2defd15", "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143939_1c21b278-8275-4eb9-ace4-f80cf2defd15.mp4", "startImage": "06-large-format.png", "usedFor": "Video showcase rail + large-format service page", "prompt": "Slow controlled shot as a large-format porcelain slab settles onto combed adhesive ridges, focus travelling along the joint. No people, no hands, no text." },
-    { "file": "kabura-bathroom-reveal.mp4", "type": "video", "model": "seedance_2_0", "jobId": "0046152e-4b90-4ebc-8753-2d7f5d9d9707", "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143939_0046152e-4b90-4ebc-8753-2d7f5d9d9707.mp4", "startImage": "02-bathroom-reveal-dark.png", "usedFor": "Video showcase rail + bathrooms page reveal", "prompt": "Slow cinematic lateral drift past a backlit book-matched stone feature wall toward a sculptural freestanding bath as warm light strengthens. No people, no text." }
+    {
+      "file": "01-hero-bathroom.png",
+      "type": "image",
+      "model": "nano_banana_2",
+      "jobId": "79f66db9-f2f4-46ea-9557-04588b4bab8f",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143451_79f66db9-f2f4-46ea-9557-04588b4bab8f.png",
+      "usedFor": "Homepage hero still + poster, /bathrooms hero, bathroom service panel",
+      "prompt": "Wide architectural interior photograph of an ultra-modern luxury bathroom in a high-end Australian home, floor-to-ceiling large-format warm greige stone porcelain, frameless glass walk-in shower, floating vanity, brushed bronze tapware, soft morning daylight. No people, no text, no logos."
+    },
+    {
+      "file": "02-bathroom-reveal-dark.png",
+      "type": "image",
+      "model": "nano_banana_2",
+      "jobId": "b21cdebe-3f4d-4616-bddd-5dc8f36e6700",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143423_b21cdebe-3f4d-4616-bddd-5dc8f36e6700.png",
+      "usedFor": "Projects showcase / bathroom reveal panel",
+      "prompt": "Dramatic dark luxury bathroom, honed charcoal basalt-look large-format tiles, backlit book-matched stone feature wall, sculptural freestanding bath, brushed bronze tapware, deep shadow. No people, no text, no logos."
+    },
+    {
+      "file": "03-stone-slab.png",
+      "type": "image",
+      "model": "nano_banana_2",
+      "jobId": "623a9924-c44f-4233-a107-9dbd561792e3",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143451_623a9924-c44f-4233-a107-9dbd561792e3.png",
+      "usedFor": "Texture map for the interactive 3D slab (SlabScene) and the layer-story tile layer",
+      "prompt": "Flat-on orthographic studio photograph of a large-format natural stone slab surface, warm greige quartzite with soft grey and faint bronze veining, honed matte finish, even studio lighting, no perspective, no edges. Material scan."
+    },
+    {
+      "file": "04-stone-feature.png",
+      "type": "image",
+      "model": "nano_banana_2",
+      "jobId": "b71373b6-94da-4eb0-9625-91ebe2835a96",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143508_b71373b6-94da-4eb0-9625-91ebe2835a96.png",
+      "usedFor": "Natural stone installation service panel",
+      "prompt": "Architectural detail of a book-matched travertine-look stone feature wall in a luxury Australian entry, grazing warm light from a concealed floor slot, slim bronze reveal. No people, no text, no logos."
+    },
+    {
+      "file": "05-waterproofing.png",
+      "type": "image",
+      "model": "nano_banana_2",
+      "jobId": "394e31b0-11fc-4572-9975-f9cbd630d044",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143423_394e31b0-11fc-4572-9975-f9cbd630d044.png",
+      "usedFor": "Waterproofing service panel + poster for the waterproofing clip",
+      "prompt": "Extreme close-up of liquid waterproofing membrane coating a shower recess, reinforcing fillet at the wall-to-floor junction, stainless linear floor waste. No people, no hands, no text, no branding."
+    },
+    {
+      "file": "06-large-format.png",
+      "type": "image",
+      "model": "nano_banana_2",
+      "jobId": "cf15f5e1-d42f-4507-b8e7-dd4b14cb2ff5",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143423_cf15f5e1-d42f-4507-b8e7-dd4b14cb2ff5.png",
+      "usedFor": "Large-format service panel + poster for the large-format clip",
+      "prompt": "Extreme close-up of a large-format porcelain slab set into combed adhesive, levelling clip and wedge at the joint, laser level line, consistent 3mm joint. No people, no hands, no text."
+    },
+    {
+      "file": "07-screed.png",
+      "type": "image",
+      "model": "nano_banana_2",
+      "jobId": "663bbd48-7b5b-45af-925c-7c59224e0c62",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143507_663bbd48-7b5b-45af-925c-7c59224e0c62.png",
+      "usedFor": "Screeding service panel, layer-story screed layer",
+      "prompt": "Close-up of a freshly screeded bathroom floor falling to a stainless linear drain, aluminium straight edge across the surface. No people, no hands, no text."
+    },
+    {
+      "file": "08-alfresco.png",
+      "type": "image",
+      "model": "nano_banana_2",
+      "jobId": "7b4cd2ef-f177-40bc-bbde-22d7d812b17c",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143423_7b4cd2ef-f177-40bc-bbde-22d7d812b17c.png",
+      "usedFor": "Outdoor / alfresco service panel",
+      "prompt": "Luxury Australian alfresco terrace paved in large-format limestone-look porcelain, flush transition through full-height sliding glass, lap pool with stone coping, late afternoon sun. No people, no text."
+    },
+    {
+      "file": "09-commercial.png",
+      "type": "image",
+      "model": "nano_banana_2",
+      "jobId": "7ab08c80-fffb-4414-92bd-683a0200527a",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143423_7ab08c80-fffb-4414-92bd-683a0200527a.png",
+      "usedFor": "Commercial tiling service panel",
+      "prompt": "Modern commercial lobby with a large-format stone-look porcelain floor in stack bond, honed stone reception desk, bronze detailing, tall glass facade. No people, no text, no signage."
+    },
+    {
+      "file": "10-corner-detail.png",
+      "type": "image",
+      "model": "nano_banana_2",
+      "jobId": "b650654a-769c-4d82-a504-31f59f7f85c2",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143423_b650654a-769c-4d82-a504-31f59f7f85c2.png",
+      "usedFor": "Why Kabura precision panel, about page detail",
+      "prompt": "Macro detail of two large-format porcelain tiles meeting in a mitred external corner with a razor-straight 2mm grout joint, raking light. No people, no text."
+    },
+    {
+      "file": "11-hero-bathroom-light.png",
+      "type": "image",
+      "model": "nano_banana_2",
+      "jobId": "b681936b-6de2-498c-a2c3-bdbabecc3027",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143507_b681936b-6de2-498c-a2c3-bdbabecc3027.png",
+      "usedFor": "Secondary hero / bathrooms page editorial image",
+      "prompt": "Serene luxury bathroom in warm off-white travertine-look large-format tiles, frameless glass shower, floating stone vanity, tall pivot window with diffused daylight. No people, no text."
+    },
+    {
+      "file": "12-layer-tile.png",
+      "type": "image",
+      "model": "nano_banana_flash",
+      "jobId": "fbe068b1-40e2-445d-aa62-1ca9404eba5c",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260820_061537_fbe068b1-40e2-445d-aa62-1ca9404eba5c.png",
+      "usedFor": "Build-up layer 01 \u2014 the tile face on the interactive slab",
+      "prompt": "Flat-on orthographic material scan photograph, camera directly overhead, of a finished floor of premium large-format porcelain tiles, warm greige book-matched marble-look surface with soft grey and faint bronze veining, honed matte finish, one razor-straight fine grout joint crossing the frame, perfectly even studio lighting, no perspective distortion, empty frame, no people, no text, no logos, no watermark."
+    },
+    {
+      "file": "13-layer-adhesive.png",
+      "type": "image",
+      "model": "nano_banana_flash",
+      "jobId": "6ef1cfc6-c7a0-43ff-ae89-3902b9a73dd5",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260820_061456_6ef1cfc6-c7a0-43ff-ae89-3902b9a73dd5.png",
+      "usedFor": "Build-up layer 02 \u2014 the combed adhesive bed on the interactive slab",
+      "prompt": "Flat-on orthographic material scan photograph, camera directly overhead, of grey cement tile adhesive freshly combed with a notched trowel into perfectly even parallel ridges across a floor, construction site material texture, fine aggregate visible, even studio lighting, no perspective distortion, empty frame, no people, no text, no logos, no watermark."
+    },
+    {
+      "file": "14-layer-waterproofing.png",
+      "type": "image",
+      "model": "nano_banana_flash",
+      "jobId": "c47e245a-c69e-47d1-af48-eab93da630b8",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260820_061424_c47e245a-c69e-47d1-af48-eab93da630b8.png",
+      "usedFor": "Build-up layer 03 \u2014 the waterproofing membrane on the interactive slab",
+      "prompt": "Flat-on orthographic material scan photograph, camera directly overhead, of a liquid-applied waterproofing membrane rolled over a floor, deep charcoal-grey rubberised coating with a satin sheen and faint roller texture, a band of grey reinforcing bond-breaker tape bedded into the membrane crossing the frame, even studio lighting, no perspective distortion, no people, no hands, no tools, no text, no logos, no watermark."
+    },
+    {
+      "file": "15-layer-screed.png",
+      "type": "image",
+      "model": "nano_banana_flash",
+      "jobId": "4376e324-a96f-4590-96f1-8edd970f5138",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260820_061424_4376e324-a96f-4590-96f1-8edd970f5138.png",
+      "usedFor": "Build-up layer 04 \u2014 the screed bed on the interactive slab",
+      "prompt": "Flat-on orthographic material scan photograph, camera directly overhead, of a sand-and-cement screed bed floated flat, warm pale grey-beige, fine sandy texture with faint float marks sweeping across the surface, even studio lighting, no perspective distortion, no people, no hands, no tools, no text, no logos, no watermark."
+    },
+    {
+      "file": "16-layer-substrate.png",
+      "type": "image",
+      "model": "nano_banana_flash",
+      "jobId": "6260870d-6548-4086-9c87-43d1f99c90ad",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260820_061424_6260870d-6548-4086-9c87-43d1f99c90ad.png",
+      "usedFor": "Build-up layer 05 \u2014 the concrete substrate on the interactive slab",
+      "prompt": "Flat-on orthographic material scan photograph, camera directly overhead, of a bare concrete slab substrate, cool mid-grey power-floated concrete with fine aggregate, subtle patina and hairline surface variation, even studio lighting, no perspective distortion, no people, no hands, no tools, no text, no logos, no watermark."
+    },
+    {
+      "file": "kabura-hero-bathroom.mp4",
+      "type": "video",
+      "model": "seedance_2_0",
+      "jobId": "dcf04599-a932-4d2a-bccc-81ff36417f97",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_145231_dcf04599-a932-4d2a-bccc-81ff36417f97.mp4",
+      "startImage": "01-hero-bathroom.png",
+      "usedFor": "Homepage cinematic hero background video",
+      "prompt": "Extremely slow, smooth architectural dolly push forward into the bathroom, gentle parallax past the freestanding bath, light shifting across the stone. Locked horizon, single continuous shot. No people, no text."
+    },
+    {
+      "file": "kabura-waterproofing.mp4",
+      "type": "video",
+      "model": "seedance_2_0",
+      "jobId": "91d15a09-8474-4ef8-b6b2-d4ca4be5b7da",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143939_91d15a09-8474-4ef8-b6b2-d4ca4be5b7da.mp4",
+      "startImage": "05-waterproofing.png",
+      "usedFor": "Video showcase rail + waterproofing service page",
+      "prompt": "Very slow macro dolly along the waterproofing membrane and the wall-to-floor fillet, gentle focus rack to the floor waste. No people, no hands, no text."
+    },
+    {
+      "file": "kabura-large-format.mp4",
+      "type": "video",
+      "model": "seedance_2_0",
+      "jobId": "1c21b278-8275-4eb9-ace4-f80cf2defd15",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143939_1c21b278-8275-4eb9-ace4-f80cf2defd15.mp4",
+      "startImage": "06-large-format.png",
+      "usedFor": "Video showcase rail + large-format service page",
+      "prompt": "Slow controlled shot as a large-format porcelain slab settles onto combed adhesive ridges, focus travelling along the joint. No people, no hands, no text."
+    },
+    {
+      "file": "kabura-bathroom-reveal.mp4",
+      "type": "video",
+      "model": "seedance_2_0",
+      "jobId": "0046152e-4b90-4ebc-8753-2d7f5d9d9707",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3HBS30VHXCb2BGGNcbJqbVhOtLF/hf_20260818_143939_0046152e-4b90-4ebc-8753-2d7f5d9d9707.mp4",
+      "startImage": "02-bathroom-reveal-dark.png",
+      "usedFor": "Video showcase rail + bathrooms page reveal",
+      "prompt": "Slow cinematic lateral drift past a backlit book-matched stone feature wall toward a sculptural freestanding bath as warm light strengthens. No people, no text."
+    }
   ]
 }

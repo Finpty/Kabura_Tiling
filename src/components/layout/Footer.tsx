@@ -2,10 +2,12 @@ import Link from "next/link";
 import { Logo } from "./Logo";
 import { MagneticLink } from "@/components/ui/MagneticButton";
 import { PlaceholderNotice } from "@/components/ui/PlaceholderNotice";
+import { SocialLinks } from "@/components/ui/SocialLinks";
 import { SERVICES } from "@/lib/services";
 import { SERVICE_AREAS } from "@/lib/service-areas";
 import { configuredSocials, site, PLACEHOLDER_LABEL } from "@/lib/site";
-import { telHref } from "@/lib/utils";
+import { centreBlock, centreItems, centreText } from "@/lib/align";
+import { cn, telHref } from "@/lib/utils";
 
 const YEAR = new Date().getFullYear();
 
@@ -48,13 +50,24 @@ export function Footer() {
     <footer className="relative overflow-hidden border-t border-stone/15 bg-charcoal">
       <div className="shell py-20 md:py-28">
         {/* Closing CTA */}
-        <div className="flex flex-col gap-8 border-b border-stone/15 pb-16 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl">
+        <div
+          className={cn(
+            "flex flex-col gap-8 border-b border-stone/15 pb-16",
+            centreItems,
+            "lg:flex-row lg:justify-between lg:items-end",
+          )}
+        >
+          <div className={cn("max-w-2xl", centreText)}>
             <p className="eyebrow text-bronze-light">Start a project</p>
             <p className="mt-5 font-display text-headline text-bone">
               Tell us what you&rsquo;re planning.
             </p>
-            <p className="mt-4 max-w-lg text-lead text-sand/80">
+            <p
+              className={cn(
+                "mt-4 max-w-lg text-lead text-sand/80",
+                centreBlock,
+              )}
+            >
               Send through the details and photos of your space and we&rsquo;ll
               come back with a considered quote.
             </p>
@@ -65,7 +78,12 @@ export function Footer() {
         </div>
 
         {/* Columns */}
-        <div className="grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-4">
+        <div
+          className={cn(
+            "grid gap-12 py-16 md:grid-cols-2 lg:grid-cols-4",
+            centreText,
+          )}
+        >
           <div>
             <Link href="/" className="inline-block text-bone">
               <Logo />
@@ -73,9 +91,15 @@ export function Footer() {
             <p className="mt-6 font-serif text-2xl text-bronze-light italic">
               {site.tagline}
             </p>
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-sand/70">
+            <p
+              className={cn(
+                "mt-4 max-w-xs text-sm leading-relaxed text-sand/70",
+                centreBlock,
+              )}
+            >
               {site.proposition}
             </p>
+            <SocialLinks className="mt-7 lg:hidden" size="sm" centred />
           </div>
 
           <nav aria-labelledby="footer-services">
@@ -147,6 +171,14 @@ export function Footer() {
                   About
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/book"
+                  className="link-underline text-sm text-sand/80 hover:text-bone"
+                >
+                  Check availability
+                </Link>
+              </li>
             </ul>
           </nav>
 
@@ -170,27 +202,19 @@ export function Footer() {
               <ContactValue label="ABN" value={site.abn} />
             </div>
 
-            <h2 className="eyebrow mt-10 text-stone-light">Social</h2>
-            {socials.length > 0 ? (
-              <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2">
-                {socials.map((social) => (
-                  <li key={social.key}>
-                    <a
-                      href={social.href}
-                      target="_blank"
-                      rel="noopener noreferrer me"
-                      className="link-underline text-sm text-sand/80 hover:text-bone"
-                    >
-                      {social.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-6 text-sm text-sand/45 italic">
-                Social profiles {PLACEHOLDER_LABEL.toLowerCase()}
-              </p>
-            )}
+            {/* Below `lg` the icons sit under the wordmark instead, so the
+                heading has to move with them — a "Follow" label with nothing
+                beneath it is worse than no label at all. */}
+            <div className={socials.length > 0 ? "hidden lg:block" : undefined}>
+              <h2 className="eyebrow mt-10 text-stone-light">Follow</h2>
+              {socials.length > 0 ? (
+                <SocialLinks className="mt-6" size="sm" />
+              ) : (
+                <p className="mt-6 text-sm text-sand/45 italic">
+                  Social profiles {PLACEHOLDER_LABEL.toLowerCase()}
+                </p>
+              )}
+            </div>
           </div>
         </div>
 
@@ -202,11 +226,11 @@ export function Footer() {
           </PlaceholderNotice>
         ) : null}
 
-        <div className="flex flex-col gap-5 border-t border-stone/15 pt-8 text-xs text-stone md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col items-center gap-5 border-t border-stone/15 pt-8 text-center text-xs text-stone md:flex-row md:items-center md:justify-between md:text-left">
           <p>
             © {YEAR} {site.legalName}. All rights reserved.
           </p>
-          <ul className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             <li>
               <Link href="/privacy" className="link-underline hover:text-sand">
                 Privacy Policy
@@ -225,14 +249,6 @@ export function Footer() {
           </ul>
         </div>
       </div>
-
-      {/* Oversized watermark wordmark */}
-      <p
-        aria-hidden="true"
-        className="pointer-events-none -mb-[0.22em] w-full text-center font-display text-[19vw] leading-none font-semibold tracking-[-0.05em] text-bone/[0.035] select-none"
-      >
-        KABURA
-      </p>
     </footer>
   );
 }

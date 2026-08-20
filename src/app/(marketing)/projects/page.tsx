@@ -1,47 +1,39 @@
 import type { Metadata } from "next";
 import { PageHero } from "@/components/layout/PageHero";
 import { Section } from "@/components/ui/Section";
-import { ProjectsGrid } from "@/components/projects/ProjectsGrid";
-import { PlaceholderNotice } from "@/components/ui/PlaceholderNotice";
+import { VideoWall } from "@/components/projects/VideoWall";
+import { resolveSocialPosts } from "@/lib/social-resolve";
 import { CTASection } from "@/components/home/CTASection";
-import { getProjects } from "@/lib/data";
 import { pageMetadata } from "@/lib/seo";
 import { site } from "@/lib/site";
+
+/** Re-render hourly so a failed TikTok lookup does not stick. */
+export const revalidate = 3600;
 
 export const metadata: Metadata = pageMetadata({
   title: "Projects",
   description:
-    "Selected tiling, bathroom, stone, commercial, outdoor and large-format projects by Kabura Tiling Group across Western Australia.",
+    "Tiling, bathroom, stone, commercial, outdoor and large-format work by Kabura Tiling Group across Western Australia, filmed on site.",
   path: "/projects",
 });
 
 export default async function ProjectsPage() {
-  const projects = await getProjects();
-  const anyPlaceholder = projects.some((project) => project.isPlaceholder);
+  const posts = await resolveSocialPosts();
 
   return (
     <>
       <PageHero
         eyebrow="Portfolio"
-        title="Selected Projects"
-        lead={`Residential, bathrooms, commercial, stone, outdoor and large format across ${site.state}.`}
+        title="The work, on video."
+        titleFace="serif"
+        lead={`Rooms as they were handed over — filmed on site across ${site.state}, straight from our own channels.`}
         imageKey="bathroomReveal"
         breadcrumbs={[{ name: "Projects", path: "/projects" }]}
       />
 
       <Section spacing="loose" className="bg-ink">
         <div className="shell">
-          {anyPlaceholder ? (
-            <PlaceholderNotice className="mb-10 max-w-3xl">
-              Every record below is a placeholder built to demonstrate the
-              portfolio. The imagery is brand and atmosphere visuals — not
-              photographs of completed Kabura work — and suburbs, tile
-              selections and scopes are illustrative. Real projects replace them
-              once Kabura supplies photography.
-            </PlaceholderNotice>
-          ) : null}
-
-          <ProjectsGrid projects={projects} />
+          <VideoWall posts={posts} />
         </div>
       </Section>
 

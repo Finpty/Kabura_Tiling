@@ -7,12 +7,12 @@ import { BeforeAfterSlider } from "@/components/ui/BeforeAfterSlider";
 import { BathroomVisualiser } from "@/components/home/BathroomVisualiser";
 import { AmbientVideo } from "@/components/ui/AmbientVideo";
 import { CTASection } from "@/components/home/CTASection";
-import { PlaceholderNotice } from "@/components/ui/PlaceholderNotice";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { img, imageFill, video } from "@/lib/media";
+import { centreBlock, centreRow, centreText } from "@/lib/align";
 import { faqSchema, pageMetadata, serviceSchema } from "@/lib/seo";
 import { site } from "@/lib/site";
-import { pad } from "@/lib/utils";
+import { cn, pad } from "@/lib/utils";
 
 export const metadata: Metadata = pageMetadata({
   title: "Bathroom Renovations",
@@ -89,6 +89,7 @@ export default function BathroomsPage() {
       <PageHero
         eyebrow="Bathrooms"
         title="The hardest room in the house to get right."
+        titleFace="serif"
         lead={`Complete bathroom renovations across ${site.state} — demolition through to final grout, by one team.`}
         imageKey="bathroom"
         breadcrumbs={[{ name: "Bathrooms", path: "/bathrooms" }]}
@@ -98,11 +99,23 @@ export default function BathroomsPage() {
       <Section spacing="loose" className="bg-ink">
         <div className="shell grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-20">
           <Reveal>
-            <SectionLabel eyebrow="Why it is different" />
-            <h2 className="mt-6 font-display text-headline text-bone">
+            <SectionLabel eyebrow="Why it is different" className={centreRow} />
+            <h2
+              className={cn(
+                "mt-6 font-display text-headline text-bone",
+                centreText,
+                centreBlock,
+              )}
+            >
               Every surface has to shed water.
             </h2>
-            <div className="mt-7 flex flex-col gap-5 text-lead text-sand/80">
+            <div
+              className={cn(
+                "mt-7 flex flex-col gap-5 text-lead text-sand/80",
+                centreText,
+                centreBlock,
+              )}
+            >
               <p>
                 A bathroom asks more of a trade than any other room. Every
                 junction has to stay sealed, every fall has to run to the waste,
@@ -123,7 +136,9 @@ export default function BathroomsPage() {
               alt="Bathroom finished in large-format stone-look tiles."
               sizes="(min-width: 1024px) 46vw, 92vw"
               className="aspect-[4/5] w-full rounded-sm"
-              placeholderLabel={video("bathroomReveal") ? undefined : "Footage to come"}
+              placeholderLabel={
+                video("bathroomReveal") ? undefined : "Footage to come"
+              }
             />
           </Reveal>
         </div>
@@ -132,8 +147,14 @@ export default function BathroomsPage() {
       {/* Stages */}
       <Section spacing="loose" className="border-t border-stone/12 bg-charcoal">
         <div className="shell">
-          <SectionLabel eyebrow="The sequence" />
-          <h2 className="mt-6 max-w-2xl font-display text-headline text-bone">
+          <SectionLabel eyebrow="The sequence" className={centreRow} />
+          <h2
+            className={cn(
+              "mt-6 max-w-2xl font-display text-headline text-bone",
+              centreText,
+              centreBlock,
+            )}
+          >
             Six stages, in order.
           </h2>
 
@@ -158,8 +179,14 @@ export default function BathroomsPage() {
       {/* Before / after */}
       <Section spacing="loose" className="border-t border-stone/12 bg-ink">
         <div className="shell">
-          <SectionLabel eyebrow="Before / after" />
-          <h2 className="mt-6 max-w-2xl font-display text-headline text-bone">
+          <SectionLabel eyebrow="Before / after" className={centreRow} />
+          <h2
+            className={cn(
+              "mt-6 max-w-2xl font-display text-headline text-bone",
+              centreText,
+              centreBlock,
+            )}
+          >
             From waterproofed to finished.
           </h2>
           <BeforeAfterSlider
@@ -167,11 +194,6 @@ export default function BathroomsPage() {
             afterKey="bathroom"
             className="mt-12 aspect-[16/10] w-full rounded-sm md:aspect-[16/8]"
           />
-          <PlaceholderNotice className="mt-8 max-w-3xl">
-            Placeholder comparison shown to demonstrate the slider — not one
-            room photographed before and after. Real matched pairs replace this
-            once Kabura supplies project photography.
-          </PlaceholderNotice>
         </div>
       </Section>
 
@@ -181,8 +203,14 @@ export default function BathroomsPage() {
       <Section spacing="loose" className="border-t border-stone/12 bg-ink">
         <div className="shell grid gap-12 lg:grid-cols-[minmax(0,22rem)_1fr] lg:gap-20">
           <div>
-            <SectionLabel eyebrow="Questions" />
-            <h2 className="mt-6 font-display text-headline text-bone">
+            <SectionLabel eyebrow="Questions" className={centreRow} />
+            <h2
+              className={cn(
+                "mt-6 font-display text-headline text-bone",
+                centreText,
+                centreBlock,
+              )}
+            >
               Before you ask.
             </h2>
             <div className="relative mt-10 hidden aspect-[3/4] overflow-hidden rounded-sm lg:block">

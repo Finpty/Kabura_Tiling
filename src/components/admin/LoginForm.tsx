@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { signIn, type ActionState } from "@/app/admin/actions";
@@ -17,19 +18,22 @@ function Submit() {
   );
 }
 
-export function LoginForm() {
+export function LoginForm({ next }: { next?: string }) {
   const [state, action] = useActionState<ActionState, FormData>(signIn, {});
 
   return (
     <form action={action} className="mt-8 flex flex-col gap-4">
+      {/* Where they were headed before the redirect. Validated server-side —
+          the action refuses anything that is not an in-app /admin path. */}
+      {next ? <input type="hidden" name="next" value={next} /> : null}
       <div className="flex flex-col gap-2">
         <label htmlFor="admin-email" className="eyebrow text-stone-light">
-          Email
+          Username or email
         </label>
         <input
           id="admin-email"
           name="email"
-          type="email"
+          type="text"
           required
           autoComplete="username"
           className="w-full rounded-sm border border-stone/30 bg-charcoal px-4 py-3 text-bone focus:border-bronze-light focus:outline-none"
@@ -57,6 +61,13 @@ export function LoginForm() {
       ) : null}
 
       <Submit />
+
+      <Link
+        href="/admin/forgot-password"
+        className="mt-2 text-xs text-stone transition-colors hover:text-sand"
+      >
+        Forgotten your password?
+      </Link>
     </form>
   );
 }

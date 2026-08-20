@@ -1,9 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { AdminShell } from "@/components/admin/AdminShell";
 import { StatusSelect } from "@/components/admin/StatusSelect";
 import { NoteForm } from "@/components/admin/NoteForm";
+import type { QuoteRow } from "@/lib/admin/data";
+import { QuoteCommercialsForm } from "@/components/admin/QuoteCommercialsForm";
 import { signUploadUrls } from "@/app/admin/actions";
 import { getAdminSession } from "@/lib/admin-auth";
 import { createServerSupabase } from "@/lib/supabase/server";
@@ -13,12 +14,23 @@ import type {
   QuoteRequestNote,
 } from "@/lib/supabase/types";
 import { QUOTE_SERVICE_OPTIONS } from "@/lib/services";
-import { formatBytes, formatDateTime, telHref } from "@/lib/utils";
+import { formatBytes, formatDate, formatDateTime, telHref } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
+/** "3.2 m × 2.4 m", or whichever single measurement was given. */
+function measurements(request: QuoteRequest) {
+  const width = request.width_m;
+  const length = request.length_m;
+  if (width !== null && length !== null) return `${width} m × ${length} m`;
+  if (width !== null) return `Width ${width} m`;
+  if (length !== null) return `Length / height ${length} m`;
+  return null;
+}
+
 const serviceLabel = (value: string) =>
-  QUOTE_SERVICE_OPTIONS.find((option) => option.value === value)?.label ?? value;
+  QUOTE_SERVICE_OPTIONS.find((option) => option.value === value)?.label ??
+  value;
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -46,7 +58,9 @@ export default async function EnquiryPage({ params }: Params) {
 
   if (!enquiry) notFound();
 
-  const request = enquiry as QuoteRequest;
+  // The row carries the portal's commercial columns as well as the intake
+  // fields the customer filled in.
+  const request = enquiry as QuoteRow;
   const uploads = (files ?? []) as QuoteRequestFile[];
   const noteList = (notes ?? []) as QuoteRequestNote[];
 
@@ -61,14 +75,21 @@ export default async function EnquiryPage({ params }: Params) {
     ["Service", serviceLabel(request.service)],
     ["Suburb", request.suburb],
     ["Postcode", request.postcode],
+    ["Measurements", measurements(request)],
     ["Approx. m²", request.approx_sqm],
     ["Tile size", request.tile_size],
     ["Build type", request.build_type],
     ["Start timing", request.start_timing],
+    [
+      "Requested date",
+      request.preferred_start_date
+        ? `${formatDate(request.preferred_start_date)} (requested, not booked)`
+        : null,
+    ],
   ];
 
   return (
-    <AdminShell email={session.email}>
+    <>
       <Link
         href="/admin"
         className="text-xs text-stone transition-colors hover:text-sand"
@@ -197,8 +218,8 @@ export default async function EnquiryPage({ params }: Params) {
                   })}
                 </ul>
                 <p className="mt-4 text-xs text-stone">
-                  Links are signed and expire after five minutes. Reload the page
-                  to generate fresh ones.
+                  Links are signed and expire after five minutes. Reload the
+                  page to generate fresh ones.
                 </p>
               </>
             )}
@@ -217,6 +238,15 @@ export default async function EnquiryPage({ params }: Params) {
             </p>
 
             <NoteForm id={request.id} />
+
+            <div className="mt-10 border-t border-stone/12 pt-8">
+              <h2 className="text-[0.68rem] tracking-[0.16em] text-stone-light uppercase">
+                Pricing and conversion
+              </h2>
+              <div className="mt-4">
+                <QuoteCommercialsForm quote={request} />
+              </div>
+            </div>
 
             <ul className="mt-8 flex flex-col gap-3">
               {noteList.length === 0 ? (
@@ -261,6 +291,6 @@ export default async function EnquiryPage({ params }: Params) {
           </dl>
         </aside>
       </div>
-    </AdminShell>
+    </>
   );
 }

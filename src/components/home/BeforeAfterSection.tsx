@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Section, SectionLabel } from "@/components/ui/Section";
 import { BeforeAfterSlider } from "@/components/ui/BeforeAfterSlider";
 import { PlaceholderNotice } from "@/components/ui/PlaceholderNotice";
+import { centreBlock, centreItems, centreRow, centreText } from "@/lib/align";
 import { cn } from "@/lib/utils";
 
 /**
@@ -48,9 +49,18 @@ export function BeforeAfterSection() {
       aria-labelledby="before-after-heading"
     >
       <div className="shell">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-xl">
-            <SectionLabel index="06" eyebrow="Before / after" />
+        <div
+          className={cn(
+            "flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between",
+            centreItems,
+          )}
+        >
+          <div className={cn("max-w-xl", centreText, centreBlock)}>
+            <SectionLabel
+              index="06"
+              eyebrow="Before / after"
+              className={centreRow}
+            />
             <h2
               id="before-after-heading"
               className="mt-6 font-display text-headline text-bone"
@@ -93,9 +103,10 @@ export function BeforeAfterSection() {
         />
 
         <PlaceholderNotice className="mt-8 max-w-3xl">
-          Placeholder comparison. These are brand visuals shown to demonstrate the
-          slider, not one room photographed before and after. Real matched pairs
-          load from the <code>projects</code> table once Kabura supplies them.
+          Placeholder comparison. These are brand visuals shown to demonstrate
+          the slider, not one room photographed before and after. Real matched
+          pairs load from the <code>projects</code> table once Kabura supplies
+          them.
         </PlaceholderNotice>
       </div>
     </Section>

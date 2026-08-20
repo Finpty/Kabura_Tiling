@@ -4,7 +4,8 @@ import { MagneticLink } from "@/components/ui/MagneticButton";
 import { RevealText } from "@/components/ui/RevealText";
 import { imageFill } from "@/lib/media";
 import { site, hasPhone } from "@/lib/site";
-import { telHref } from "@/lib/utils";
+import { centreBlock, centreRow, centreText } from "@/lib/align";
+import { cn, telHref } from "@/lib/utils";
 
 type Props = {
   eyebrow?: string;
@@ -38,7 +39,7 @@ export function CTASection({
       </div>
 
       <div className="shell py-28 md:py-40">
-        <div className="max-w-3xl">
+        <div className={cn("max-w-3xl", centreText, centreBlock)}>
           <p className="eyebrow text-bronze-light">{eyebrow}</p>
           <RevealText
             as="h2"
@@ -46,9 +47,15 @@ export function CTASection({
             className="mt-6 block font-display text-headline text-bone"
             stagger={0.05}
           />
-          <p className="mt-6 max-w-xl text-lead text-sand/80">{body}</p>
+          <p
+            className={cn("mt-6 max-w-xl text-lead text-sand/80", centreBlock)}
+          >
+            {body}
+          </p>
 
-          <div className="mt-10 flex flex-wrap items-center gap-3">
+          <div
+            className={cn("mt-10 flex flex-wrap items-center gap-3", centreRow)}
+          >
             <MagneticLink href="/quote" variant="bronze" size="lg" withArrow>
               Request a Free Quote
             </MagneticLink>

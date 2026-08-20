@@ -4,6 +4,7 @@ import { PageHero } from "@/components/layout/PageHero";
 import { Section, SectionLabel } from "@/components/ui/Section";
 import { MagneticLink } from "@/components/ui/MagneticButton";
 import { PlaceholderNotice } from "@/components/ui/PlaceholderNotice";
+import { SocialLinks } from "@/components/ui/SocialLinks";
 import { SERVICE_AREAS } from "@/lib/service-areas";
 import {
   PLACEHOLDER_LABEL,
@@ -13,7 +14,8 @@ import {
   site,
 } from "@/lib/site";
 import { pageMetadata } from "@/lib/seo";
-import { telHref } from "@/lib/utils";
+import { centreRow, centreText } from "@/lib/align";
+import { cn, telHref } from "@/lib/utils";
 
 export const metadata: Metadata = pageMetadata({
   title: "Contact",
@@ -68,7 +70,7 @@ export default function ContactPage() {
       <Section spacing="loose" className="bg-ink">
         <div className="shell grid gap-14 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-20">
           <div>
-            <SectionLabel eyebrow="Details" />
+            <SectionLabel eyebrow="Details" className={centreRow} />
             <dl className="mt-8 border-t border-stone/18">
               <Row
                 label="Phone"
@@ -94,28 +96,15 @@ export default function ContactPage() {
                 deliberately blank until Kabura supplies them — the site will
                 never show an invented number or address. Set them in{" "}
                 <code>.env.local</code> (see <code>.env.example</code>) and they
-                appear here, in the header, in the footer and in the site&rsquo;s
-                structured data automatically.
+                appear here, in the header, in the footer and in the
+                site&rsquo;s structured data automatically.
               </PlaceholderNotice>
             ) : null}
 
-            <div className="mt-12">
-              <h2 className="eyebrow text-stone-light">Social</h2>
+            <div className={cn("mt-12", centreText)}>
+              <h2 className="eyebrow text-stone-light">Follow us</h2>
               {socials.length > 0 ? (
-                <ul className="mt-5 flex flex-wrap gap-3">
-                  {socials.map((social) => (
-                    <li key={social.key}>
-                      <a
-                        href={social.href}
-                        target="_blank"
-                        rel="noopener noreferrer me"
-                        className="inline-block rounded-full border border-stone/30 px-4 py-2 text-sm text-sand/80 transition-colors hover:border-bronze-light hover:text-bronze-light"
-                      >
-                        {social.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
+                <SocialLinks className="mt-5" centred />
               ) : (
                 <p className="mt-5 text-sand/50 italic">
                   Social profiles {PLACEHOLDER_LABEL.toLowerCase()}

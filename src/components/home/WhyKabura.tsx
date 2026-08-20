@@ -7,6 +7,7 @@ import { Section, SectionLabel } from "@/components/ui/Section";
 import { Reveal } from "@/components/ui/Reveal";
 import { imageFill } from "@/lib/media";
 import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
+import { centreBlock, centreRow, centreText } from "@/lib/align";
 import { cn, pad } from "@/lib/utils";
 
 /**
@@ -59,10 +60,14 @@ export function WhyKabura() {
       aria-labelledby="why-heading"
     >
       <div className="shell">
-        <SectionLabel index="08" eyebrow="Why Kabura" />
+        <SectionLabel index="08" eyebrow="Why Kabura" className={centreRow} />
         <h2
           id="why-heading"
-          className="mt-6 max-w-2xl font-display text-headline text-bone"
+          className={cn(
+            "mt-6 max-w-2xl font-display text-headline text-bone",
+            centreText,
+            centreBlock,
+          )}
         >
           The parts of the job that decide the result.
         </h2>
@@ -72,7 +77,10 @@ export function WhyKabura() {
             {PILLARS.map((pillar, index) => {
               const isActive = index === active;
               return (
-                <li key={pillar.id} className="border-b border-stone/18 first:border-t">
+                <li
+                  key={pillar.id}
+                  className="border-b border-stone/18 first:border-t"
+                >
                   <button
                     type="button"
                     onMouseEnter={() => setActive(index)}

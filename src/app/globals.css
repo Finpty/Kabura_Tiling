@@ -20,6 +20,12 @@
   --color-bronze-light: #cf9d5f;
   --color-bronze-glow: #e0b782;
 
+  /* Logo colours, from the Kabura Tiling Group Pty Ltd wordmark. They sit
+     outside the bronze/stone system on purpose — they belong to the mark, and
+     nothing else on the site should reach for them. */
+  --color-brand-red: #ed2a24;
+  --color-brand-navy: #131347;
+
   --font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-display: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
@@ -40,6 +46,14 @@
   --text-headline: clamp(2rem, 4.6vw, 4.25rem);
   --text-headline--line-height: 0.95;
   --text-headline--letter-spacing: -0.035em;
+
+  /* Quiet display size for page headings set in the serif. Four steps down
+     from --text-display: the serif carries the page on its own without the
+     scale, and at this size the italic reads as a signature rather than a
+     banner. */
+  --text-feature: clamp(1.65rem, 3.2vw, 3.1rem);
+  --text-feature--line-height: 1.12;
+  --text-feature--letter-spacing: -0.012em;
 
   --text-title: clamp(1.5rem, 2.6vw, 2.5rem);
   --text-title--line-height: 1.06;
@@ -93,7 +107,15 @@
   html.lenis body {
     height: auto;
   }
-  .lenis.lenis-smooth {
+  /**
+   * Native smooth scrolling MUST be off while Lenis is running, or the two
+   * animate the same scroll position against each other — every wheel notch
+   * lands short, anchor jumps overshoot, and the page reads as if it is
+   * sticking. Guarded on `.lenis`, which Lenis puts on <html> in its
+   * constructor. It previously read `.lenis.lenis-smooth`, a compound this
+   * version never applies, so the guard silently matched nothing.
+   */
+  html.lenis {
     scroll-behavior: auto !important;
   }
   .lenis.lenis-stopped {
@@ -210,6 +232,47 @@
     );
   }
 
+  /**
+   * The build-up slider. Native `input[type=range]` on purpose — it is
+   * keyboard-operable, works with touch and assistive technology for free, and
+   * a hand-built drag handle would give up all three to look the same.
+   */
+  .kb-range {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(
+      to right,
+      var(--color-bronze-light),
+      color-mix(in oklab, var(--color-stone) 45%, transparent)
+    );
+    cursor: grab;
+  }
+  .kb-range:active { cursor: grabbing; }
+
+  .kb-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 999px;
+    background: var(--color-bone);
+    border: 1px solid var(--color-bronze-light);
+    box-shadow: 0 6px 18px -6px color-mix(in oklab, var(--color-bronze) 85%, transparent);
+    transition: transform 0.4s var(--ease-out-expo);
+  }
+  .kb-range::-webkit-slider-thumb:hover { transform: scale(1.12); }
+
+  .kb-range::-moz-range-thumb {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 999px;
+    background: var(--color-bone);
+    border: 1px solid var(--color-bronze-light);
+    box-shadow: 0 6px 18px -6px color-mix(in oklab, var(--color-bronze) 85%, transparent);
+  }
+
   .link-underline {
     background-image: linear-gradient(currentColor, currentColor);
     background-size: 0% 1px;
@@ -251,5 +314,5 @@
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
-  .lenis.lenis-smooth { scroll-behavior: auto !important; }
+  html.lenis { scroll-behavior: auto !important; }
 }

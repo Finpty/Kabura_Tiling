@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Section, SectionLabel } from "@/components/ui/Section";
 import { PlaceholderNotice } from "@/components/ui/PlaceholderNotice";
 import { MATERIAL_LIST } from "@/lib/media";
+import { centreBlock, centreRow, centreText } from "@/lib/align";
 import { cn } from "@/lib/utils";
 
 /**
@@ -45,7 +46,12 @@ type Tile = { x: number; y: number; w: number; h: number };
 const AREA = { w: 3600, h: 2400 };
 
 /** Lay out one wall's worth of tiles, in millimetres, for the chosen pattern. */
-function layout(pattern: PatternId, w: number, h: number, area: { w: number; h: number }): Tile[] {
+function layout(
+  pattern: PatternId,
+  w: number,
+  h: number,
+  area: { w: number; h: number },
+): Tile[] {
   const tiles: Tile[] = [];
 
   if (pattern === "herringbone") {
@@ -125,8 +131,12 @@ export function TileWall() {
       aria-labelledby="tile-wall-heading"
     >
       <div className="shell">
-        <div className="max-w-2xl">
-          <SectionLabel index="09" eyebrow="Layout studio" />
+        <div className={cn("max-w-2xl", centreText, centreBlock)}>
+          <SectionLabel
+            index="09"
+            eyebrow="Layout studio"
+            className={centreRow}
+          />
           <h2
             id="tile-wall-heading"
             className="mt-6 font-display text-headline text-bone"
@@ -178,7 +188,8 @@ export function TileWall() {
             />
 
             <span className="pointer-events-none absolute bottom-4 left-4 rounded-full border border-bone/20 bg-ink/60 px-3 py-1.5 text-[0.62rem] font-medium tracking-[0.16em] text-bone/85 uppercase backdrop-blur-sm">
-              {format.label} mm · {PATTERNS.find((p) => p.id === patternId)?.label}
+              {format.label} mm ·{" "}
+              {PATTERNS.find((p) => p.id === patternId)?.label}
             </span>
           </div>
 

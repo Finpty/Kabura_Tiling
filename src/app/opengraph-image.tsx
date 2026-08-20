@@ -20,107 +20,109 @@ export default async function OpengraphImage() {
   ]);
 
   return new ImageResponse(
-    (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          background:
-            "linear-gradient(135deg, #0b0a09 0%, #14120f 46%, #241d15 100%)",
-          padding: "72px 80px",
-          fontFamily: "Inter Tight",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-          <div
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 999,
-              border: "2px solid #cf9d5f",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#cf9d5f",
-              fontSize: 22,
-              fontWeight: 600,
-            }}
-          >
-            K
-          </div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <span
-              style={{
-                color: "#f1ece2",
-                fontSize: 22,
-                fontWeight: 600,
-                letterSpacing: 6,
-              }}
-            >
-              KABURA
-            </span>
-            <span style={{ color: "#8b8177", fontSize: 13, letterSpacing: 5 }}>
-              TILING GROUP
-            </span>
-          </div>
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <span
-            style={{
-              color: "#f1ece2",
-              fontSize: 92,
-              fontWeight: 600,
-              letterSpacing: -4,
-              lineHeight: 1,
-            }}
-          >
-            CRAFTED IN TILE.
-          </span>
-          <span
-            style={{
-              color: "#f1ece2",
-              fontSize: 92,
-              fontWeight: 600,
-              letterSpacing: -4,
-              lineHeight: 1,
-            }}
-          >
-            BUILT TO LAST.
-          </span>
-          <span
-            style={{
-              marginTop: 26,
-              color: "#cf9d5f",
-              fontSize: 34,
-              fontFamily: "Instrument Serif",
-            }}
-          >
-            {site.tagline}
-          </span>
-        </div>
-
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        background:
+          "linear-gradient(135deg, #0b0a09 0%, #14120f 46%, #241d15 100%)",
+        padding: "72px 80px",
+        fontFamily: "Inter Tight",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
         <div
           style={{
+            width: 44,
+            height: 44,
+            borderRadius: 6,
+            // The brand red from the logo. Satori has no gradient text and no
+            // background-clip, so the wordmark's diagonal split is echoed
+            // here by simply colouring the two halves.
+            background: "#ed2a24",
             display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-end",
-            borderTop: "1px solid rgba(139,129,119,0.35)",
-            paddingTop: 24,
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#f1ece2",
+            fontSize: 26,
+            fontWeight: 700,
           }}
         >
-          <span style={{ color: "#c9bca8", fontSize: 22, maxWidth: 720 }}>
-            Premium tiling, waterproofing, stone and bathroom finishes.
-          </span>
-          <span style={{ color: "#8b8177", fontSize: 18, letterSpacing: 3 }}>
-            {site.state.toUpperCase()}
+          K
+        </div>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <div
+            style={{
+              display: "flex",
+              fontSize: 22,
+              fontWeight: 700,
+              letterSpacing: 6,
+            }}
+          >
+            <span style={{ color: "#f1ece2" }}>KAB</span>
+            <span style={{ color: "#ed2a24" }}>URA</span>
+          </div>
+          <span style={{ color: "#8b8177", fontSize: 12, letterSpacing: 4 }}>
+            TILING GROUP PTY LTD
           </span>
         </div>
       </div>
-    ),
+
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        <span
+          style={{
+            color: "#f1ece2",
+            fontSize: 92,
+            fontWeight: 600,
+            letterSpacing: -4,
+            lineHeight: 1,
+          }}
+        >
+          CRAFTED IN TILE.
+        </span>
+        <span
+          style={{
+            color: "#f1ece2",
+            fontSize: 92,
+            fontWeight: 600,
+            letterSpacing: -4,
+            lineHeight: 1,
+          }}
+        >
+          BUILT TO LAST.
+        </span>
+        <span
+          style={{
+            marginTop: 26,
+            color: "#cf9d5f",
+            fontSize: 34,
+            fontFamily: "Instrument Serif",
+          }}
+        >
+          {site.tagline}
+        </span>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-end",
+          borderTop: "1px solid rgba(139,129,119,0.35)",
+          paddingTop: 24,
+        }}
+      >
+        <span style={{ color: "#c9bca8", fontSize: 22, maxWidth: 720 }}>
+          Premium tiling, waterproofing, stone and bathroom finishes.
+        </span>
+        <span style={{ color: "#8b8177", fontSize: 18, letterSpacing: 3 }}>
+          {site.state.toUpperCase()}
+        </span>
+      </div>
+    </div>,
     {
       ...size,
       fonts: [

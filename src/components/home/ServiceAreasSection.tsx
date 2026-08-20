@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 import { Section, SectionLabel } from "@/components/ui/Section";
 import { MagneticLink } from "@/components/ui/MagneticButton";
+import { CoverageBoard } from "@/components/service-areas/CoverageBoard";
 import { SERVICE_AREAS } from "@/lib/service-areas";
 import { site } from "@/lib/site";
+import { centreBlock, centreRow, centreText } from "@/lib/align";
 import { cn, pad } from "@/lib/utils";
 
 /**
@@ -28,13 +30,31 @@ export function ServiceAreasSection() {
       <div className="shell">
         <div className="grid gap-12 lg:grid-cols-[1fr_minmax(0,26rem)] lg:gap-20">
           <div>
-            <SectionLabel index="12" eyebrow="Where we work" />
+            <SectionLabel
+              index="12"
+              eyebrow="Where we work"
+              className={centreRow}
+            />
             <h2
               id="areas-heading"
-              className="mt-6 max-w-xl font-display text-headline text-bone"
+              className={cn(
+                "mt-6 max-w-xl font-display text-headline text-bone",
+                centreText,
+                centreBlock,
+              )}
             >
-              Across {site.state}.
+              Areas we service.
             </h2>
+            <p
+              className={cn(
+                "mt-5 max-w-lg text-lead text-sand/75",
+                centreText,
+                centreBlock,
+              )}
+            >
+              The suburbs we have confirmed we cover, across the Perth,
+              Rockingham and Mandurah corridor.
+            </p>
 
             <ul className="mt-12 border-t border-stone/18">
               {SERVICE_AREAS.map((item, index) => (
@@ -67,7 +87,9 @@ export function ServiceAreasSection() {
             </ul>
           </div>
 
-          <div className="lg:sticky lg:top-32 lg:self-start">
+          <div className="flex flex-col gap-8 lg:sticky lg:top-32 lg:self-start">
+            <CoverageBoard className="mx-auto lg:mx-0" />
+
             <div className="border border-stone/20 bg-ink/50 p-7">
               <p className="eyebrow text-bronze-light">{area.region}</p>
               <h3 className="mt-4 font-display text-3xl font-medium tracking-[-0.03em] text-bone">
@@ -101,11 +123,23 @@ export function ServiceAreasSection() {
               </MagneticLink>
             </div>
 
-            <p className="mt-6 text-sm leading-relaxed text-sand/60">
-              Somewhere else in {site.state}? We have not listed every suburb —
-              send us the address and we will tell you honestly whether we can
-              get there.
-            </p>
+            <div className={cn(centreText, centreBlock)}>
+              <p className="text-sm leading-relaxed text-sand/60">
+                Somewhere else in {site.state}? We have not listed every suburb
+                — send us the address and we will tell you honestly whether we
+                can get there.
+              </p>
+              <div className={cn("mt-6 flex flex-wrap gap-3", centreRow)}>
+                <MagneticLink
+                  href="/service-areas"
+                  variant="outline"
+                  size="sm"
+                  withArrow
+                >
+                  View service areas
+                </MagneticLink>
+              </div>
+            </div>
           </div>
         </div>
       </div>

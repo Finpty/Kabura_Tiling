@@ -49,6 +49,12 @@ export type Project = {
  * *shape* of a project record, chosen to exercise every field and filter in the
  * UI. They are deliberately generic and are never presented as case studies.
  *
+ * The titles read cleanly rather than carrying a "Placeholder —" prefix: the
+ * disclosure belongs on the page, where it is stated in full, and on the card's
+ * own Sample badge — not smuggled into a project name that then has to be
+ * edited out when the real record arrives. `isPlaceholder` stays true, so every
+ * surface that renders one still shows the placeholder treatment.
+ *
  * To replace: insert rows into the `projects` / `project_media` tables in
  * Supabase (see `supabase/migrations`). `getProjects()` prefers the database
  * whenever it is configured and only falls back to this list otherwise.
@@ -56,7 +62,7 @@ export type Project = {
 export const PLACEHOLDER_PROJECTS: Project[] = [
   {
     slug: "placeholder-coastal-ensuite",
-    title: "Placeholder — Coastal Ensuite",
+    title: "Coastal Ensuite",
     category: "Bathrooms",
     projectType: "Bathroom renovation",
     suburb: "Suburb to be confirmed",
@@ -77,12 +83,16 @@ export const PLACEHOLDER_PROJECTS: Project[] = [
       { key: "cornerDetail", caption: "Placeholder image" },
       { key: "heroBathroomAlt", caption: "Placeholder image" },
     ],
-    beforeAfter: { before: "waterproofing", after: "bathroom", label: "Kabura Finish" },
+    beforeAfter: {
+      before: "waterproofing",
+      after: "bathroom",
+      label: "Kabura Finish",
+    },
     isPlaceholder: true,
   },
   {
     slug: "placeholder-large-format-living",
-    title: "Placeholder — Large Format Living",
+    title: "Large-Format Living",
     category: "Large Format",
     projectType: "New build, ground floor",
     suburb: "Suburb to be confirmed",
@@ -102,12 +112,16 @@ export const PLACEHOLDER_PROJECTS: Project[] = [
       { key: "largeFormat", caption: "Placeholder image" },
       { key: "floorTiling", caption: "Placeholder image" },
     ],
-    beforeAfter: { before: "demolition", after: "residential", label: "Kabura Finish" },
+    beforeAfter: {
+      before: "demolition",
+      after: "residential",
+      label: "Kabura Finish",
+    },
     isPlaceholder: true,
   },
   {
     slug: "placeholder-stone-feature-wall",
-    title: "Placeholder — Stone Feature Wall",
+    title: "Stone Feature Wall",
     category: "Stone",
     projectType: "Feature wall installation",
     suburb: "Suburb to be confirmed",
@@ -131,7 +145,7 @@ export const PLACEHOLDER_PROJECTS: Project[] = [
   },
   {
     slug: "placeholder-commercial-amenities",
-    title: "Placeholder — Commercial Amenities",
+    title: "Commercial Amenities",
     category: "Commercial",
     projectType: "Commercial fit-out",
     suburb: "Suburb to be confirmed",
@@ -154,7 +168,7 @@ export const PLACEHOLDER_PROJECTS: Project[] = [
   },
   {
     slug: "placeholder-alfresco-terrace",
-    title: "Placeholder — Alfresco Terrace",
+    title: "Alfresco Terrace",
     category: "Outdoor",
     projectType: "Outdoor / alfresco",
     suburb: "Suburb to be confirmed",
@@ -177,7 +191,7 @@ export const PLACEHOLDER_PROJECTS: Project[] = [
   },
   {
     slug: "placeholder-whole-home-tiling",
-    title: "Placeholder — Whole Home Tiling",
+    title: "Whole-Home Floors",
     category: "Residential",
     projectType: "Residential, whole home",
     suburb: "Suburb to be confirmed",
@@ -197,7 +211,11 @@ export const PLACEHOLDER_PROJECTS: Project[] = [
       { key: "wall", caption: "Placeholder image" },
       { key: "repairs", caption: "Placeholder image" },
     ],
-    beforeAfter: { before: "screed", after: "floorTiling", label: "Kabura Finish" },
+    beforeAfter: {
+      before: "screed",
+      after: "floorTiling",
+      label: "Kabura Finish",
+    },
     isPlaceholder: true,
   },
 ];

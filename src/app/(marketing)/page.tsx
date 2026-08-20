@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Hero } from "@/components/home/Hero";
-import { SlabStage } from "@/components/three/SlabStage";
+import { BuildUp } from "@/components/home/BuildUp";
 import { LayerStory } from "@/components/home/LayerStory";
 import { ServicesShowcase } from "@/components/home/ServicesShowcase";
 import { ProjectsShowcase } from "@/components/home/ProjectsShowcase";
@@ -9,12 +9,14 @@ import { VideoRail } from "@/components/home/VideoRail";
 import { WhyKabura } from "@/components/home/WhyKabura";
 import { TileWall } from "@/components/home/TileWall";
 import { BathroomVisualiser } from "@/components/home/BathroomVisualiser";
-import { Testimonials } from "@/components/home/Testimonials";
+import { LatestWork } from "@/components/home/LatestWork";
+import { resolveSocialPosts } from "@/lib/social-resolve";
+import { Reviews } from "@/components/home/Reviews";
 import { ServiceAreasSection } from "@/components/home/ServiceAreasSection";
 import { CTASection } from "@/components/home/CTASection";
 import { Marquee } from "@/components/ui/Marquee";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { getProjects, getReviews } from "@/lib/data";
+import { getProjects } from "@/lib/data";
 import { faqSchema, pageMetadata } from "@/lib/seo";
 import { site } from "@/lib/site";
 import { SERVICES } from "@/lib/services";
@@ -54,7 +56,10 @@ const HOME_FAQS = [
 ];
 
 export default async function HomePage() {
-  const [projects, reviews] = await Promise.all([getProjects(), getReviews()]);
+  const [projects, posts] = await Promise.all([
+    getProjects(),
+    resolveSocialPosts(),
+  ]);
 
   return (
     <>
@@ -67,7 +72,7 @@ export default async function HomePage() {
         className="border-y border-stone/12 bg-charcoal py-4"
       />
 
-      <SlabStage />
+      <BuildUp />
       <LayerStory />
       <ServicesShowcase />
       <ProjectsShowcase projects={projects} />
@@ -76,7 +81,8 @@ export default async function HomePage() {
       <WhyKabura />
       <TileWall />
       <BathroomVisualiser />
-      <Testimonials data={reviews} />
+      <LatestWork posts={posts} />
+      <Reviews />
       <ServiceAreasSection />
 
       <CTASection />

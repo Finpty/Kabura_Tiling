@@ -39,7 +39,10 @@ export default function QuotePage() {
       </div>
 
       <div className="shell">
-        <Breadcrumbs items={[{ name: "Quote", path: "/quote" }]} className="mb-10" />
+        <Breadcrumbs
+          items={[{ name: "Quote", path: "/quote" }]}
+          className="mb-10"
+        />
 
         <div className="mx-auto mb-14 max-w-3xl text-center">
           <p className="eyebrow text-bronze-light">Free quote</p>
@@ -47,8 +50,9 @@ export default function QuotePage() {
             Let&rsquo;s price it properly.
           </h1>
           <p className="mt-6 text-lead text-sand/80">
-            Five short steps. The more you tell us about the space — especially
-            photos — the closer the quote will be to the final number.
+            Six short steps. The more you tell us about the space — the
+            measurements, a preferred date, and especially photos — the closer
+            the quote will be to the final number.
           </p>
           <p className="mt-3 text-sm text-stone">
             {site.state} · {site.tagline}

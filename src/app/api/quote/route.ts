@@ -7,6 +7,7 @@ import {
   EMPTY_DRAFT,
   MAX_FILES,
   MAX_FILE_BYTES,
+  parseMetres,
   validateAll,
   type QuoteDraft,
 } from "@/lib/quote-schema";
@@ -31,7 +32,9 @@ const MAX_FIELD_LENGTH = 4000;
 
 function field(form: FormData, name: string): string {
   const value = form.get(name);
-  return typeof value === "string" ? value.trim().slice(0, MAX_FIELD_LENGTH) : "";
+  return typeof value === "string"
+    ? value.trim().slice(0, MAX_FIELD_LENGTH)
+    : "";
 }
 
 function extensionFor(type: string, name: string) {
@@ -90,7 +93,10 @@ export async function POST(request: Request) {
     service: field(form, "service"),
     suburb: field(form, "suburb"),
     postcode: field(form, "postcode"),
+    widthM: field(form, "widthM"),
+    lengthM: field(form, "lengthM"),
     approxSqm: field(form, "approxSqm"),
+    preferredStartDate: field(form, "preferredStartDate"),
     tileSize: field(form, "tileSize"),
     buildType: field(form, "buildType"),
     startTiming: field(form, "startTiming"),
@@ -113,24 +119,32 @@ export async function POST(request: Request) {
   }
 
   const insertPayload = {
-      service: draft.service,
-      suburb: draft.suburb,
-      postcode: draft.postcode || null,
-      approx_sqm: draft.approxSqm || null,
-      tile_size: draft.tileSize || null,
-      build_type: draft.buildType || null,
-      start_timing: draft.startTiming || null,
-      description: draft.description || null,
-      name: draft.name,
-      phone: draft.phone,
-      email: draft.email,
-      source_path: field(form, "sourcePath") || null,
+    service: draft.service,
+    suburb: draft.suburb,
+    postcode: draft.postcode || null,
+    approx_sqm: draft.approxSqm || null,
+    // Validated above, so these are either a sane number or absent entirely.
+    width_m: parseMetres(draft.widthM),
+    length_m: parseMetres(draft.lengthM),
+    // A requested date. Nothing downstream treats it as a confirmed booking —
+    // only the admin calendar creates a real job.
+    preferred_start_date: draft.preferredStartDate || null,
+    tile_size: draft.tileSize || null,
+    build_type: draft.buildType || null,
+    start_timing: draft.startTiming || null,
+    description: draft.description || null,
+    name: draft.name,
+    phone: draft.phone,
+    email: draft.email,
+    source_path: field(form, "sourcePath") || null,
   };
 
   // Only the service role can read the row back — anon has no SELECT policy,
   // which is the point. On the anon path we insert and trust the constraint.
   if (!admin) {
-    const { error } = await supabase.from("quote_requests").insert(insertPayload);
+    const { error } = await supabase
+      .from("quote_requests")
+      .insert(insertPayload);
     if (error) {
       console.error("quote insert failed (anon path)", error);
       return NextResponse.json(

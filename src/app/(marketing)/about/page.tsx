@@ -7,9 +7,10 @@ import { RevealText } from "@/components/ui/RevealText";
 import { CTASection } from "@/components/home/CTASection";
 import { PlaceholderNotice } from "@/components/ui/PlaceholderNotice";
 import { imageFill } from "@/lib/media";
+import { centreBlock, centreRow, centreText } from "@/lib/align";
 import { pageMetadata } from "@/lib/seo";
 import { site } from "@/lib/site";
-import { pad } from "@/lib/utils";
+import { cn, pad } from "@/lib/utils";
 
 export const metadata: Metadata = pageMetadata({
   title: "About",
@@ -63,6 +64,7 @@ export default function AboutPage() {
       <PageHero
         eyebrow="About"
         title="Built around the details most people never notice."
+        titleFace="serif"
         imageKey="cornerDetail"
         breadcrumbs={[{ name: "About", path: "/about" }]}
       />
@@ -74,17 +76,33 @@ export default function AboutPage() {
             <RevealText
               as="p"
               text="Nobody walks into a finished bathroom and compliments the screed."
-              className="block font-display text-headline text-bone"
+              className={cn(
+                "block font-display text-headline text-bone",
+                centreText,
+                centreBlock,
+              )}
               stagger={0.035}
             />
             <div className="mt-10 grid gap-8 md:grid-cols-2 md:gap-14">
-              <p className="text-lead text-sand/80">
+              <p
+                className={cn(
+                  "text-lead text-sand/80",
+                  centreText,
+                  centreBlock,
+                )}
+              >
                 They notice the room feels right — that the floor is flat, the
-                joints line up, the corners resolve, and nothing sits at an angle
-                that catches the eye. What they are actually noticing is a series
-                of decisions made long before the tiles arrived.
+                joints line up, the corners resolve, and nothing sits at an
+                angle that catches the eye. What they are actually noticing is a
+                series of decisions made long before the tiles arrived.
               </p>
-              <p className="text-lead text-sand/80">
+              <p
+                className={cn(
+                  "text-lead text-sand/80",
+                  centreText,
+                  centreBlock,
+                )}
+              >
                 {site.name} is built around that part of the job. The
                 preparation, the levels, the falls and the waterproofing are the
                 work; the tile is what the work is wearing.
@@ -111,8 +129,17 @@ export default function AboutPage() {
       {/* The details */}
       <Section spacing="loose" className="border-t border-stone/12 bg-charcoal">
         <div className="shell">
-          <SectionLabel eyebrow="What we pay attention to" />
-          <h2 className="mt-6 max-w-2xl font-display text-headline text-bone">
+          <SectionLabel
+            eyebrow="What we pay attention to"
+            className={centreRow}
+          />
+          <h2
+            className={cn(
+              "mt-6 max-w-2xl font-display text-headline text-bone",
+              centreText,
+              centreBlock,
+            )}
+          >
             Nine things that decide the finish.
           </h2>
 
@@ -138,15 +165,27 @@ export default function AboutPage() {
       <Section spacing="loose" className="border-t border-stone/12 bg-ink">
         <div className="shell grid gap-12 lg:grid-cols-2 lg:gap-20">
           <Reveal>
-            <SectionLabel eyebrow="The company" />
-            <h2 className="mt-6 font-display text-headline text-bone">
+            <SectionLabel eyebrow="The company" className={centreRow} />
+            <h2
+              className={cn(
+                "mt-6 font-display text-headline text-bone",
+                centreText,
+                centreBlock,
+              )}
+            >
               {site.legalName}
             </h2>
-            <p className="mt-7 text-lead text-sand/80">
+            <p
+              className={cn(
+                "mt-7 text-lead text-sand/80",
+                centreText,
+                centreBlock,
+              )}
+            >
               A tiling company working across {site.state} on residential and
               commercial projects — bathrooms, floors, walls, wet areas, stone
-              and outdoor spaces — from demolition and preparation through to the
-              final grout.
+              and outdoor spaces — from demolition and preparation through to
+              the final grout.
             </p>
             <p className="mt-5 font-serif text-3xl text-bronze-light italic">
               {site.tagline}
