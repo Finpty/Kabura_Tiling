@@ -8,7 +8,7 @@ import { imageFill } from "@/lib/media";
 import { useInView } from "@/hooks/use-in-view";
 import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
 import { centreBlock, centreRow, centreText } from "@/lib/align";
-import { cn } from "@/lib/utils";
+import { cn, fixed } from "@/lib/utils";
 
 /**
  * Take it apart.
@@ -99,6 +99,18 @@ export function BuildUp() {
     setSpread(value);
   }, []);
 
+  /**
+   * Worked out here rather than inline in the style string, and rounded, so
+   * the server and the browser produce byte-identical markup — see `fixed`.
+   */
+  const stackOffsetY = fixed(
+    -(
+      (BUILD_UP_LAYERS.length - 1) *
+      (THICKNESS + SPREAD * shown) *
+      AXIS_TO_SCREEN
+    ) / 2,
+  );
+
   return (
     <Section
       id="under-the-tile"
@@ -144,11 +156,7 @@ export function BuildUp() {
             <div
               className="preserve-3d pointer-events-none relative h-[15rem] w-[19rem] sm:h-[19rem] sm:w-[26rem] lg:w-[30rem]"
               style={{
-                transform: `translateY(${
-                  -((BUILD_UP_LAYERS.length - 1) *
-                    (THICKNESS + SPREAD * shown) *
-                    AXIS_TO_SCREEN) / 2
-                }px) rotateX(56deg) rotateZ(-40deg)`,
+                transform: `translateY(${stackOffsetY}px) rotateX(56deg) rotateZ(-40deg)`,
               }}
             >
               {BUILD_UP_LAYERS.map((layer, index) => (

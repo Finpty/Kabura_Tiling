@@ -9,7 +9,7 @@ import {
 } from "@/lib/service-areas";
 import { useInView } from "@/hooks/use-in-view";
 import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
-import { cn } from "@/lib/utils";
+import { cn, fixed } from "@/lib/utils";
 
 /**
  * Coverage, plotted rather than mapped.
@@ -83,8 +83,10 @@ const MARKERS: Marker[] = (() => {
       slug: area.slug,
       name: area.name,
       km: Math.round(metres / 1000),
-      x: Math.sin(bearing) * r,
-      y: -Math.cos(bearing) * r,
+      // Rounded: these end up in `left`/`top` percentages, and the trigonometry
+      // behind them is implementation-approximated. See `fixed`.
+      x: fixed(Math.sin(bearing) * r),
+      y: fixed(-Math.cos(bearing) * r),
     };
   });
 })();
@@ -101,7 +103,7 @@ const RING_STEP = REACH_KM > 60 ? 20 : 10;
 const RINGS = Array.from(
   { length: Math.floor(REACH_KM / RING_STEP) },
   (_, i) => (i + 1) * RING_STEP,
-).map((km) => ({ km, r: (km / REACH_KM) * PLOT_R }));
+).map((km) => ({ km, r: fixed((km / REACH_KM) * PLOT_R) }));
 
 /* ------------------------------ component -------------------------------- */
 
@@ -267,8 +269,8 @@ export function CoverageBoard({ className }: { className?: string }) {
                 revealed ? "scale-100 opacity-100" : "scale-0 opacity-0",
               )}
               style={{
-                left: `${((HALF + m.x) / (HALF * 2)) * 100}%`,
-                top: `${((HALF + m.y) / (HALF * 2)) * 100}%`,
+                left: `${fixed(((HALF + m.x) / (HALF * 2)) * 100)}%`,
+                top: `${fixed(((HALF + m.y) / (HALF * 2)) * 100)}%`,
                 transform: "translate(-50%, -50%)",
                 transitionDuration: "600ms",
                 transitionDelay: reduced ? "0ms" : `${380 + i * 70}ms`,

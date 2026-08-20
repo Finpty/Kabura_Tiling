@@ -11,12 +11,12 @@ import { TileWall } from "@/components/home/TileWall";
 import { BathroomVisualiser } from "@/components/home/BathroomVisualiser";
 import { LatestWork } from "@/components/home/LatestWork";
 import { resolveSocialPosts } from "@/lib/social-resolve";
-import { Testimonials } from "@/components/home/Testimonials";
+import { Reviews } from "@/components/home/Reviews";
 import { ServiceAreasSection } from "@/components/home/ServiceAreasSection";
 import { CTASection } from "@/components/home/CTASection";
 import { Marquee } from "@/components/ui/Marquee";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { getProjects, getReviews } from "@/lib/data";
+import { getProjects } from "@/lib/data";
 import { faqSchema, pageMetadata } from "@/lib/seo";
 import { site } from "@/lib/site";
 import { SERVICES } from "@/lib/services";
@@ -56,9 +56,8 @@ const HOME_FAQS = [
 ];
 
 export default async function HomePage() {
-  const [projects, reviews, posts] = await Promise.all([
+  const [projects, posts] = await Promise.all([
     getProjects(),
-    getReviews(),
     resolveSocialPosts(),
   ]);
 
@@ -83,7 +82,7 @@ export default async function HomePage() {
       <TileWall />
       <BathroomVisualiser />
       <LatestWork posts={posts} />
-      <Testimonials data={reviews} />
+      <Reviews />
       <ServiceAreasSection />
 
       <CTASection />

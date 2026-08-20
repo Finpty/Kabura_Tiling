@@ -97,3 +97,22 @@ export function formatBytes(bytes: number) {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
+
+/**
+ * Rounds a computed number before it is written into markup.
+ *
+ * `Math.sin`, `Math.cos`, `Math.atan2`, `Math.asin` and friends are
+ * *implementation-approximated* in ECMAScript — the spec lets every engine
+ * pick its own algorithm, so V8 on the server and JavaScriptCore in Safari can
+ * legitimately return values differing in the last bit. Interpolated into a
+ * style string that becomes `translateY(-24.87112717665125px)` on one and
+ * `translateY(-24.871127176651253px)` on the other, and React reports a
+ * hydration mismatch over a digit sixteen places below anything a layout can
+ * resolve.
+ *
+ * `toFixed` is exactly specified, unlike the trigonometry feeding it, so
+ * rounding through it is deterministic across engines. Three decimals is far
+ * finer than a device pixel on any display.
+ */
+export const fixed = (value: number, decimals = 3): number =>
+  Number(value.toFixed(decimals));

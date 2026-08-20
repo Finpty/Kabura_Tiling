@@ -143,10 +143,8 @@ supplied" placeholder rather than inventing a number, address or registration.
 | `NEXT_PUBLIC_SOCIAL_YOUTUBE` | — | as above |
 | `NEXT_PUBLIC_SOCIAL_GOOGLE` | — | as above, plus the "read our reviews" link |
 | `NEXT_PUBLIC_SOCIAL_LINKEDIN` | — | No default. Hidden until a URL is supplied |
-| `GOOGLE_PLACES_API_KEY` | for reviews | **Server only.** Places API (New). Unset ⇒ "reviews coming soon" |
-| `GOOGLE_PLACE_ID` | for reviews | The business's Place ID |
 
-> There is no Maps key. The coverage panel is drawn from the coordinates in `src/lib/service-areas.ts`, so it needs no Google Cloud project, no billing and no referrer allowlist — and cannot show "This page can't load Google Maps correctly" when one of those is wrong.
+> There are no Google API keys. The reviews are transcribed into `src/lib/customer-reviews.ts` from the Google Business Profile, and the coverage panel is drawn from the coordinates in `src/lib/service-areas.ts` — so neither needs a Google Cloud project, billing or a referrer allowlist, and neither can fail at request time.
 
 | `NEXT_PUBLIC_SUPABASE_URL` | for quotes | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | for quotes | Publishable key — safe in the browser, every table is behind RLS |
@@ -286,9 +284,12 @@ rather than by convention:
   schema.org markup is worse than an absent one.
 - **Projects** ship as placeholder records flagged `isPlaceholder`, badged in
   the UI, `noindex`, and excluded from the sitemap.
-- **Reviews** ship as an empty table with a "Customer reviews coming soon"
-  state. The carousel is fully built and takes over the moment approved rows
-  exist.
+- **Reviews** are the ten real reviews from the Google Business Profile,
+  transcribed word for word into `src/lib/customer-reviews.ts`. Punctuation and
+  obvious spelling slips are tidied; nothing that changes what a customer said
+  is touched. Where Google truncated a review behind "… More", the card shows
+  it as an extract and links out rather than inventing an ending. The site says
+  "from our Google Business Profile", never "live" or "synced".
 - **Generated imagery** is labelled wherever it appears in a portfolio context,
   and its provenance is recorded in `assets-src/higgsfield/manifest.json`.
 - **The layout tools** state plainly that the surfaces are representative
@@ -358,8 +359,8 @@ appear across the site automatically.
 - [ ] Street address, or confirmation that there is no public shopfront
 - [x] ~~Instagram~~ — @kaburatilinggroupptyltd
 - [ ] Facebook / LinkedIn URLs
-- [ ] Google Business Profile: set `GOOGLE_PLACES_API_KEY` + `GOOGLE_PLACE_ID`
-      to pull the real reviews (see `.env.example`)
+- [x] ~~Google Business Profile~~ — linked, and the ten reviews are transcribed
+      into `src/lib/customer-reviews.ts`. Append new ones there as they arrive
 - [ ] Any trade licence or certification numbers you want shown — with the
       registration numbers so they can be verified
 - [ ] Confirmation of the suburbs to list in `src/lib/service-areas.ts`

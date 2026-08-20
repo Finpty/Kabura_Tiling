@@ -166,7 +166,12 @@ export function distanceBetween(
   const h =
     Math.sin(dLat / 2) ** 2 +
     Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
-  return 2 * EARTH_RADIUS_M * Math.asin(Math.min(1, Math.sqrt(h)));
+  // Whole metres. `Math.asin`/`sin`/`cos` are implementation-approximated, so
+  // two engines can differ in the last bit — rounding here keeps everything
+  // derived from a distance (map positions, ring radii) identical on the
+  // server and in the browser, and a haversine was never accurate to the
+  // nanometre anyway.
+  return Math.round(2 * EARTH_RADIUS_M * Math.asin(Math.min(1, Math.sqrt(h))));
 }
 
 /** Mean position of every listed suburb. */
