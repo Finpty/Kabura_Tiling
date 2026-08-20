@@ -5,18 +5,43 @@ verified before it was written down — the schema and policy lists are read
 back from a database that ran the real migrations, and the behavioural claims
 are each one of the 29 checks in `supabase/tests/portal.test.sql`.
 
-## Going live
+## Live status — 20 Aug 2026
 
-1. Apply the migrations in `supabase/migrations/` in filename order (fresh
-   projects can run the whole folder; every statement is idempotent).
-2. In Supabase Auth, create the owner's user, then insert their id into
-   `public.admin_users`. Repeat for any second trusted person — that is all
-   "multiple admins" requires.
-3. Open `/admin/settings` and set the GST rate, estimated tax rate, working
-   days, daily capacity and notification addresses.
-4. Optional: put a `resend_api_key` secret in Supabase Vault so quote and
+Already done against the production Supabase project (`dovgxtnxnscbizcxhncm`):
+
+- **All 17 migrations are applied**, including the portal schema, the
+  availability engine and the username column.
+- **The first admin exists**: username `Rez`, email `rasatiling@gmail.com`,
+  already on the allow-list. The password is the one the owner chose; it is
+  stored only as a bcrypt hash, and the hash was verified to match.
+- **The engine was exercised on the live database**: a test booking request was
+  approved into a job and the public function flipped that day from
+  `available` to `limited`; cancelling flipped it back; the test rows were
+  removed completely. The one real quote request in the system was untouched.
+
+What remains is deployment-side:
+
+1. Deploy this branch with the environment variables below.
+2. Sign in at `/admin/login` — then open `/admin/settings` and set the GST
+   rate, estimated tax rate, working days, daily capacity and notification
+   addresses.
+3. Optional: put a `resend_api_key` secret in Supabase Vault so quote and
    booking emails send. Without it both triggers log and do nothing — a mail
    problem never blocks a customer's request.
+4. To add a second admin: create their user in Supabase Auth, then insert
+   their id (and a `username`, if they want one) into `public.admin_users`.
+
+## Deployment environment
+
+| Variable | Where | Purpose |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | build + runtime | `https://dovgxtnxnscbizcxhncm.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | build + runtime | the anon key from Supabase → Settings → API |
+| `SUPABASE_SERVICE_ROLE_KEY` | runtime, server only | photo uploads, **username sign-in**, and returning a reference to booking customers |
+
+The service-role key is never sent to a browser (`server-only` enforces it at
+build time). Without it the portal still works: sign-in falls back to
+email-only, and a booking customer gets a confirmation without a reference.
 
 No environment variables were added. The portal runs on the same
 `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` /
@@ -79,6 +104,15 @@ PostgREST does not expose. Two properties matter more than the list:
   even `INSERT … RETURNING` works — RETURNING is a read. The test suite
   proves it, and it is why `/api/booking` uses the server-only service client
   to read the reference back.
+
+## Signing in
+
+`/admin/login` accepts **a username or an email**, plus the password. A
+username is an alias on the `admin_users` row: the server resolves it to that
+row's email through the service-role client *before* authenticating, so which
+usernames exist is never observable from a browser, and a name that matches
+nothing fails with the same generic message as any wrong password. Supabase
+Auth itself still authenticates by email + password, unchanged.
 
 ## Authentication
 
