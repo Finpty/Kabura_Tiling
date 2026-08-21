@@ -25,6 +25,18 @@ import { NextResponse, type NextRequest } from "next/server";
  * afternoon on site does not end in a surprise logout.
  */
 
+/**
+ * Redirects are issued on the canonical origin, not the request's own — behind
+ * Hostinger's proxy the request origin is 0.0.0.0:<port>, which no browser
+ * can follow. Mirrors src/lib/site.ts (middleware cannot import it wholesale
+ * without dragging the full site config into the edge bundle).
+ */
+const CANONICAL_ORIGIN =
+  process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+  (process.env.NODE_ENV === "development"
+    ? "http://localhost:3000"
+    : "https://kaburatiling.com.au");
+
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ?? "";
 const SUPABASE_ANON_KEY =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ?? "";
@@ -73,19 +85,15 @@ export async function middleware(request: NextRequest) {
   );
 
   if (!user && !isPublicAdminPath) {
-    const login = request.nextUrl.clone();
-    login.pathname = "/admin/login";
+    const login = new URL("/admin/login", CANONICAL_ORIGIN);
     // Carry the destination so signing in lands where they were headed.
-    login.search = pathname === "/admin" ? "" : `?next=${encodeURIComponent(pathname)}`;
+    if (pathname !== "/admin") login.search = `?next=${encodeURIComponent(pathname)}`;
     return NextResponse.redirect(login);
   }
 
   // Already signed in and asking for the login page: send them on.
   if (user && pathname === "/admin/login") {
-    const dashboard = request.nextUrl.clone();
-    dashboard.pathname = "/admin";
-    dashboard.search = "";
-    return NextResponse.redirect(dashboard);
+    return NextResponse.redirect(new URL("/admin", CANONICAL_ORIGIN));
   }
 
   return response;

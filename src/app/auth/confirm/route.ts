@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { site } from "@/lib/site";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,15 +43,25 @@ function sanitizeNext(raw: string | null): string {
   return "/admin/reset-password";
 }
 
+/**
+ * Absolute URLs are built on the site's canonical origin, never on
+ * `request.nextUrl`. Behind Hostinger's proxy the request's own origin is the
+ * server's internal address — 0.0.0.0:<port> — and a redirect built from it
+ * sends the visitor's browser somewhere that does not exist.
+ */
+const absolute = (path: string, search = "") => {
+  const url = new URL(path, site.url);
+  url.search = search;
+  return url;
+};
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const tokenHash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
   const next = sanitizeNext(searchParams.get("next"));
 
-  const failure = request.nextUrl.clone();
-  failure.pathname = "/admin/forgot-password";
-  failure.search = "?error=link";
+  const failure = absolute("/admin/forgot-password", "?error=link");
 
   if (!tokenHash || !type || !ALLOWED_TYPES.includes(type)) {
     return NextResponse.redirect(failure);
@@ -71,8 +82,5 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(failure);
   }
 
-  const success = request.nextUrl.clone();
-  success.pathname = next;
-  success.search = "";
-  return NextResponse.redirect(success);
+  return NextResponse.redirect(absolute(next));
 }
