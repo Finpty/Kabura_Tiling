@@ -104,12 +104,13 @@ export async function requestPasswordReset(
   if (!supabase) return { error: "Not connected." };
 
   /**
-   * `redirectTo` feeds {{ .RedirectTo }} and the allowlist check. The email
-   * template itself links to /auth/confirm with {{ .TokenHash }} — the server
-   * route that exchanges the one-time token for a session and only then
-   * forwards to the reset page. A template that links straight to the reset
-   * page skips that exchange, and the page finds no session: the exact bug
-   * this flow replaces.
+   * `redirectTo` feeds {{ .RedirectTo }} and must stay on the Supabase
+   * redirect allow-list. Either email template completes from there: the
+   * customised one links straight to /auth/confirm with {{ .TokenHash }}
+   * (verified there with verifyOtp — works from any browser), and the stock
+   * one goes via Supabase's hosted verify endpoint, which lands back on the
+   * reset page with ?code= for the middleware to exchange (same browser that
+   * requested the reset). Both end signed in on /admin/reset-password.
    */
   await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${site.url}/admin/reset-password`,
