@@ -103,6 +103,14 @@ export async function requestPasswordReset(
   const supabase = await createServerSupabase();
   if (!supabase) return { error: "Not connected." };
 
+  /**
+   * `redirectTo` feeds {{ .RedirectTo }} and the allowlist check. The email
+   * template itself links to /auth/confirm with {{ .TokenHash }} — the server
+   * route that exchanges the one-time token for a session and only then
+   * forwards to the reset page. A template that links straight to the reset
+   * page skips that exchange, and the page finds no session: the exact bug
+   * this flow replaces.
+   */
   await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${site.url}/admin/reset-password`,
   });
@@ -139,7 +147,8 @@ export async function updatePassword(
   } = await supabase.auth.getUser();
   if (!user) {
     return {
-      error: "That reset link has expired. Request a new one and try again.",
+      error:
+        "Your reset session has ended. Request a new link from the sign-in page and use it straight away.",
     };
   }
 
