@@ -25,8 +25,9 @@ What remains is deployment-side:
 2. Sign in at `/admin/login` — then open `/admin/settings` and set the GST
    rate, estimated tax rate, working days, daily capacity and notification
    addresses.
-3. Optional: put a `resend_api_key` secret in Supabase Vault so quote and
-   booking emails send. Without it both triggers log and do nothing — a mail
+3. Optional: put a `brevo_api_key` secret in Supabase Vault so quote and
+   booking emails send through Brevo (a REST API key, the xkeysib- kind — an
+   SMTP key will not work). Without it both triggers log and do nothing — a mail
    problem never blocks a customer's request.
 4. To add a second admin: create their user in Supabase Auth, then insert
    their id (and a `username`, if they want one) into `public.admin_users`.

@@ -84,7 +84,13 @@ export function SettingsForm({ settings }: { settings: BusinessSettingsRow }) {
         <Text label="Business name" name="business_name" defaultValue={settings.business_name} />
         <Text label="ABN" name="abn" defaultValue={settings.abn} />
         <Text label="Phone" name="phone" defaultValue={settings.phone} />
-        <Text label="Email" name="email" type="email" defaultValue={settings.email} />
+        <Text
+          label="Email"
+          name="email"
+          type="email"
+          defaultValue={settings.email}
+          hint="Also the sender for quote and booking notification emails — must be a verified sender in Brevo."
+        />
       </fieldset>
 
       <fieldset className="grid gap-4 sm:grid-cols-2">

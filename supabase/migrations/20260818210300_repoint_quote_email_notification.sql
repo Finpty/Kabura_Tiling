@@ -1,13 +1,14 @@
--- Re-point the Resend notification at the new quote_requests.
+-- Quote notification email, via BREVO (vault secret: brevo_api_key).
 --
--- Same recipient, same Vault secret and same pg_net call as the original — only
--- the column mapping changed, plus the fields the new form actually collects
--- (reference, separate suburb/postcode, approx m2, tile size, build type).
--- Failures are swallowed exactly as before: an email problem must never roll
--- back the enquiry itself.
+-- HISTORY NOTE. This file originally posted through a different provider. It
+-- was rewritten in place on 21 Aug 2026 so that a fresh replay of this folder
+-- never installs anything but Brevo at any point. Supabase tracks applied
+-- migrations by version, so environments that already ran the old text are
+-- unaffected by this edit; the currently-installed functions come from
+-- 20260821090000_brevo_notifications.sql either way.
 --
--- NOTE: this is inert until a secret named `resend_api_key` exists in Supabase
--- Vault. Without it the function logs and returns, and no email is sent.
+-- Same contract as ever: read the key from Vault, post through pg_net, and
+-- swallow every error — an email problem must never roll back the enquiry.
 
 create schema if not exists private;
 
@@ -18,71 +19,64 @@ security definer
 set search_path to 'pg_catalog'
 as $function$
 declare
-  resend_key   text;
+  brevo_key    text;
   request_id   bigint;
   message_text text;
-  subject_text text;
 begin
-  select decrypted_secret into resend_key
+  select decrypted_secret into brevo_key
   from vault.decrypted_secrets
-  where name = 'resend_api_key'
+  where name = 'brevo_api_key'
   order by updated_at desc
   limit 1;
 
-  if resend_key is null or btrim(resend_key) = '' then
-    raise log 'Kabura quote email skipped: resend_api_key not configured in Vault';
+  if brevo_key is null or btrim(brevo_key) = '' then
+    raise log 'Kabura quote email skipped: brevo_api_key not configured in Vault';
     return new;
   end if;
 
-  subject_text := format(
-    'New Kabura quote %s — %s — %s',
-    new.reference,
-    coalesce(nullif(new.service, ''), 'General enquiry'),
-    coalesce(nullif(new.suburb, ''), 'Location not supplied')
-  );
-
-  message_text := format(
-    'A new quote request was submitted on the Kabura Tiling website.%s%s'
-    || 'Reference: %s%s' || 'Name: %s%s' || 'Phone: %s%s' || 'Email: %s%s'
-    || 'Suburb: %s%s' || 'Postcode: %s%s' || 'Service: %s%s'
-    || 'Approx. square metres: %s%s' || 'Tile size: %s%s'
-    || 'New build / renovation: %s%s' || 'Preferred start: %s%s'
-    || 'Project description: %s%s' || 'Submitted: %s%s' || 'Status: %s',
-    E'\n', E'\n',
-    new.reference, E'\n',
-    coalesce(new.name, 'Not supplied'), E'\n',
-    coalesce(new.phone, 'Not supplied'), E'\n',
-    coalesce(new.email, 'Not supplied'), E'\n',
-    coalesce(nullif(new.suburb, ''), 'Not supplied'), E'\n',
-    coalesce(nullif(new.postcode, ''), 'Not supplied'), E'\n',
-    coalesce(nullif(new.service, ''), 'Not supplied'), E'\n',
-    coalesce(nullif(new.approx_sqm, ''), 'Not supplied'), E'\n',
-    coalesce(nullif(new.tile_size, ''), 'Not supplied'), E'\n',
-    coalesce(nullif(new.build_type, ''), 'Not supplied'), E'\n',
-    coalesce(nullif(new.start_timing, ''), 'Not supplied'), E'\n',
-    coalesce(nullif(new.description, ''), 'Not supplied'), E'\n',
-    coalesce(new.created_at::text, now()::text), E'\n',
-    coalesce(new.status::text, 'new')
+  message_text := concat_ws(E'\n',
+    'A new quote request was submitted on the Kabura Tiling website.',
+    '',
+    'Reference: '              || new.reference,
+    'Name: '                   || coalesce(new.name, 'Not supplied'),
+    'Phone: '                  || coalesce(new.phone, 'Not supplied'),
+    'Email: '                  || coalesce(new.email, 'Not supplied'),
+    'Suburb: '                 || coalesce(nullif(new.suburb, ''), 'Not supplied'),
+    'Postcode: '               || coalesce(nullif(new.postcode, ''), 'Not supplied'),
+    'Service: '                || coalesce(nullif(new.service, ''), 'Not supplied'),
+    'Approx. square metres: '  || coalesce(nullif(new.approx_sqm, ''), 'Not supplied'),
+    'Tile size: '              || coalesce(nullif(new.tile_size, ''), 'Not supplied'),
+    'New build / renovation: ' || coalesce(nullif(new.build_type, ''), 'Not supplied'),
+    'Preferred timing: '       || coalesce(nullif(new.start_timing, ''), 'Not supplied'),
+    '',
+    'Project description:',
+    coalesce(nullif(new.description, ''), 'Not supplied'),
+    '',
+    'Open it in the portal:',
+    'https://kaburatiling.com.au/admin/quotes'
   );
 
   select net.http_post(
-    url := 'https://api.resend.com/emails',
+    url := 'https://api.brevo.com/v3/smtp/email',
     headers := jsonb_build_object(
-      'Authorization', 'Bearer ' || resend_key,
+      'api-key',      brevo_key,
       'Content-Type', 'application/json',
-      'User-Agent', 'Kabura-Tiling-Supabase/1.0',
-      'Idempotency-Key', 'kabura-quote-' || new.id::text
+      'Accept',       'application/json'
     ),
     body := jsonb_build_object(
-      'from', 'Kabura Tiling Website <onboarding@resend.dev>',
-      'to', jsonb_build_array('rasatiling@gmail.com'),
-      'subject', subject_text,
-      'text', message_text
+      'sender',  jsonb_build_object('name', 'Kabura Tiling Website', 'email', 'rasatiling@gmail.com'),
+      'to',      jsonb_build_array(jsonb_build_object('email', 'rasatiling@gmail.com')),
+      'replyTo', jsonb_build_object('email', new.email, 'name', new.name),
+      'subject', format('New Kabura quote %s — %s — %s',
+                        new.reference,
+                        coalesce(nullif(new.service, ''), 'General enquiry'),
+                        coalesce(nullif(new.suburb, ''), 'Location not supplied')),
+      'textContent', message_text
     ),
     timeout_milliseconds := 5000
   ) into request_id;
 
-  raise log 'Kabura quote email queued via pg_net request_id=%', request_id;
+  raise log 'Kabura quote email queued via Brevo, pg_net request_id=%', request_id;
   return new;
 exception
   when others then
