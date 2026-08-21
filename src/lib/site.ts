@@ -31,12 +31,22 @@ export const site = {
   currency: "AUD",
   timeZone: "Australia/Perth",
 
-  /** Canonical origin. Falls back to the Vercel-provided URL, then localhost. */
+  /**
+   * Canonical origin.
+   *
+   * Defaults to the real production domain rather than localhost, because
+   * behind Hostinger's proxy the server's own idea of its address is
+   * 0.0.0.0:<port> — and every absolute URL built from that (auth redirects,
+   * sitemap entries, canonical links) breaks in a browser. The env var still
+   * overrides for staging; `next dev` overrides below.
+   */
   url:
     env(process.env.NEXT_PUBLIC_SITE_URL) ??
     (process.env.VERCEL_PROJECT_PRODUCTION_URL
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : "http://localhost:3000"),
+      : process.env.NODE_ENV === "development"
+        ? "http://localhost:3000"
+        : "https://kaburatiling.com.au"),
 
   /* ---------- Supplied by Kabura, 18 Aug 2026 ----------
      Committed as defaults because they are public business facts meant to be
