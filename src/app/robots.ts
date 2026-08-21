@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: "*",
         allow: "/",
         // Nothing under these paths should ever be indexed.
-        disallow: ["/admin", "/admin/", "/api/"],
+        disallow: ["/admin", "/admin/", "/api/", "/auth/"],
       },
     ],
     sitemap: absoluteUrl("/sitemap.xml"),

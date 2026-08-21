@@ -1,17 +1,10 @@
--- Tell the office when someone asks for a date.
+-- Tell the office when someone asks for a date — via BREVO (brevo_api_key).
+-- Key from Vault, pg_net post, swallow every error: a mail problem must never
+-- roll back the customer's request.
 --
--- Same mechanism as the quote notification that already works: read the
--- provider key from Supabase Vault, post through pg_net, and swallow every
--- error. An email problem must never roll back the customer's request — the
--- row is the thing that matters, the email is a convenience.
---
--- Inert until a secret named `resend_api_key` exists in Vault. The existing
--- quote notification uses the same secret, so once one works, both do.
---
--- NOTE ON THE PROVIDER: the working integration in this project is Resend, not
--- Brevo. Switching is a change to the URL, the auth header and the JSON body
--- in this one function plus the quote one — nothing else in the app knows or
--- cares which provider sends the mail.
+-- HISTORY NOTE. Rewritten in place on 21 Aug 2026 so a fresh replay never
+-- installs any provider but Brevo. The installed functions come from
+-- 20260821090000_brevo_notifications.sql either way.
 
 create schema if not exists private;
 
@@ -22,25 +15,33 @@ security definer
 set search_path to 'pg_catalog'
 as $function$
 declare
-  resend_key   text;
-  recipients   text[];
+  brevo_key    text;
+  recipients   jsonb;
+  request_id   bigint;
   message_text text;
 begin
-  select decrypted_secret into resend_key
+  select decrypted_secret into brevo_key
   from vault.decrypted_secrets
-  where name = 'resend_api_key'
+  where name = 'brevo_api_key'
   order by updated_at desc
   limit 1;
 
-  if resend_key is null or btrim(resend_key) = '' then
-    raise log 'Kabura booking email skipped: resend_api_key not configured in Vault';
+  if brevo_key is null or btrim(brevo_key) = '' then
+    raise log 'Kabura booking email skipped: brevo_api_key not configured in Vault';
     return new;
   end if;
 
-  select coalesce(nullif(notification_emails, '{}'), array['hello@kaburatiling.com.au'])
+  select coalesce(
+           (select jsonb_agg(jsonb_build_object('email', e))
+              from unnest(s.notification_emails) as e),
+           jsonb_build_array(jsonb_build_object('email', 'rasatiling@gmail.com'))
+         )
     into recipients
-    from public.business_settings
-   where id = 1;
+    from public.business_settings s
+   where s.id = 1;
+
+  recipients := coalesce(recipients,
+                  jsonb_build_array(jsonb_build_object('email', 'rasatiling@gmail.com')));
 
   message_text := concat_ws(E'\n',
     'A customer has asked to book a date on the Kabura Tiling website.',
@@ -62,22 +63,24 @@ begin
 
   begin
     perform net.http_post(
-      url     := 'https://api.resend.com/emails',
+      url := 'https://api.brevo.com/v3/smtp/email',
       headers := jsonb_build_object(
-        'Authorization', 'Bearer ' || resend_key,
-        'Content-Type',  'application/json'
+        'api-key',      brevo_key,
+        'Content-Type', 'application/json',
+        'Accept',       'application/json'
       ),
-      body    := jsonb_build_object(
-        'from',    'Kabura Website <onboarding@resend.dev>',
-        'to',      to_jsonb(recipients),
+      body := jsonb_build_object(
+        'sender',  jsonb_build_object('name', 'Kabura Tiling Website', 'email', 'rasatiling@gmail.com'),
+        'to',      recipients,
+        'replyTo', jsonb_build_object('email', new.email, 'name', new.name),
         'subject', format('Date request %s — %s — %s',
                           new.reference, new.name,
                           to_char(new.requested_date, 'DD Mon YYYY')),
-        'text',    message_text
-      )
+        'textContent', message_text
+      ),
+      timeout_milliseconds := 5000
     );
   exception when others then
-    -- Never let a mail failure undo the request.
     raise log 'Kabura booking email failed: %', sqlerrm;
   end;
 
@@ -91,4 +94,4 @@ create trigger booking_requests_notify
   for each row execute function private.notify_kabura_booking_email();
 
 comment on function private.notify_kabura_booking_email() is
-  'Emails the office when a date request arrives. Inert without a Vault secret; never blocks the insert.';
+  'Emails the office when a date request arrives, via Brevo. Inert without the brevo_api_key Vault secret; never blocks the insert.';

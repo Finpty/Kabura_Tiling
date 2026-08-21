@@ -289,3 +289,29 @@ begin
   raise notice 'TEST availability-returns-only-day-and-status %',
     case when not leaked then 'PASS' else 'FAIL' end;
 end$$;
+
+-- ================ 11 · notifications are Brevo, and stay Brevo ============
+-- The tripwire that makes a regression to any other provider a failing test:
+-- after a full replay of the folder, every notification function must read
+-- brevo_api_key and nothing else.
+do $$
+declare bad text := '';
+begin
+  perform 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+   where n.nspname = 'private' and p.proname in
+     ('notify_kabura_quote_email', 'notify_kabura_booking_email',
+      'send_kabura_quote_email', 'send_kabura_booking_email')
+     and pg_get_functiondef(p.oid) not ilike '%brevo_api_key%'
+     and p.proname like 'send%';
+  if found then bad := bad || ' send-fn-missing-brevo'; end if;
+
+  perform 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+   where n.nspname = 'private' and p.proname in
+     ('notify_kabura_quote_email', 'notify_kabura_booking_email',
+      'send_kabura_quote_email', 'send_kabura_booking_email')
+     and pg_get_functiondef(p.oid) ilike '%resend%';
+  if found then bad := bad || ' mentions-other-provider'; end if;
+
+  raise notice 'TEST notifications-are-brevo %',
+    case when bad = '' then 'PASS' else 'FAIL:' || bad end;
+end$$;
