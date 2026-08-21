@@ -117,20 +117,36 @@ Auth itself still authenticates by email + password, unchanged.
 
 ## Password reset — how the pieces fit
 
-The emailed link carries a **one-time token hash**, not a session. The server
-route `/auth/confirm` is what turns one into the other: it calls
-`verifyOtp({ type: "recovery", token_hash })`, lets the SSR client write the
-session cookies (only a Route Handler may write cookies), and forwards the
-now-signed-in visitor to `/admin/reset-password`. A used, expired or mangled
-link is bounced to `/admin/forgot-password?error=link`, which explains and
-offers the form again. Tokens stay one-time: `verifyOtp` consumes them, and
-nothing in the app extends their life.
+The emailed link carries a **one-time credential**, not a session, and
+something on the server has to exchange it before the reset page can find a
+signed-in user. Both link shapes Supabase can send are handled:
+
+- **Stock template** (`{{ .ConfirmationURL }}`, the dashboard default): the
+  link goes to Supabase's hosted verify endpoint, which consumes the token
+  itself and redirects back to `/admin/reset-password?code=…`. The middleware
+  exchanges that code for a session (`exchangeCodeForSession`), writes the
+  cookies onto its redirect, and reloads the page clean. The exchange needs
+  the code-verifier cookie stored when the reset was requested, so with this
+  template **the link must be opened in the same browser the reset was
+  requested from**.
+- **Customised template** (below, recommended): the link goes straight to the
+  server route `/auth/confirm`, which calls
+  `verifyOtp({ type: "recovery", token_hash })` and attaches the session
+  cookies to its redirect. No verifier cookie involved — works from any
+  browser or device, which is why it is the better template.
+
+Either way, a used, expired or mangled link is bounced to
+`/admin/forgot-password?error=link`, which explains and offers the form again.
+Credentials stay one-time: the exchange consumes them, and nothing in the app
+extends their life. Note that requesting a new link invalidates older ones,
+and Supabase rate-limits requests (roughly one per minute) — patience beats
+hammering the button.
 
 `/admin/reset-password` renders the form only when a session actually exists;
 otherwise it shows "Request a new reset link" instead of a form that can only
 fail. After a successful change the visitor lands on `/admin`, signed in.
 
-**The Supabase email template must link to the confirm route.** In the
+**Recommended: point the email template at the confirm route.** In the
 dashboard under Authentication → Emails → *Reset Password*, use:
 
 ```html
@@ -146,8 +162,6 @@ works once and expires after an hour.</p>
 <p>If you didn&rsquo;t ask for this, ignore this email — nothing will change.</p>
 ```
 
-A template that links straight to `/admin/reset-password` skips the token
-exchange and the page finds no session — the exact bug this flow replaces.
 Site URL must be `https://kaburatiling.com.au`, and
 `https://kaburatiling.com.au/admin/reset-password` stays in the Redirect URLs
 allowlist.

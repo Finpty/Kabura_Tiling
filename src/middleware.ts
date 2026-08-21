@@ -1,4 +1,4 @@
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
@@ -57,12 +57,21 @@ export async function middleware(request: NextRequest) {
 
   let response = NextResponse.next({ request });
 
+  /**
+   * Every cookie Supabase writes this request, kept for replay. `response`
+   * carries them when the request falls through to a page, but a redirect is a
+   * fresh response — and a session cookie that misses the browser turns a
+   * perfectly good sign-in into "that link has already been used".
+   */
+  const staged: { name: string; value: string; options: CookieOptions }[] = [];
+
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookies: {
       getAll() {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
+        staged.push(...cookiesToSet);
         for (const { name, value } of cookiesToSet) {
           request.cookies.set(name, value);
         }
@@ -73,6 +82,39 @@ export async function middleware(request: NextRequest) {
       },
     },
   });
+
+  /** A redirect on the canonical origin, carrying whatever Supabase wrote. */
+  const redirectWithCookies = (target: URL) => {
+    const redirect = NextResponse.redirect(target);
+    for (const { name, value, options } of staged) {
+      redirect.cookies.set(name, value, options);
+    }
+    return redirect;
+  };
+
+  // ── The emailed reset link, arriving via Supabase's hosted endpoint ────────
+  // With the stock email template, the link points at supabase.co/auth/v1/
+  // verify, which consumes the one-time token itself and bounces back here
+  // with ?code=… — half a sign-in. Nothing that merely renders can finish it,
+  // because finishing it writes cookies; so it is finished here. The exchange
+  // needs the code-verifier cookie set when the reset was requested, which is
+  // why a reset must be requested and clicked in the same browser.
+  // (/auth/confirm handles the customised template that links there instead.)
+  if (pathname === "/admin/reset-password") {
+    const code = request.nextUrl.searchParams.get("code");
+    if (code) {
+      const exchanged = await supabase.auth
+        .exchangeCodeForSession(code)
+        .then(({ error }) => !error)
+        .catch(() => false);
+      // Success or not, never re-land on a URL holding a spent code.
+      return redirectWithCookies(
+        exchanged
+          ? new URL("/admin/reset-password", CANONICAL_ORIGIN)
+          : new URL("/admin/forgot-password?error=link", CANONICAL_ORIGIN),
+      );
+    }
+  }
 
   // `getUser` rather than `getSession`: it validates the token with Supabase
   // instead of trusting whatever is in the cookie jar.
@@ -88,12 +130,12 @@ export async function middleware(request: NextRequest) {
     const login = new URL("/admin/login", CANONICAL_ORIGIN);
     // Carry the destination so signing in lands where they were headed.
     if (pathname !== "/admin") login.search = `?next=${encodeURIComponent(pathname)}`;
-    return NextResponse.redirect(login);
+    return redirectWithCookies(login);
   }
 
   // Already signed in and asking for the login page: send them on.
   if (user && pathname === "/admin/login") {
-    return NextResponse.redirect(new URL("/admin", CANONICAL_ORIGIN));
+    return redirectWithCookies(new URL("/admin", CANONICAL_ORIGIN));
   }
 
   return response;
